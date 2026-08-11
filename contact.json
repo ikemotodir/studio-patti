@@ -1,0 +1,9 @@
+{
+ "_メモ": "お問い合わせの送り先。endpoint が空のあいだは、メールソフトを開く従来の動き（mailto）のままです。Googleフォームの formResponse のURLと、各質問の entry.xxxx を入れると、サイトの中だけで送信が完了するようになります。",
+ "endpoint": "",
+ "fields": {
+  "name": "",
+  "mail": "",
+  "body": ""
+ }
+}

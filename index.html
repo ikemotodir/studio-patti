@@ -4,7 +4,17 @@
 <meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PATTI ROOM — 仮組みデモ</title>
+<title>STUDIO PATTI｜合同会社スタジオパッチ</title>
+<meta name="description" content="キャラクターを中心としたクリエイティブ。アニメーション制作・キャラクター設計・絵本・メタバース・ドキュメンタリー映像。おばけのパッチくんの部屋から、どうぞ。">
+<meta name="theme-color" content="#05030f">
+<link rel="icon" href="favicon.png" type="image/png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="STUDIO PATTI">
+<meta property="og:title" content="STUDIO PATTI｜合同会社スタジオパッチ">
+<meta property="og:description" content="キャラクターを中心としたクリエイティブ。パッチくんの部屋の、気になるところをクリックしてね。">
+<meta property="og:url" content="https://ikemotodir.github.io/studio-patti/">
+<meta property="og:image" content="https://ikemotodir.github.io/studio-patti/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   :root { --scene-w: 384; --scene-h: 240; }
   html, body {
@@ -203,6 +213,65 @@
   }
   @media (prefers-reduced-motion: reduce) { #garland { animation: none; } }
 
+  /* ─── スマホ(縦持ち)への案内: 横にしてもらう ─── */
+  #rotate {
+    position: fixed; inset: 0; z-index: 100; display: none;
+    flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+    background: #05030f; padding: 24px;
+    font-family: 'DotGothic16', 'MS Gothic', monospace; text-align: center;
+  }
+  #rotate .phone {
+    width: 144px; height: 144px; image-rendering: pixelated;
+    background-image: url(rotate_phone.png);
+    background-size: 1440px 144px;
+    animation: phoneturn 2.6s steps(1) infinite;
+  }
+  @keyframes phoneturn {
+    0%,9.9%    { background-position: 0 0; }
+    10%,19.9%  { background-position: -144px 0; }
+    20%,29.9%  { background-position: -288px 0; }
+    30%,39.9%  { background-position: -432px 0; }
+    40%,49.9%  { background-position: -576px 0; }
+    50%,59.9%  { background-position: -720px 0; }
+    60%,69.9%  { background-position: -864px 0; }
+    70%,79.9%  { background-position: -1008px 0; }
+    80%,89.9%  { background-position: -1152px 0; }
+    90%,100%   { background-position: -1296px 0; }
+  }
+  #rotate .msg {
+    position: relative; max-width: 340px; box-sizing: border-box;
+    background: rgba(8, 6, 40, .92);
+    border: 2px solid #e8e4f4; border-radius: 3px;
+    box-shadow: inset 0 0 0 1px #2a2560;
+    padding: 13px 12px 12px 54px; color: #f2eefc;
+    font-size: clamp(11px, 3.4vw, 14px); line-height: 1.7; text-align: left;
+    white-space: nowrap;   /* 改行は<br>で手で入れた位置だけにする */
+  }
+  #rotate .msg b {
+    color: #fcc800; font-weight: normal; display: block;
+    font-size: clamp(12px, 3.9vw, 16px); margin-bottom: 2px;
+  }
+  #rotate .patti {
+    position: absolute; left: 8px; bottom: 6px;
+    width: 36px; height: 48px; image-rendering: pixelated;
+    background-image: url(patti_shaded.png);
+    background-size: 2160px 48px;
+    animation: pattiidle 1.2s steps(12) infinite;
+  }
+  @keyframes pattiidle { from { background-position: 0 0; } to { background-position: -432px 0; } }
+  #rotate .anyway {
+    background: none; border: 0; color: #8b86a8;
+    font-family: inherit; font-size: 12px; text-decoration: underline;
+    cursor: pointer; padding: 6px 10px;
+  }
+  @media (orientation: portrait) and (max-width: 900px) {
+    body:not(.seeanyway) #rotate { display: flex; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #rotate .phone, #rotate .patti { animation: none; }
+    #rotate .phone { background-position: -1296px 0; }
+  }
+
   /* ─── 汎用ホットスポット ─── */
   .hs {
     position: absolute; display: block; cursor: pointer;
@@ -349,6 +418,16 @@
 </style>
 </head>
 <body>
+
+<div id="rotate" role="dialog" aria-label="画面を横向きにしてください">
+  <div class="phone" aria-hidden="true"></div>
+  <div class="msg">
+    <div class="patti" aria-hidden="true"></div>
+    <b>スマホを横向きにしてね！</b>
+    よこにすると、<br>ボクのおへやが<br>ぜんぶ見えるよ！
+  </div>
+  <button class="anyway" type="button">このまま見る</button>
+</div>
 
 <div id="wrap">
   <div id="stage">
@@ -687,6 +766,8 @@ let RECTS = {}, BOOK = null, GALLERY = { items: [] };
 // ビルドし直した内容が必ず反映されるようキャッシュを避ける
 const NOCACHE = { cache: 'no-store' };
 fetch('closeups.json', NOCACHE).then(r => r.json()).then(j => RECTS = j).catch(() => {});
+let CONTACT = { endpoint: '', fields: {} };   // お問い合わせの送り先(contact.json)
+fetch('contact.json', NOCACHE).then(r => r.json()).then(j => CONTACT = j).catch(() => {});
 fetch('book.json', NOCACHE).then(r => r.json()).then(j => BOOK = j).catch(() => {});
 fetch('gallery.json', NOCACHE).then(r => r.json()).then(j => GALLERY = j).catch(() => {});
 
@@ -966,7 +1047,13 @@ const BUILDERS = {
     dcontent.appendChild(ok);
     const p = dcontent;
     send.addEventListener('click', () => {
-      const name = nameEl.value, mail = mailEl.value, body = ta.value;
+      const name = nameEl.value.trim(), mail = mailEl.value.trim(), body = ta.value.trim();
+      const okEl = p.querySelector('#lok');
+      if (!name || !mail || !body) {              // 空のまま投函させない
+        okEl.textContent = 'おなまえ・メールアドレス・ご用件を書いてね！';
+        okEl.style.display = 'block';
+        return;
+      }
       const fl = document.createElement('div');
       fl.id = 'flyletter';
       fl.style.left = (r.x / 384 * 100) + '%';
@@ -981,8 +1068,20 @@ const BUILDERS = {
       }));
       setTimeout(() => {
         fl.remove();
-        p.querySelector('#lok').style.display = 'block';
-        location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('【スタジオパッチ】お問い合わせ: ' + name)}&body=${encodeURIComponent(body + '\n\n' + name + '\n' + mail)}`;
+        const F = CONTACT.fields || {};
+        if (CONTACT.endpoint && F.name && F.mail && F.body) {
+          // サイトの中だけで送信を完了させる（メールソフトは開かない）
+          const fd = new FormData();
+          fd.append(F.name, name); fd.append(F.mail, mail); fd.append(F.body, body);
+          fetch(CONTACT.endpoint, { method: 'POST', mode: 'no-cors', body: fd }).catch(() => {});
+          okEl.textContent = 'おてがみを投函しました！ありがとう！';
+          okEl.style.display = 'block';
+          nameEl.value = ''; mailEl.value = ''; ta.value = '';
+        } else {
+          okEl.textContent = 'おてがみを投函しました！ありがとう！';
+          okEl.style.display = 'block';
+          location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('【スタジオパッチ】お問い合わせ: ' + name)}&body=${encodeURIComponent(body + '\n\n' + name + '\n' + mail)}`;
+        }
       }, 950);
     });
   },
@@ -1004,6 +1103,10 @@ hotspot('postlink', '赤いポスト！<br>お手紙（お問い合わせ）は�
   () => zoomOpen('post', 293, 132, 30, 50));
 hotspot('memolink', '実験メモ！<br>CHARA CHARA LABへ飛べるよ！',
   () => window.open(CCL_URL, '_blank'));
+
+// スマホ(縦持ち)の案内。横にすればCSSが自動で引っ込める
+document.querySelector('#rotate .anyway')
+  .addEventListener('click', () => document.body.classList.add('seeanyway'));
 
 // テレビだけ特別: ハイライトの代わりに砂嵐→放送開始
 const tvB = document.getElementById('tvlink');
