@@ -748,8 +748,6 @@ function hotspot(id, hoverText, onClick) {
 // サイトエンジン: ズーム遷移 + 各詳細ビュー
 // ─────────────────────────────────────────────
 const CCL_URL = 'https://ikemotodir.github.io/chara-chara-lab/';
-// 迷惑メール対策: 生のアドレスをHTMLに書かず、実行時に組み立てる
-const CONTACT_EMAIL = ['mm.arrowz.39', 'gmail.com'].join('@');
 const SHOW_CAMERA = true;
 const CHANNELS = [
   { t: '3DCG・VFX シネマティック', c: 'Amused Art Japan',
@@ -1070,17 +1068,20 @@ const BUILDERS = {
         fl.remove();
         const F = CONTACT.fields || {};
         if (CONTACT.endpoint && F.name && F.mail && F.body) {
-          // サイトの中だけで送信を完了させる（メールソフトは開かない）
-          const fd = new FormData();
-          fd.append(F.name, name); fd.append(F.mail, mail); fd.append(F.body, body);
-          fetch(CONTACT.endpoint, { method: 'POST', mode: 'no-cors', body: fd }).catch(() => {});
+          // サイトの中だけで送信を完了させる(メールソフトは開かない)
+          const q = new URLSearchParams();
+          q.append(F.name, name); q.append(F.mail, mail); q.append(F.body, body);
+          fetch(CONTACT.endpoint, {
+            method: 'POST', mode: 'no-cors', redirect: 'follow',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+            body: q.toString()
+          }).catch(() => {});
           okEl.textContent = 'おてがみを投函しました！ありがとう！';
           okEl.style.display = 'block';
           nameEl.value = ''; mailEl.value = ''; ta.value = '';
         } else {
-          okEl.textContent = 'おてがみを投函しました！ありがとう！';
+          okEl.textContent = '今はおてがみを受け取れないみたい。もう一度ためしてね！';
           okEl.style.display = 'block';
-          location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('【スタジオパッチ】お問い合わせ: ' + name)}&body=${encodeURIComponent(body + '\n\n' + name + '\n' + mail)}`;
         }
       }, 950);
     });
