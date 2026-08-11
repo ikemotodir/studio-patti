@@ -1,0 +1,1123 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PATTI ROOM — 仮組みデモ</title>
+<style>
+  :root { --scene-w: 384; --scene-h: 240; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: #05030f; color: #c9c9d4;
+    font-family: system-ui, sans-serif;
+  }
+  #wrap {
+    position: fixed; inset: 0; overflow: hidden;
+  }
+  #hud { display: none; }   /* 開発用HUDは本番非表示 */
+  /* シーン本体。中の座標は全部 384x216 のドット単位で書ける */
+  #stage {
+    position: absolute;
+    left: 50%; top: 50%;
+    margin-left: -192px; margin-top: -120px;   /* 拡大率に関係なく必ず画面中央 */
+    width: 384px; height: 240px;
+    transform-origin: center center;
+    image-rendering: pixelated;
+    overflow: hidden;
+  }
+  #stage img, #stage div { image-rendering: pixelated; }
+
+  #room { position: absolute; left: 0; top: 0; width: 384px; height: 240px; }
+
+  /* ゲーム風テキストボックス(将来ここにホバー解説が入る) */
+  #talkbox {
+    position: absolute; left: 72px; top: 184px;
+    width: 242px; height: 30px; box-sizing: border-box;
+    background: rgba(8, 6, 40, .92);
+    border: 2px solid #e8e4f4; border-radius: 3px;
+    box-shadow: inset 0 0 0 1px #2a2560;
+    padding: 3px 14px 3px 6px;
+    font-family: 'DotGothic16', 'MS Gothic', monospace;
+    color: #f2eefc; font-size: 8px; line-height: 1.4;
+  }
+  #talkbox .name { color: #fcc800; }
+  #talkbox .cursor {
+    position: absolute; right: 5px; bottom: 3px;
+    width: 0; height: 0;
+    border-left: 3px solid transparent;
+    border-right: 3px solid transparent;
+    border-top: 4px solid #f2eefc;
+    animation: tbc 1s steps(1) infinite;
+  }
+  @keyframes tbc { 0%,50% { opacity: 1; } 50.01%,100% { opacity: 0; } }
+
+  /* 絵本『おばけのパッチ』のクリック範囲 */
+  #booklink {
+    position: absolute; left: 138px; top: 140px;
+    width: 32px; height: 32px;
+    display: block; cursor: pointer;
+    border: 0; background: transparent; padding: 0;
+  }
+  /* 絵本ホバー: ページがパラパラめくれる */
+  #bookflip {
+    position: absolute; left: 136px; top: 148px;
+    width: 36px; height: 22px; display: none;
+    background-image: url(bookflip.png);
+    background-size: 216px 22px;
+    animation: bookflipanim .8s steps(6) infinite;
+    pointer-events: none;
+  }
+  @keyframes bookflipanim { from { background-position: 0 0; } to { background-position: -216px 0; } }
+  /* 地球儀はずっと回っている */
+  #globespin {
+    position: absolute; left: 40px; top: 76px;
+    width: 24px; height: 28px;
+    background-image: url(globe_spin.png);
+    background-size: 144px 28px;
+    animation: globespinanim 2.4s steps(6) infinite;
+    pointer-events: none;
+  }
+  @keyframes globespinanim { from { background-position: 0 0; } to { background-position: -144px 0; } }
+  /* ギャラリー: 傘型ライトが点いて光が差す */
+  #gallight {
+    position: absolute; left: 82px; top: 55px;
+    width: 32px; height: 28px; display: none;
+    clip-path: polygon(22% 0, 78% 0, 100% 100%, 0 100%);
+    background: linear-gradient(rgba(255, 214, 140, .62), rgba(255, 214, 140, 0));
+    mix-blend-mode: screen; pointer-events: none;
+  }
+  /* PC画面: 横長の楕円グロー(画面が周りをほわーっと照らす) */
+  #monglow {
+    position: absolute; left: 282px; top: 62px;
+    width: 84px; height: 52px; display: none;
+    background: radial-gradient(ellipse at center, rgba(140, 190, 255, .55), rgba(140, 190, 255, 0) 70%);
+    mix-blend-mode: screen; pointer-events: none;
+  }
+  /* デジタル時計(閲覧者のローカル時刻) */
+  /* ジュークボックス(左下のデッドスペース) */
+  #jukebox {
+    position: absolute; left: 14px; top: 104px;
+    width: 42px; height: 74px; cursor: pointer;
+    border: 0; background: transparent; padding: 0;
+  }
+  /* 灯りのコマ(消灯時は非表示。再生中=速い点滅／ホバー中=ゆっくり点滅) */
+  #jukeglow {
+    position: absolute; left: 14px; top: 104px;
+    width: 42px; height: 74px; display: none;
+    background-image: url(jukebox_glow.png);
+    background-size: 168px 74px;
+    image-rendering: pixelated; pointer-events: none;
+  }
+  @keyframes jbglow {
+    0%,24.9%   { background-position: 0 0; }
+    25%,49.9%  { background-position: -42px 0; }
+    50%,74.9%  { background-position: -84px 0; }
+    75%,100%   { background-position: -126px 0; }
+  }
+  #jukehalo {
+    position: absolute; left: 2px; top: 92px;
+    width: 66px; height: 98px; display: none;
+    background: radial-gradient(ellipse at center, rgba(255,170,90,.34), rgba(255,170,90,0) 70%);
+    mix-blend-mode: screen; pointer-events: none;
+  }
+  /* 再生中: チューブと星が速くピカピカ */
+  #jukebox.playing ~ #jukeglow { display: block; animation: jbglow .44s steps(1) infinite; }
+  #jukebox.playing ~ #jukehalo { display: block; }
+  /* ホバー(停止中): 再生中よりゆっくり灯りが点滅する */
+  #jukebox:hover:not(.playing) ~ #jukeglow,
+  #jukebox:focus-visible:not(.playing) ~ #jukeglow {
+    display: block; opacity: .8; animation: jbglow 2.4s steps(1) infinite;
+  }
+  #jukebox:hover:not(.playing) ~ #jukehalo,
+  #jukebox:focus-visible:not(.playing) ~ #jukehalo {
+    display: block; animation: jbbreath 2.4s ease-in-out infinite;
+  }
+  @keyframes jbbreath { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    #jukeglow, #jukehalo { animation: none !important; }
+  }
+  #clockdisp {
+    position: absolute; left: 357px; top: 29px;
+    width: 24px; height: 9px; pointer-events: none;
+    font-family: 'DotGothic16','MS Gothic',monospace;
+    font-size: 7px; line-height: 9px; text-align: center;
+    color: #8ef0d0;
+  }
+
+  /* テレビ画面：池本のアニメーション動画をループ再生 */
+  #tv {
+    position: absolute; left: 129px; top: 59px;
+    width: 44px; height: 34px;
+    image-rendering: pixelated;   /* 44x34へ縮小描画=映像もドット化 */
+    object-fit: cover; display: block;
+  }
+
+  /* パッチくんの接地影(足の黒とぶつからない紫) */
+  #pshadow {
+    position: absolute; width: 30px; height: 7px;
+    left: 183px; top: 166px;   /* 読み込み前もパッチの足元に */
+    border-radius: 50%; background: rgba(64, 24, 108, .5);
+  }
+  /* マユちゃん(左で絵本を読んでいる) */
+  #mayu {
+    position: absolute; left: 66px; top: 112px;
+    width: 76px; height: 58px;   /* 足先を描き足した分だけ広い */
+    background-image: url(mayu_shaded.png);
+    background-repeat: no-repeat;
+  }
+  #mshadow {
+    position: absolute; left: 70px; top: 165px;
+    width: 62px; height: 8px;
+    border-radius: 50%; background: rgba(64, 24, 108, .5);
+  }
+  /* 窓の向こうを飛ぶおばけ(Speop)。楕円でクリップして桟の奥に見せる */
+  #speopclip {
+    position: absolute; left: 273px; top: 17px;
+    width: 78px; height: 54px;
+    clip-path: ellipse(39px 27px at 39px 27px);
+    pointer-events: none;
+  }
+  #speop {
+    position: absolute; left: -30px; top: 18px;
+    width: 24px; height: 18px;
+    background-image: url(speop.png);
+    background-repeat: no-repeat;
+  }
+  #winbars {
+    position: absolute; left: 0; top: 0;
+    width: 384px; height: 240px; pointer-events: none;
+  }
+  /* ガーランドのチラつき(3コマ) */
+  #garland {
+    position: absolute; left: 0; top: 10px;
+    width: 384px; height: 26px;
+    background-image: url(garland.png);
+    background-size: 1152px 26px;
+    animation: garflick 1.35s steps(1) infinite;
+  }
+  @keyframes garflick {
+    0%, 33.3% { background-position: 0 0; }
+    33.4%, 66.6% { background-position: -384px 0; }
+    66.7%, 100% { background-position: -768px 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { #garland { animation: none; } }
+
+  /* ─── 汎用ホットスポット ─── */
+  .hs {
+    position: absolute; display: block; cursor: pointer;
+    border: 0; background: transparent; padding: 0; border-radius: 0;
+  }
+  /* ホバー=やわらかい楕円の光がふわっと灯る(四角い切り抜きは一切貼らない) */
+  .hs::after {
+    content: ''; position: absolute; left: 50%; top: 50%;
+    width: var(--gw, 164%); height: var(--gh, 164%);
+    transform: translate(-50%, -50%); border-radius: 50%;
+    background: radial-gradient(closest-side,
+      rgba(255,244,214,.74) 0%, rgba(255,224,164,.45) 34%,
+      rgba(255,200,120,.18) 60%, rgba(255,184,100,0) 100%);
+    mix-blend-mode: screen; pointer-events: none;
+    opacity: 0; transition: opacity .2s ease;
+  }
+  .hs:hover::after, .hs:focus-visible::after { opacity: var(--gi, 1); }
+  /* 専用の演出を持つ場所(テレビ/絵本/ギャラリー/PC)は光を重ねない */
+  .hs.nobg::after { content: none; }
+  @media (prefers-reduced-motion: reduce) { .hs::after { transition: none; } }
+  /* 月のおばけボンボン(窓の向こう) */
+  #bonbon {
+    position: absolute; left: 44px; top: 2px;
+    width: 32px; height: 32px;
+    background-image: url(bonbon_shaded.png);
+    background-size: 768px 32px;
+    image-rendering: pixelated;
+    animation: bonbonanim 2.4s steps(24) infinite;
+  }
+  @keyframes bonbonanim { from { background-position: 0 0; } to { background-position: -768px 0; } }
+
+  /* ─── ズーム先の詳細ビュー ─── */
+  #detail {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(4, 2, 26, .94);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity .3s;
+  }
+  #detail[hidden] { display: none; }   /* hidden属性を確実に効かせる(全クリック吸収バグの根治) */
+  #detail.on { opacity: 1; }
+  /* 装飾要素はクリックを一切奪わない */
+  #tv, #garland, #mayu, #mshadow, #patti, #pshadow, #room { pointer-events: none; }
+  #dwrap {
+    position: relative;
+    width: min(96vw, 148vh);   /* 画面サイズに応じて収まるように */
+    aspect-ratio: 8 / 5;
+  }
+  #dbg { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+  #dcontent { position: absolute; inset: 0; font-family: 'DotGothic16','MS Gothic',monospace; }
+  #dcontent * { box-sizing: border-box; }   /* %パディングで幅が膨らんではみ出すのを根治 */
+  #dback {
+    position: absolute; left: 1.5%; top: 3%; z-index: 10;
+    background: rgba(8,6,40,.92); color: #f2eefc;
+    border: 2px solid #e8e4f4; border-radius: 3px;
+    font-family: 'DotGothic16','MS Gothic',monospace;
+    font-size: clamp(11px, 1.6vw, 16px); padding: 5px 12px; cursor: pointer;
+  }
+  #dback:hover { background: #fcc800; color: #1c1640; }
+  /* ブラウン管効果(丸み・走査線・にじみ) */
+  /* チャンネル動画は他社作品なので加工なし(角丸のみ) */
+  .crt {
+    position: absolute; overflow: hidden; background: #000;
+    border-radius: 2% / 3%;
+  }
+  .crt iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  #dcontent iframe, #dcontent img.fit { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  #dcontent img.fit { object-fit: contain; background: #05030f; }
+  .dpanel { position: absolute; overflow: auto; color: #0a0830; }
+  .dpanel h2 { font-size: clamp(13px, 2vw, 20px); margin: 0 0 .5em; }
+  .dpanel p { font-size: clamp(10px, 1.45vw, 14px); line-height: 1.7; margin: 0 0 .8em; }
+  .chbtn {
+    display: block; width: 100%; margin: 0 0 6%;
+    background: #1c1640; color: #ffd35e; border: 1px solid #e8e4f4;
+    font-family: inherit; font-size: clamp(9px, 1.2vw, 12px); cursor: pointer; padding: 8% 0;
+  }
+  .chbtn.on { background: #fcc800; color: #1c1640; }
+  .navbtn {
+    background: rgba(8,6,40,.85); color: #f2eefc; border: 2px solid #e8e4f4;
+    border-radius: 3px; font-family: inherit; font-size: clamp(12px, 2vw, 18px);
+    cursor: pointer; padding: 2px 10px;
+  }
+  /* 購入ボタン: 赤ベース。紺の壁と真鍮プレートの中で一番目を引く色 */
+  .buybtn {
+    display: flex; align-items: center; justify-content: center; gap: .45em;
+    background: linear-gradient(#6b2830, #3d151b);
+    color: #dcb2ae; border: 2px solid #240a0f;
+    box-shadow: inset 0 1px 0 #8d3f47, 0 2px 0 #1b0508;
+    border-radius: 3px; text-decoration: none; box-sizing: border-box;
+    font-family: inherit; font-size: clamp(10px, 2vw, 24px);
+    cursor: pointer; white-space: nowrap;
+    transition: background .18s ease, color .18s ease, border-color .18s ease,
+                box-shadow .18s ease, transform .12s ease;
+  }
+  .buybtn svg {
+    width: 1.25em; height: 1.25em; shape-rendering: crispEdges; flex: none;
+    filter: brightness(.62) saturate(.5); transition: filter .18s ease;
+  }
+  /* カーソルを乗せると赤く灯って「押せる」状態になる */
+  .buybtn:hover, .buybtn:focus-visible {
+    background: linear-gradient(#ff6069, #cc2a39);
+    color: #fff3ea; border-color: #5e0e19;
+    box-shadow: inset 0 1px 0 #ff9aa2, 0 2px 0 #46080f;
+    transform: translateY(-1px); outline: none;
+  }
+  .buybtn:hover svg, .buybtn:focus-visible svg { filter: none; }
+  .buybtn:active { transform: translateY(1px); box-shadow: inset 0 1px 0 #ff9aa2; }
+  @media (prefers-reduced-motion: reduce) { .buybtn, .buybtn svg { transition: none; } }
+  .letterfield {
+    display: block; width: 100%; margin-bottom: 4%;
+    background: transparent; border: 0; border-bottom: 1px solid #b9a; color: #0a0830;
+    font-family: inherit; font-size: clamp(10px, 1.5vw, 14px); padding: 2px;
+  }
+  #flyletter {
+    position: absolute; width: 12%; height: 8%;
+    background: #fdf3e3; border: 1px solid #0a0830; z-index: 5;
+    transition: all .9s cubic-bezier(.5,0,.8,1); pointer-events: none;
+  }
+  /* パッチくん：コマの切り替えは JS が背景位置を動かす */
+  #patti {
+    position: absolute;
+    width: 36px; height: 48px;
+    background-image: url(patti_shaded.png);
+    background-repeat: no-repeat;
+    left: 180px; top: 122px;   /* GROUND_Y(170) - 48。JS初期値と一致させる */
+  }
+
+  /* テレビのクリック範囲。本番ではここが <a href="/animation"> になる */
+  #tvlink {
+    position: absolute; left: 116px; top: 34px;
+    width: 78px; height: 78px;
+    display: block; cursor: pointer;
+    border: 0; background: transparent; padding: 0;
+  }
+
+  #hud { font-size: 13px; letter-spacing: .04em; }
+  #hud b { color: #fcc800; font-weight: 500; }
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #1b1b24; border: 1px solid #34343f; border-radius: 8px;
+    padding: 10px 16px; font-size: 13px; opacity: 0;
+    transition: opacity .25s; pointer-events: none;
+  }
+  @media (prefers-reduced-motion: reduce) { #tv { animation: none; } }
+</style>
+</head>
+<body>
+
+<div id="wrap">
+  <div id="stage">
+    <img id="room" src="room.png" alt="パッチくんの部屋">
+    <video id="tvsrc" src="tv_video.mp4" autoplay muted loop playsinline
+           style="display:none" aria-hidden="true"></video>
+    <canvas id="tv" width="44" height="34" aria-hidden="true"></canvas>
+    <div id="speopclip" aria-hidden="true"><div id="bonbon"></div><div id="speop"></div></div>
+    <div id="bookflip" aria-hidden="true"></div>
+    <div id="globespin" aria-hidden="true"></div>
+    <div id="gallight" aria-hidden="true"></div>
+    <div id="monglow" aria-hidden="true"></div>
+    <div id="clockdisp" aria-hidden="true"></div>
+    <button id="jukebox" aria-label="ジュークボックス（クリックで曲が変わります）"></button>
+    <div id="jukeglow" aria-hidden="true"></div>
+    <div id="jukehalo" aria-hidden="true"></div>
+    <img id="winbars" src="window_bars.png" alt="" aria-hidden="true">
+    <div id="garland" aria-hidden="true"></div>
+    <div id="mshadow" aria-hidden="true"></div>
+    <div id="mayu" role="img" aria-label="絵本を読むマユちゃん"></div>
+    <div id="pshadow" aria-hidden="true"></div>
+    <div id="patti" role="img" aria-label="パッチくん"></div>
+    <button id="tvlink" class="hs" style="left:116px;top:34px;width:78px;height:78px"
+            aria-label="テレビ（アニメーション制作事例）"></button>
+    <button id="booklink" class="hs" style="left:134px;top:146px;width:40px;height:26px"
+            aria-label="絵本『おばけのパッチ』を読む"></button>
+    <button id="bplink" class="hs" style="left:194px;top:22px;width:76px;height:56px;--gw:112%;--gh:122%;--gi:.7"
+            aria-label="キャラクター設計・デザインについて"></button>
+    <button id="monlink" class="hs" style="left:296px;top:60px;width:56px;height:48px"
+            aria-label="メタバース制作について"></button>
+    <button id="gallink" class="hs" style="left:76px;top:52px;width:44px;height:32px"
+            aria-label="ギャラリー"></button>
+    <button id="camlink" class="hs" style="left:204px;top:86px;width:32px;height:22px;--gw:150%;--gh:190%;--gi:.85"
+            aria-label="ドキュメンタリー映像制作"></button>
+    <button id="postlink" class="hs" style="left:293px;top:132px;width:30px;height:50px;--gw:148%;--gh:152%;--gi:.78"
+            aria-label="お問い合わせ（ポスト）"></button>
+    <button id="memolink" class="hs" style="left:286px;top:82px;width:19px;height:24px;--gw:210%;--gh:180%"
+            aria-label="実験メモ（CHARA CHARA LABへ）"></button>
+    <div id="talkbox">
+      <span class="name">パッチ</span>
+      <span id="talktext">ここはスタジオパッチのホームページだよ！<br>気になるところをクリックしてね！</span>
+      <span class="cursor" aria-hidden="true"></span>
+    </div>
+  </div>
+</div>
+
+<div id="hud">いま再生中: <b id="now">…</b></div>
+<div id="toast"></div>
+
+<div id="detail" hidden>
+  <div id="dwrap">
+    <button id="dback">← へやにもどる</button>
+    <img id="dbg" src="" alt="">
+    <div id="dcontent"></div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// 設定：ここだけ触れば動きが変わる
+// ─────────────────────────────────────────────
+const GROUND_Y   = 170;   // 足の裏が乗る高さ（ドット）※下部はテキストボックス帯
+const WALK_MIN_X = 172;   // 歩ける左端(マユちゃんの右から)
+const WALK_MAX_X = 246;   // 歩ける右端(サボテンの鉢と赤いポストの手前で止まる)
+const WALK_SPEED = 20;    // 歩く速さ（ドット/秒）※歩行コマと同期する速度
+const ART_FACES  = 'left';// 描いた絵が向いている方向。'right' なら書き換える
+
+const stage = document.getElementById('stage');
+const el    = document.getElementById('patti');
+const now   = document.getElementById('now');
+
+// ─────────────────────────────────────────────
+// スプライトプレイヤー
+// patti.json のタグ情報をそのまま読むので、
+// 絵を描き直しても PNG と JSON を差し替えるだけでいい
+// ─────────────────────────────────────────────
+class Player {
+  constructor(el) { this.el = el; this.tag = null; this.i = 0; this.t = 0; this.onEnd = null; this.hud = false; }
+  load(data) {
+    this.frames = data.frames.map(f => ({ x: f.frame.x, ms: f.duration }));
+    this.tags = {};
+    for (const t of data.meta.frameTags) this.tags[t.name] = t;
+    this.w = data.frames[0].frame.w;
+    this.h = data.frames[0].frame.h;
+    this.sheetW = data.meta.size.w;
+    this.el.style.backgroundSize = `${this.sheetW}px ${this.h}px`;
+  }
+  // ping-pong / reverse も含めて再生順を組み立てる
+  order(tag) {
+    const seq = [];
+    for (let i = tag.from; i <= tag.to; i++) seq.push(i);
+    if (tag.direction === 'reverse') seq.reverse();
+    if (tag.direction === 'pingpong' && seq.length > 2) {
+      for (let i = seq.length - 2; i > 0; i--) seq.push(seq[i]);
+    }
+    return seq;
+  }
+  play(name, { loop = true } = {}) {
+    const ALIAS = { walk: 'wolk', wolk: 'walk' };   // タグ名を直しても動くように
+    const tag = this.tags[name] || this.tags[ALIAS[name]];
+    if (!tag) { console.warn('タグが見つかりません:', name); return Promise.resolve(); }
+    this.tag = tag; this.seq = this.order(tag); this.loop = loop;
+    this.i = 0; this.t = 0; this.draw();
+    if (this.hud) now.textContent = name;
+    return new Promise(res => { this.onEnd = res; });
+  }
+  draw() { this.el.style.backgroundPosition = `-${this.frames[this.seq[this.i]].x}px 0`; }
+  tick(dt) {
+    if (!this.tag) return;
+    this.t += dt;
+    const dur = this.frames[this.seq[this.i]].ms;
+    if (this.t < dur) return;
+    this.t -= dur;
+    this.i++;
+    if (this.i >= this.seq.length) {
+      if (this.loop) { this.i = 0; }
+      else { this.i = this.seq.length - 1; const f = this.onEnd; this.onEnd = null; this.tag = null; if (f) f(); return; }
+    }
+    this.draw();
+  }
+}
+
+const p = new Player(el);
+p.hud = true;
+const mp = new Player(document.getElementById('mayu'));   // マユちゃん
+let x = 180, facing = 1;   // facing: 1 = 絵のまま, -1 = 左右反転
+
+function place() {
+  const xi = Math.round(x);              // 整数スナップでドットのズレ/ジッタを防ぐ
+  el.style.left = xi + 'px';
+  el.style.top  = (GROUND_Y - p.h) + 'px';
+  el.style.transform = facing === 1 ? 'none' : 'scaleX(-1)';
+  const sh = document.getElementById('pshadow');
+  sh.style.left = (xi + 3) + 'px';
+  sh.style.top  = (GROUND_Y - 4) + 'px';
+}
+
+const wait  = ms => new Promise(r => setTimeout(r, ms));
+const rand  = (a, b) => a + Math.random() * (b - a);
+const randi = (a, b) => Math.floor(rand(a, b + 1));
+
+// ─────────────────────────────────────────────
+// 行動：ここを書き換えるだけで振る舞いが変わる
+// ─────────────────────────────────────────────
+async function idleFor(ms) {
+  const end = performance.now() + ms;
+  p.play('idle');
+  while (performance.now() < end) {
+    await wait(rand(2800, 6000));
+    if (performance.now() >= end) break;
+    await p.play('blink', { loop: false });   // たまに1回だけ瞬き
+    p.play('idle');
+  }
+}
+
+async function walkTo(targetX) {
+  const dir = targetX > x ? 1 : -1;
+  facing = (ART_FACES === 'left') ? (dir > 0 ? -1 : 1) : (dir > 0 ? 1 : -1);
+  place();
+  p.play('wolk');
+  await new Promise(res => {
+    let prev = performance.now();
+    const step = (t) => {
+      const dt = Math.min(100, t - prev);   // タブ復帰時の巨大な差分を潰す
+      prev = t;
+      x += dir * WALK_SPEED * dt / 1000;    // 実時間で進める（画面のHz依存にしない）
+      if ((dir > 0 && x >= targetX) || (dir < 0 && x <= targetX)) { x = targetX; place(); res(); return; }
+      place();
+      requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+}
+
+async function nap() {
+  await p.play('sleep_in', { loop: false });
+  p.play('sleep');
+  await wait(rand(12000, 22000));           // しばらく眠る
+  await p.play('sleep_out', { loop: false });
+}
+
+async function behave() {
+  while (true) {
+    await idleFor(rand(6000, 12000));       // しばらく立っている
+    for (let i = 0, n = randi(1, 2); i < n; i++) {
+      await walkTo(rand(WALK_MIN_X, WALK_MAX_X));
+      await idleFor(rand(4000, 9000));
+    }
+    if (Math.random() < 0.5) await nap();
+  }
+}
+
+// 窓の向こうをたまーに飛ぶおばけ(Speop / 16コマ 24x18)
+async function speopBehave() {
+  const el = document.getElementById('speop');
+  const N_FRAMES = 16, FW2 = 24;
+  el.style.backgroundSize = (N_FRAMES * FW2) + 'px 18px';
+  while (true) {
+    await wait(rand(9000, 20000));
+    const toRight = Math.random() < 0.5;
+    const x0 = toRight ? -28 : 82, x1 = toRight ? 82 : -28;
+    const y0 = rand(10, 26);
+    const dur = rand(5000, 7000);
+    const t0 = performance.now();
+    await new Promise(res => {
+      const step = (t) => {
+        const k = Math.min(1, (t - t0) / dur);
+        const fx = Math.floor((t - t0) / 100) % N_FRAMES;
+        el.style.backgroundPosition = `-${fx * FW2}px 0`;
+        el.style.left = Math.round(x0 + (x1 - x0) * k) + 'px';
+        el.style.top = Math.round(y0 + 5 * Math.sin(k * 6.28 * 1.5)) + 'px';
+        el.style.transform = toRight ? 'none' : 'scaleX(-1)';
+        if (k >= 1) { res(); return; }
+        requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    });
+  }
+}
+
+// マユちゃん: 基本ずーっと idle、本当にたまーに blink
+async function mayuBehave() {
+  mp.play('idle');
+  while (true) {
+    await wait(rand(8000, 16000));
+    await mp.play('blink', { loop: false });
+    mp.play('idle');
+  }
+}
+
+// ─────────────────────────────────────────────
+// 起動
+// ─────────────────────────────────────────────
+function fitStage() {
+  // PC画面いっぱいに表示する(端数スケール許容・pixelatedなので見た目は保たれる)
+  const s = Math.max(0.5, Math.min(window.innerWidth / 384, window.innerHeight / 240));
+  stage.style.transform = `scale(${s})`;
+}
+window.addEventListener('resize', fitStage);
+window.addEventListener('load', fitStage);
+// resize が飛ばない環境(埋め込み/モバイルのURLバー等)でも必ず追従させる
+if (window.ResizeObserver) new ResizeObserver(fitStage).observe(document.documentElement);
+document.addEventListener('visibilitychange', fitStage);
+setTimeout(fitStage, 400);   // 起動直後にビューポートが確定しない環境への保険
+fitStage();   // スプライト読み込みを待たずに即スケール
+
+let last = performance.now();
+function loop(t) {
+  const dt = Math.min(100, t - last);
+  p.tick(dt);
+  mp.tick(dt);
+  last = t;
+  requestAnimationFrame(loop);
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(window._tt);
+  window._tt = setTimeout(() => el.style.opacity = '0', 2200);
+}
+
+// ─────────────────────────────────────────────
+// テキストボックス: ホバーでパッチが解説する(将来ここに項目を足していく)
+// ─────────────────────────────────────────────
+const talktext = document.getElementById('talktext');
+const TALK_DEFAULT = 'ここはスタジオパッチのホームページだよ！<br>気になるところをクリックしてね！';
+const setTalk = t => {                              // 改行位置は<br>で明示的に制御する
+  const nm = document.querySelector('#talkbox .name');
+  if (nm) nm.style.display = '';                    // 通常は「パッチ」を表示に戻す
+  talktext.innerHTML = t;
+};
+
+// テレビ: ふだんは砂嵐、カーソルを合わせている間だけ動画が流れる(ドット化+走査線)
+const tvv = document.getElementById('tvsrc');
+const tvcv = document.getElementById('tv');
+const tctx = tvcv.getContext('2d');
+let tvHover = false, tvNoiseT = 0;
+function setTvHover(on) {
+  tvHover = on;
+  if (on) tvv.play().catch(() => {}); else tvv.pause();
+}
+(function tvDraw(t) {
+  if (tvHover && tvv.readyState >= 2 && tvv.videoWidth) {
+    const cw = tvv.videoHeight * 44 / 34;
+    tctx.drawImage(tvv, (tvv.videoWidth - cw) / 2, 0, cw, tvv.videoHeight, 0, 0, 44, 34);
+    tctx.fillStyle = 'rgba(4,2,20,0.3)';
+    for (let y = 0; y < 34; y += 3) tctx.fillRect(0, y, 44, 1);
+  } else if (!tvHover && (t || 0) - tvNoiseT > 90) {
+    tvNoiseT = t || 0;                       // 砂嵐(約11fps)
+    for (let y = 0; y < 34; y++) for (let x = 0; x < 44; x++) {
+      const v = (Math.random() * 46 | 0) + 8;
+      tctx.fillStyle = `rgb(${v},${v},${v + 10})`;
+      tctx.fillRect(x, y, 1, 1);
+    }
+    tctx.fillStyle = 'rgba(4,2,20,0.32)';
+    for (let y = 0; y < 34; y += 3) tctx.fillRect(0, y, 44, 1);
+  }
+  requestAnimationFrame(tvDraw);
+})(0);
+
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && currentView) closeDetail();
+});
+
+function hotspot(id, hoverText, onClick) {
+  const b = document.getElementById(id);
+  if (!b) return;
+  b.addEventListener('mouseenter', () => setTalk(hoverText));
+  b.addEventListener('focus', () => setTalk(hoverText));
+  b.addEventListener('mouseleave', () => setTalk(TALK_DEFAULT));
+  b.addEventListener('blur', () => setTalk(TALK_DEFAULT));
+  b.addEventListener('click', onClick);
+}
+
+// ─────────────────────────────────────────────
+// サイトエンジン: ズーム遷移 + 各詳細ビュー
+// ─────────────────────────────────────────────
+const CCL_URL = 'https://ikemotodir.github.io/chara-chara-lab/';
+// 迷惑メール対策: 生のアドレスをHTMLに書かず、実行時に組み立てる
+const CONTACT_EMAIL = ['mm.arrowz.39', 'gmail.com'].join('@');
+const SHOW_CAMERA = true;
+const CHANNELS = [
+  { t: '3DCG・VFX シネマティック', c: 'Amused Art Japan',
+    src: 'https://player.vimeo.com/video/1166568421?title=0&byline=0&portrait=0' },
+  { t: '広告・ブランド映像', c: 'Amused Art Japan',
+    src: 'https://player.vimeo.com/video/1029119982?title=0&byline=0&portrait=0' },
+  { t: 'アナログ・クラフト', c: 'samillia',
+    src: 'https://www.youtube-nocookie.com/embed/Y3UOLaso-MI?rel=0' },
+  { t: '映画劇中アニメーション', c: 'samillia',
+    src: 'https://player.vimeo.com/video/1084182206?title=0&byline=0&portrait=0' },
+];
+
+let RECTS = {}, BOOK = null, GALLERY = { items: [] };
+// ビルドし直した内容が必ず反映されるようキャッシュを避ける
+const NOCACHE = { cache: 'no-store' };
+fetch('closeups.json', NOCACHE).then(r => r.json()).then(j => RECTS = j).catch(() => {});
+fetch('book.json', NOCACHE).then(r => r.json()).then(j => BOOK = j).catch(() => {});
+fetch('gallery.json', NOCACHE).then(r => r.json()).then(j => GALLERY = j).catch(() => {});
+
+const pctRect = r =>
+  `position:absolute;left:${r.x / 384 * 100}%;top:${r.y / 240 * 100}%;` +
+  `width:${r.w / 384 * 100}%;height:${r.h / 240 * 100}%;`;
+const arr4 = a => ({ x: a[0], y: a[1], w: a[2], h: a[3] });
+
+const dcontent = document.getElementById('dcontent');
+const detail = document.getElementById('detail');
+const dbg = document.getElementById('dbg');
+let currentView = null;
+
+function stageScale() {
+  const m = /scale\(([\d.]+)\)/.exec(stage.style.transform || '');
+  return m ? parseFloat(m[1]) : 1;
+}
+
+function zoomOpen(key, hx, hy, hw, hh) {
+  const s = stageScale();
+  stage.style.transformOrigin = `${hx + hw / 2}px ${hy + hh / 2}px`;
+  stage.style.transition = 'transform .55s cubic-bezier(.45,0,.85,1)';
+  stage.style.transform = `scale(${s * 5})`;
+  setTimeout(() => {
+    showDetail(key, true);
+    requestAnimationFrame(() => {          // 詳細画面が乗ってから部屋を戻す
+      stage.style.transition = 'none';
+      stage.style.transformOrigin = 'center center';
+      fitStage();
+    });
+  }, 540);
+}
+
+function showDetail(key, instant = false) {
+  currentView = key;
+  dbg.src = `closeup_${key}.png`;
+  clearTimeout(window._closeT);   // 閉じかけのタイマーが中身を消すのを防ぐ
+  dcontent.innerHTML = '';
+  detail.hidden = false;          // 先に表示してから組む(採寸が0にならないように)
+  BUILDERS[key]();
+  if (instant) {
+    // ズーム直後は一瞬も部屋を見せない(フェードなしで即表示)
+    detail.style.transition = 'none';
+    detail.classList.add('on');
+    requestAnimationFrame(() => { detail.style.transition = ''; });
+  } else {
+    requestAnimationFrame(() => detail.classList.add('on'));
+  }
+  if (location.hash !== '#' + key) history.pushState(null, '', '#' + key);
+}
+
+function closeDetail() {
+  detail.classList.remove('on');
+  clearTimeout(window._closeT);
+  window._closeT = setTimeout(() => { detail.hidden = true; dcontent.innerHTML = ''; }, 300);
+  currentView = null;
+  if (location.hash) history.pushState(null, '', location.pathname);
+}
+document.getElementById('dback').addEventListener('click', closeDetail);
+window.addEventListener('popstate', () => {
+  const k = location.hash.slice(1);
+  if (k && BUILDERS[k]) showDetail(k); else closeDetail();
+});
+
+const BUILDERS = {
+  tv() {
+    const r = RECTS.tv || { x: 56, y: 28, w: 236, h: 164 };
+    const scr = document.createElement('div');
+    scr.className = 'crt';
+    scr.style.cssText += pctRect(r);
+    dcontent.appendChild(scr);
+    const btns = document.createElement('div');
+    btns.style.cssText = 'position:absolute;left:80%;top:14%;width:12%;height:68%;display:flex;flex-direction:column;justify-content:center;gap:4%;';
+    dcontent.appendChild(btns);
+    const cap = document.createElement('div');
+    cap.style.cssText = 'position:absolute;left:14.5%;top:84%;width:64%;color:#f5c9a8;font-size:clamp(10px,1.4vw,15px);line-height:1.6;text-shadow:1px 1px 0 #1c1030;';
+    dcontent.appendChild(cap);
+    function tune(i) {
+      scr.innerHTML = `<iframe src="${CHANNELS[i].src}" title="${CHANNELS[i].t}" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+      cap.textContent = `CH${i + 1}　${CHANNELS[i].t} ／ ${CHANNELS[i].c}　※掲載は協力会社の制作実績です`;
+      [...btns.children].forEach((b, j) => b.classList.toggle('on', i === j));
+    }
+    CHANNELS.forEach((ch, i) => {
+      const b = document.createElement('button');
+      b.className = 'chbtn';
+      b.textContent = 'CH' + (i + 1);
+      b.title = ch.t;
+      b.addEventListener('click', () => tune(i));
+      btns.appendChild(b);
+    });
+    tune(0);
+  },
+  blueprint() {
+    const r = RECTS.blueprint || { x: 30, y: 24, w: 324, h: 166 };
+    const p = document.createElement('div');
+    p.className = 'dpanel';
+    p.style.cssText = pctRect(r) + 'color:#D9ECFF;padding:2%;';
+    p.innerHTML = `
+      <h2>キャラクター設計・デザイン</h2>
+      <p>スタジオパッチは「キャラクターを中心としたクリエイティブ」の会社です。
+      性格、体のつくり、動きのクセ、世界での役割まで——
+      1枚の設計図に落とし込むところからキャラクターづくりを始めます。</p>
+      <p>マスコット、ブランドキャラクター、絵本やゲームの主人公。
+      「描いて終わり」ではなく、アニメーションやグッズ、メタバースまで
+      動かして育てられる設計をお渡しします。（※この文章は仮です）</p>
+      <img src="sekkeizu.jpg" alt="パッチくんの設計図" style="max-width:100%;max-height:52%;border:2px solid #D9ECFF;display:block;">`;
+    dcontent.appendChild(p);
+  },
+  book() {
+    const L = arr4((RECTS.book || {}).left || [22, 30, 162, 170]);
+    const R2 = arr4((RECTS.book || {}).right || [200, 30, 162, 170]);
+    const SPREAD = { x: L.x, y: L.y, w: (R2.x + R2.w) - L.x, h: L.h };   // 見開き全面
+    const img = document.createElement('img');
+    img.style.cssText = pctRect(L) + 'object-fit:contain;background:#f5f5f7;';
+    const txt = document.createElement('div');
+    txt.style.cssText = pctRect(R2) +
+      'color:#16161c;padding:5%;display:flex;flex-direction:column;justify-content:center;' +
+      'align-items:center;text-align:center;overflow:hidden;font-family:inherit;';
+    const nav = document.createElement('div');
+    nav.style.cssText = 'position:absolute;left:50%;top:91.5%;transform:translateX(-50%);display:flex;gap:14px;align-items:center;';
+    nav.innerHTML = `<button class="navbtn" id="bprev">◀</button>
+      <span id="bnum" style="color:#c8c8d0;font-size:clamp(11px,1.5vw,15px)"></span>
+      <button class="navbtn" id="bnext">▶</button>`;
+    dcontent.append(img, txt, nav);
+    let i = 0;
+    const draw = () => {
+      if (!BOOK) { txt.textContent = '絵本を準備中…'; return; }
+      const pg = BOOK.pages[i];
+      img.src = pg.img || 'ehon_hyoshi.png';
+      if (pg.spread) {                       // 文字なしのページは見開きいっぱいに絵を出す
+        img.style.cssText = pctRect(SPREAD) + 'object-fit:contain;background:#f5f5f7;';
+        txt.style.display = 'none';
+      } else {
+        img.style.cssText = pctRect(L) + 'object-fit:contain;background:#f5f5f7;';
+        txt.style.display = 'flex';
+        // 原文の改行は絶対に崩さない。実測して、収まる倍率にまとめて縮める
+        const jpL = pg.jp || [], enL = pg.en || [];
+        txt.innerHTML =
+          `<div class="bkinner" style="white-space:nowrap">` +
+          (i === 0 ? `<div style="font-size:12px;color:#8a8a94;margin-bottom:14px">${BOOK.title}</div>` : '') +
+          `<div style="font-size:22px;line-height:2.0">${jpL.join('<br>')}</div>` +
+          (enL.length ? `<div style="font-size:13px;line-height:1.85;color:#75757f;margin-top:16px">${enL.join('<br>')}</div>` : '') +
+          `</div>`;
+        const inner = txt.firstElementChild;
+        inner.style.transformOrigin = 'center center';
+        const fit = () => {                     // レイアウト確定を待ってから倍率を決める
+          const cw = txt.clientWidth, ch = txt.clientHeight;
+          if (cw < 12 || ch < 12) { requestAnimationFrame(fit); return; }
+          const k = Math.max(0.05, Math.min(1,
+            (cw - 2) / Math.max(1, inner.scrollWidth),
+            (ch - 2) / Math.max(1, inner.scrollHeight)));
+          inner.style.transform = `scale(${k})`;
+        };
+        fit();
+      }
+      document.getElementById('bnum').textContent = (i + 1) + ' / ' + BOOK.pages.length;
+    };
+    nav.querySelector('#bprev').addEventListener('click', () => { i = (i - 1 + BOOK.pages.length) % BOOK.pages.length; draw(); });
+    nav.querySelector('#bnext').addEventListener('click', () => { i = (i + 1) % BOOK.pages.length; draw(); });
+    draw();
+  },
+  monitor() {
+    const r = RECTS.monitor || { x: 48, y: 22, w: 288, h: 162 };
+    const scr = document.createElement('div');
+    scr.style.cssText = pctRect(r) + 'background:#000;';
+    scr.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/lcd2cR3ceaI?rel=0" title="メタバース おばけの街" allow="autoplay; fullscreen" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe>`;
+    const cp = arr4((RECTS.monitor || {}).cap || [66, 197, 252, 12]);
+    const cap = document.createElement('div');
+    cap.style.cssText = pctRect(cp) +
+      'color:#cfe2ff;font-size:clamp(11px,1.6vw,17px);display:flex;align-items:center;justify-content:center;';
+    cap.textContent = 'メタバース制作 —「おばけの街」パッチの世界を歩けるボクセルの街';
+    dcontent.append(scr, cap);
+  },
+  gallery() {
+    const r = RECTS.gallery || { x: 86, y: 36, w: 212, h: 152 };
+    if (!GALLERY.items || !GALLERY.items.length) {
+      const p = document.createElement('div');
+      p.className = 'dpanel';
+      p.style.cssText = pctRect(r) + 'color:#fdE3d1;padding:4%;background:rgba(4,2,26,.5);';
+      p.innerHTML = '<h2>ギャラリー準備中</h2><p>絵を「サイト用画像\\gallery」フォルダに入れてビルドすると、ここに展示されます。</p>';
+      dcontent.appendChild(p);
+      return;
+    }
+    const img = document.createElement('img');
+    img.style.cssText = pctRect(r) + 'object-fit:contain;background:#0a0620;';
+    // 作品名は真鍮プレートの中に収める(美術館のキャプション)
+    const pl = arr4((RECTS.gallery || {}).plate || [134, 205, 116, 12]);
+    const plate = document.createElement('div');
+    plate.style.cssText = pctRect(pl) +
+      'display:flex;flex-direction:column;align-items:center;justify-content:center;' +
+      'color:#2a1a06;text-align:center;line-height:1.25;overflow:hidden;';
+    const nav = document.createElement('div');
+    nav.style.cssText = 'position:absolute;left:1.5%;top:45%;width:97%;display:flex;justify-content:space-between;pointer-events:none;';
+    nav.innerHTML = `<button class="navbtn" style="pointer-events:auto" id="gprev">◀</button>
+                     <button class="navbtn" style="pointer-events:auto" id="gnext">▶</button>`;
+    // 赤いボタンの上で映えるように、箱=アイボリー / リボン=金 に配色を反転
+    const GIFT = `<svg viewBox="0 0 12 12" aria-hidden="true">
+      <rect x="1" y="5" width="10" height="6" fill="#fbeacd"/>
+      <rect x="1" y="5" width="10" height="1" fill="#ffffff"/>
+      <rect x="0" y="3" width="12" height="2" fill="#fff6e6"/>
+      <rect x="5" y="3" width="2" height="8" fill="#f2b705"/>
+      <rect x="0" y="3" width="12" height="1" fill="#f2b705" opacity=".5"/>
+      <rect x="2" y="1" width="3" height="2" fill="#f2b705"/>
+      <rect x="7" y="1" width="3" height="2" fill="#f2b705"/>
+      <rect x="5" y="1" width="2" height="2" fill="#ffd95e"/></svg>`;
+    // 購入ボタンは作品名プレートの右どなり(視線が右下へ抜ける位置)
+    const bt = arr4((RECTS.gallery || {}).buy || [268, 199, 100, 24]);
+    const buy = document.createElement('a');
+    buy.className = 'buybtn';
+    buy.style.cssText = pctRect(bt);
+    dcontent.append(img, plate, nav, buy);
+    let i = 0;
+    const draw = () => {
+      const it = GALLERY.items[i];
+      img.src = it.file;
+      plate.innerHTML =
+        `<div style="font-size:clamp(8px,1.15vw,13px);font-weight:500">${it.title}</div>` +
+        `<div style="font-size:clamp(6px,.85vw,10px);opacity:.72">STUDIO PATTI　${i + 1} / ${GALLERY.items.length}</div>`;
+      if (it.url) {
+        buy.innerHTML = GIFT + '<span>この絵がほしい？</span>';
+        buy.href = it.url; buy.target = '_blank'; buy.rel = 'noopener';
+        buy.style.display = 'flex';
+      } else buy.style.display = 'none';
+    };
+    nav.querySelector('#gprev').addEventListener('click', () => { i = (i - 1 + GALLERY.items.length) % GALLERY.items.length; draw(); });
+    nav.querySelector('#gnext').addEventListener('click', () => { i = (i + 1) % GALLERY.items.length; draw(); });
+    draw();
+  },
+  camera() {
+    const r = RECTS.camera || { x: 52, y: 44, w: 280, h: 154 };
+    const scr = document.createElement('div');
+    scr.style.cssText = pctRect(r) + 'background:#000;';
+    scr.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/-JW8ThxS7Ag?rel=0" title="ドキュメンタリー" allow="autoplay; fullscreen" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe>`;
+    const cap = document.createElement('div');
+    cap.style.cssText = 'position:absolute;left:14%;top:87%;width:70%;color:#f5c4b3;font-size:clamp(8px,1.2vw,12px);';
+    cap.textContent = 'ドキュメンタリー映像制作 — あなたのキャラクターが創られる様子を、記録して残します。';
+    dcontent.append(scr, cap);
+  },
+  post() {
+    // 入力欄は手紙に描いてある罫線の「線上」にぴったり乗せる(closeups.jsonの座標を使用)
+    const r = RECTS.post || { x: 158, y: 34, w: 204, h: 162 };
+    const rows = (RECTS.post || {}).rows || [62, 84];
+    const bodyR = arr4((RECTS.post || {}).body || [160, 100, 196, 54]);
+    const sendR = arr4((RECTS.post || {}).send || [258, 166, 100, 22]);
+    const fs = 'font-size:clamp(11px,1.6vw,16px);font-family:inherit;color:#3a2a20;';
+    const head = document.createElement('div');
+    head.style.cssText = `position:absolute;left:${162/384*100}%;top:${40/240*100}%;` +
+      'font-size:clamp(13px,1.9vw,19px);color:#3a2a20;';
+    head.textContent = 'おてがみを書く';
+    const field = (row, ph, id, type) => {
+      const el = document.createElement('input');
+      el.id = id; el.placeholder = ph; if (type) el.type = type;
+      el.style.cssText = `position:absolute;left:${164/384*100}%;top:${(row-14)/240*100}%;` +
+        `width:${188/384*100}%;height:${15/240*100}%;` +
+        'background:transparent;border:0;outline:none;padding:0;' + fs;
+      dcontent.appendChild(el);
+      return el;
+    };
+    dcontent.appendChild(head);
+    const nameEl = field(rows[0], 'おなまえ', 'lname');
+    const mailEl = field(rows[1], 'メールアドレス', 'lmail', 'email');
+    const ta = document.createElement('textarea');
+    ta.id = 'lbody'; ta.placeholder = 'ご相談・ご依頼はこちらへ';
+    ta.style.cssText = pctRect(bodyR) +
+      'background:transparent;border:0;outline:none;resize:none;padding:1% 1% 0 1%;line-height:1.7;' + fs;
+    dcontent.appendChild(ta);
+    const send = document.createElement('button');
+    send.id = 'lsend'; send.className = 'navbtn'; send.textContent = 'ポストに投函する';
+    send.style.cssText = pctRect(sendR) +
+      'color:#3a2a20;border-color:#3a2a20;background:transparent;padding:0;' + fs;
+    dcontent.appendChild(send);
+    const ok = document.createElement('div');
+    ok.id = 'lok';
+    ok.style.cssText = `position:absolute;left:${164/384*100}%;top:${170/240*100}%;` +
+      'display:none;color:#8a2a3a;' + fs;
+    ok.textContent = 'おてがみを投函しました！ありがとう！';
+    dcontent.appendChild(ok);
+    const p = dcontent;
+    send.addEventListener('click', () => {
+      const name = nameEl.value, mail = mailEl.value, body = ta.value;
+      const fl = document.createElement('div');
+      fl.id = 'flyletter';
+      fl.style.left = (r.x / 384 * 100) + '%';
+      fl.style.top = (r.y / 240 * 100) + '%';
+      dcontent.appendChild(fl);
+      const slot = arr4((RECTS.post || {}).slot || [46, 66, 66, 10]);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        fl.style.left = (slot.x / 384 * 100) + '%';
+        fl.style.top = (slot.y / 240 * 100) + '%';
+        fl.style.transform = 'scale(.25) rotate(-14deg)';
+        fl.style.opacity = '0';
+      }));
+      setTimeout(() => {
+        fl.remove();
+        p.querySelector('#lok').style.display = 'block';
+        location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('【スタジオパッチ】お問い合わせ: ' + name)}&body=${encodeURIComponent(body + '\n\n' + name + '\n' + mail)}`;
+      }, 950);
+    });
+  },
+};
+
+hotspot('tvlink', 'それはテレビ！<br>アニメーション制作の事例が見られるよ！',
+  () => zoomOpen('tv', 116, 34, 78, 78));
+hotspot('booklink', 'それは絵本『おばけのパッチ』！<br>ボクが主役の絵本、ここで読めるよ！',
+  () => zoomOpen('book', 134, 146, 40, 26));
+hotspot('bplink', 'キャラクター設計図！<br>スタジオパッチのキャラデザインのお話だよ！',
+  () => zoomOpen('blueprint', 194, 22, 76, 56));
+hotspot('monlink', 'メタバース「おばけの街」が<br>見られるパソコンだよ！',
+  () => zoomOpen('monitor', 296, 60, 56, 48));
+hotspot('gallink', 'ギャラリー！<br>ボクの絵がいっぱいあるよ！',
+  () => zoomOpen('gallery', 76, 52, 44, 32));
+hotspot('camlink', 'ドキュメンタリーのカメラだよ！',
+  () => zoomOpen('camera', 204, 86, 32, 22));
+hotspot('postlink', '赤いポスト！<br>お手紙（お問い合わせ）はここからどうぞ！',
+  () => zoomOpen('post', 293, 132, 30, 50));
+hotspot('memolink', '実験メモ！<br>CHARA CHARA LABへ飛べるよ！',
+  () => window.open(CCL_URL, '_blank'));
+
+// テレビだけ特別: ハイライトの代わりに砂嵐→放送開始
+const tvB = document.getElementById('tvlink');
+tvB.classList.add('nobg');
+tvB.addEventListener('mouseenter', () => setTvHover(true));
+tvB.addEventListener('mouseleave', () => setTvHover(false));
+tvB.addEventListener('focus', () => setTvHover(true));
+tvB.addEventListener('blur', () => setTvHover(false));
+// マユちゃん: クリックはできないけど、パッチが紹介してくれる
+const mayuEl = document.getElementById('mayu');
+mayuEl.style.pointerEvents = 'auto';
+mayuEl.addEventListener('mouseenter', () =>
+  setTalk('マユちゃんだよ！ボクの大切なお友達なんだ！<br>いつも一緒に絵本を読んでるの'));
+mayuEl.addEventListener('mouseleave', () => setTalk(TALK_DEFAULT));
+
+// 専用ホバー演出(絵本=パラパラ / ギャラリー=傘ライト / PC=楕円グロー)
+function hoverFx(btnId, fxId) {
+  const b = document.getElementById(btnId), fx = document.getElementById(fxId);
+  b.classList.add('nobg');
+  b.addEventListener('mouseenter', () => fx.style.display = 'block');
+  b.addEventListener('mouseleave', () => fx.style.display = 'none');
+  b.addEventListener('focus', () => fx.style.display = 'block');
+  b.addEventListener('blur', () => fx.style.display = 'none');
+}
+hoverFx('booklink', 'bookflip');
+hoverFx('gallink', 'gallight');
+hoverFx('monlink', 'monglow');
+
+// ─────────────────────────────────────────────
+// ジュークボックス: クリックで曲送り。曲名はテキストボックスに出す
+// ─────────────────────────────────────────────
+const TRACKS = [
+  { f: 'music/01_pattis_room.wav',  t: 'パッチのおへや' },
+  { f: 'music/02_night_walk.wav',   t: 'よるのさんぽ' },
+  { f: 'music/03_twinkle_star.wav', t: 'きらきら星' },
+  { f: 'music/05_spook_march.wav',  t: 'おばけのマーチ' },
+];
+const audio = new Audio();
+audio.loop = true;
+audio.volume = 0.55;
+let trackIdx = -1;
+const jbBtn = document.getElementById('jukebox');
+const tbName = document.querySelector('#talkbox .name');
+const jbGlow = document.getElementById('jukeglow');
+const jbHalo = document.getElementById('jukehalo');
+
+function talkTrack(title) {
+  tbName.style.display = 'none';                 // ジュークボックス中は「パッチ」を出さない
+  talktext.innerHTML = title;
+}
+function talkNormal(t) {
+  tbName.style.display = '';
+  talktext.innerHTML = t;
+}
+
+function nextTrack() {
+  trackIdx = (trackIdx + 1) % (TRACKS.length + 1);
+  if (trackIdx === TRACKS.length) {              // 一周したら停止
+    audio.pause();
+    jbBtn.classList.remove('playing');
+    talkTrack('♪ 音楽をとめました');
+  } else {
+    const tr = TRACKS[trackIdx];
+    audio.src = tr.f;
+    audio.play().catch(() => {});
+    jbBtn.classList.add('playing');
+    talkTrack('♪ 曲名：' + tr.t);
+  }
+  clearTimeout(window._jbT);
+  window._jbT = setTimeout(() => talkNormal(TALK_DEFAULT), 3500);
+}
+jbBtn.addEventListener('click', nextTrack);
+jbBtn.addEventListener('mouseenter', () => {
+  const now = trackIdx >= 0 && trackIdx < TRACKS.length
+    ? '♪ 曲名：' + TRACKS[trackIdx].t : 'ジュークボックス！<br>クリックすると曲が変わるよ！';
+  if (trackIdx >= 0 && trackIdx < TRACKS.length) talkTrack(now); else talkNormal(now);
+});
+jbBtn.addEventListener('mouseleave', () => {
+  clearTimeout(window._jbT);
+  talkNormal(TALK_DEFAULT);
+});
+
+// デジタル時計: 見に来た人のPCのローカル時刻(タイムゾーン自動)
+const clockEl = document.getElementById('clockdisp');
+function tickClock() {
+  const d = new Date();
+  clockEl.textContent =
+    String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+tickClock();
+setInterval(tickClock, 1000);
+if (!SHOW_CAMERA) document.getElementById('camlink').style.display = 'none';
+if (location.hash && BUILDERS[location.hash.slice(1)]) {
+  setTimeout(() => showDetail(location.hash.slice(1)), 400);
+}
+
+Promise.all([
+  fetch('patti.json', NOCACHE).then(r => r.json()),
+  fetch('mayu_shaded.json', NOCACHE).then(r => r.json()),   // 足先を描き足した版(コマ幅76)
+])
+  .then(([pdata, mdata]) => {
+    p.load(pdata);
+    mp.load(mdata);
+    place();
+    fitStage();
+    requestAnimationFrame(loop);
+    behave();
+    mayuBehave();
+    speopBehave();
+  })
+  .catch(e => {
+    now.textContent = 'patti.json / mayu_shaded.json を読めません（start.bat から開いてください）';
+    console.error(e);
+  });
+</script>
+</body>
+</html>

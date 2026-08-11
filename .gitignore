@@ -1,0 +1,14 @@
+# 旧・ブログ版の絵本画像（48MB）。ビューアは book_hd\ を使うので公開不要
+book/
+
+# make_room.py が吐く中間ファイル（サイトからは読まない）
+room_layers/
+preview.gif
+preview_still.png
+
+# 作業用
+__pycache__/
+chromeprof*/
+*.pyc
+Thumbs.db
+desktop.ini
