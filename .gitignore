@@ -12,3 +12,7 @@ chromeprof*/
 *.pyc
 Thumbs.db
 desktop.ini
+
+# room.aseprite を組み立てる時の中間ファイル
+room_layers/objects/
+_sync_tmp/
