@@ -3,7 +3,7 @@
 合同会社スタジオパッチの公式サイト。トップページはドット絵の部屋そのもので、
 部屋の中のものをクリックすると、それぞれの事業内容へ寄っていきます。
 
-**公開URL** → https://ikemotodir.github.io/studio-patti/
+**公開URL** → https://studiopatti.jp/
 
 ## 部屋の中身
 
