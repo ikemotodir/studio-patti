@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>アニメーション制作｜STUDIO PATTI</title>
+<meta name="description" content="キャラクターは動かすと“資産”になる。設計から動かすところまで一貫してつくる、スタジオパッチのアニメーション制作。編集室で作例が見られます。">
+<meta name="theme-color" content="#05030f">
+<link rel="icon" href="favicon.png" type="image/png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="STUDIO PATTI">
+<meta property="og:title" content="アニメーション制作｜STUDIO PATTI">
+<meta property="og:description" content="キャラクターは動かすと“資産”になる。編集室で作例が見られます。">
+<meta property="og:url" content="https://studiopatti.jp/anime.html">
+<meta property="og:image" content="https://studiopatti.jp/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: #05030f; color: #c9c9d4;
+    font-family: system-ui, sans-serif;
+  }
+  #wrap { position: fixed; inset: 0; overflow: hidden; }
+  #stage {
+    position: absolute; left: 50%; top: 50%;
+    margin-left: -192px; margin-top: -120px;
+    width: 384px; height: 240px;
+    transform-origin: center center;
+    image-rendering: pixelated;
+    overflow: hidden;
+    animation: slidein .38s ease-out;
+  }
+  @keyframes slidein { from { opacity: 0; } to { opacity: 1; } }
+  #stage img, #stage div, #stage button { image-rendering: pixelated; }
+  #room { position: absolute; left: 0; top: 0; width: 384px; height: 240px; }
+
+  /* 編集機のキラキラ(常時) */
+  #editglow {
+    position: absolute; left: 226px; top: 106px;
+    width: 66px; height: 26px;
+    background-image: url(edit_glow.png);
+    background-size: 264px 26px;
+    animation: eglow .9s steps(1) infinite;
+    pointer-events: none;
+  }
+  @keyframes eglow {
+    0%,24.9%  { background-position: 0 0; }
+    25%,49.9% { background-position: -66px 0; }
+    50%,74.9% { background-position: -132px 0; }
+    75%,100%  { background-position: -198px 0; }
+  }
+
+  /* ── キャラクター(背景とは別レイヤー) ── */
+  #mayu2 {
+    position: absolute; left: 30px; top: 128px;
+    width: 40px; height: 72px;
+    background-image: url(mayu_stand.png);
+    background-size: 160px 72px;
+    animation: mayuidle 4.2s steps(1) infinite;
+  }
+  @keyframes mayuidle {
+    0%, 54.9%    { background-position: 0 0; }
+    55%, 69.9%   { background-position: -40px 0; }
+    70%, 91.9%   { background-position: -80px 0; }
+    92%, 100%    { background-position: -120px 0; }
+  }
+  #mayu2shadow {
+    position: absolute; left: 32px; top: 196px;
+    width: 36px; height: 7px;
+    border-radius: 50%; background: rgba(64, 24, 108, .5);
+  }
+  #patti2 {
+    position: absolute; left: 304px; top: 154px;
+    width: 36px; height: 48px;
+    background-image: url(patti_shaded.png);
+    background-size: 2160px 48px;
+    transform: scaleX(-1);              /* モニタの方を向く */
+    animation: pattiidle 1.2s steps(12) infinite;
+  }
+  @keyframes pattiidle { from { background-position: 0 0; } to { background-position: -432px 0; } }
+  #patti2shadow {
+    position: absolute; left: 306px; top: 198px;
+    width: 30px; height: 7px;
+    border-radius: 50%; background: rgba(64, 24, 108, .5);
+  }
+
+  /* ── モニタ画面(HTMLの中身が乗る) ── */
+  #screen {
+    position: absolute; left: 104px; top: 22px;
+    width: 184px; height: 86px; overflow: hidden;
+    font-family: 'DotGothic16', 'MS Gothic', monospace;
+  }
+  #screen iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  #screen .doc { position: absolute; inset: 0; padding: 5px 7px; box-sizing: border-box; }
+  #screen h2 {
+    margin: 0 0 3px; font-weight: normal; color: #fcc800;
+    font-size: 8px; line-height: 1.3; letter-spacing: .02em;
+  }
+  #screen p, #screen li {
+    margin: 0; color: #d9ecff; font-size: 6px; line-height: 1.55;
+  }
+  #screen ul { margin: 0; padding-left: 7px; }
+  #screen li { margin-bottom: 2px; }
+  #screen .ft { position: absolute; left: 7px; bottom: 4px; color: #8ef0d0; font-size: 6px; }
+  #screen .grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-top: 2px;
+  }
+  #screen .cell { border: 1px solid #1c2f66; padding: 2px 3px; }
+  #screen .cell b { display: block; color: #9cc7f7; font-size: 6px; font-weight: normal; }
+  #screen .cell span { color: #b9c6e8; font-size: 5px; line-height: 1.4; display: block; }
+  #screen .scan {
+    position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(rgba(0,0,0,.16) 0 1px, transparent 1px 3px);
+  }
+
+  /* ── パネルのラベル(クリックできる本体) ── */
+  .panel {
+    position: absolute; display: flex; align-items: center;
+    border: 0; background: transparent; padding: 0 0 0 9px; box-sizing: border-box;
+    cursor: pointer; text-align: left;
+    font-family: 'DotGothic16', 'MS Gothic', monospace;
+    font-size: 7px; line-height: 1.25; color: #cfd6f4;
+  }
+  .panel.r { color: #ffd9a8; }
+  .panel:hover, .panel:focus-visible { color: #ffffff; outline: none; }
+  .panel::after {
+    content: ''; position: absolute; left: 50%; top: 50%;
+    width: 130%; height: 170%;
+    transform: translate(-50%, -50%); border-radius: 50%;
+    background: radial-gradient(closest-side,
+      rgba(255,244,214,.5) 0%, rgba(255,224,164,.3) 34%,
+      rgba(255,200,120,.12) 60%, rgba(255,184,100,0) 100%);
+    mix-blend-mode: screen; pointer-events: none;
+    opacity: 0; transition: opacity .2s ease;
+  }
+  .panel:hover::after, .panel:focus-visible::after { opacity: 1; }
+  .panel.active { color: #fff3d0; }
+  /* 選択中の黄色い▶(点滅) */
+  .panel .cur {
+    position: absolute; left: 3px; top: 50%; margin-top: -3px;
+    width: 0; height: 0; display: none;
+    border-top: 3px solid transparent; border-bottom: 3px solid transparent;
+    border-left: 4px solid #fcc800;
+    animation: tbc 1s steps(1) infinite;
+  }
+  .panel.active .cur { display: block; }
+  .plate {
+    position: absolute; color: #c9a8e8; font-size: 6px; line-height: 6px;
+    font-family: 'DotGothic16', 'MS Gothic', monospace; text-align: center;
+    pointer-events: none;
+  }
+
+  /* ── もどる矢印(左端) ── */
+  #backlink {
+    position: absolute; left: 0; top: 56px; width: 14px; height: 48px;
+    border: 0; background: transparent; cursor: pointer; padding: 0;
+  }
+  #backlink .tri {
+    position: absolute; left: 3px; top: 50%; margin-top: -5px;
+    width: 0; height: 0;
+    border-top: 5px solid transparent; border-bottom: 5px solid transparent;
+    border-right: 7px solid #fcc800;
+    animation: tbc 1s steps(1) infinite;
+  }
+  @keyframes tbc { 0%,50% { opacity: 1; } 50.01%,100% { opacity: 0; } }
+
+  /* ── ホバー用の透明ゾーン(解説だけ・光らせない) ── */
+  .talkzone { position: absolute; border: 0; background: transparent; padding: 0; }
+
+  /* ── テキストボックス(トップと同じ) ── */
+  #talkbox {
+    position: absolute; left: 72px; top: 184px;
+    width: 242px; height: 30px; box-sizing: border-box;
+    background: rgba(8, 6, 40, .92);
+    border: 2px solid #e8e4f4; border-radius: 3px;
+    box-shadow: inset 0 0 0 1px #2a2560;
+    padding: 3px 14px 3px 6px;
+    font-family: 'DotGothic16', 'MS Gothic', monospace;
+    color: #f2eefc; font-size: 8px; line-height: 1.4;
+    pointer-events: none;
+  }
+  #talkbox .name { color: #ff9ac8; }
+  #talkbox .name.patti { color: #fcc800; }
+  #talkbox .cursor {
+    position: absolute; right: 5px; bottom: 3px;
+    width: 0; height: 0;
+    border-left: 3px solid transparent;
+    border-right: 3px solid transparent;
+    border-top: 4px solid #f2eefc;
+    animation: tbc 1s steps(1) infinite;
+  }
+
+  /* ── スマホ縦持ちの案内(トップと同じ) ── */
+  #rotate {
+    position: fixed; inset: 0; z-index: 100; display: none;
+    flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+    background: #05030f; padding: 24px;
+    font-family: 'DotGothic16', 'MS Gothic', monospace; text-align: center;
+  }
+  #rotate .phone {
+    width: 144px; height: 144px; image-rendering: pixelated;
+    background-image: url(rotate_phone.png);
+    background-size: 1440px 144px;
+    animation: phoneturn 2.6s steps(1) infinite;
+  }
+  @keyframes phoneturn {
+    0%,9.9%   { background-position: 0 0; }      10%,19.9% { background-position: -144px 0; }
+    20%,29.9% { background-position: -288px 0; } 30%,39.9% { background-position: -432px 0; }
+    40%,49.9% { background-position: -576px 0; } 50%,59.9% { background-position: -720px 0; }
+    60%,69.9% { background-position: -864px 0; } 70%,79.9% { background-position: -1008px 0; }
+    80%,89.9% { background-position: -1152px 0; } 90%,100% { background-position: -1296px 0; }
+  }
+  #rotate .msg {
+    position: relative; max-width: 340px; box-sizing: border-box;
+    background: rgba(8, 6, 40, .92);
+    border: 2px solid #e8e4f4; border-radius: 3px;
+    box-shadow: inset 0 0 0 1px #2a2560;
+    padding: 13px 12px 12px 54px; color: #f2eefc;
+    font-size: clamp(11px, 3.4vw, 14px); line-height: 1.7; text-align: left;
+    white-space: nowrap;
+  }
+  #rotate .msg b {
+    color: #fcc800; font-weight: normal; display: block;
+    font-size: clamp(12px, 3.9vw, 16px); margin-bottom: 2px;
+  }
+  #rotate .patti {
+    position: absolute; left: 8px; bottom: 6px;
+    width: 36px; height: 48px; image-rendering: pixelated;
+    background-image: url(patti_shaded.png);
+    background-size: 2160px 48px;
+    animation: pattiidle 1.2s steps(12) infinite;
+  }
+  #rotate .anyway {
+    background: none; border: 0; color: #8b86a8;
+    font-family: inherit; font-size: 12px; text-decoration: underline;
+    cursor: pointer; padding: 6px 10px;
+  }
+  @media (orientation: portrait) and (max-width: 900px) {
+    body:not(.seeanyway) #rotate { display: flex; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #editglow, #mayu2, #patti2, .cur, .tri, #rotate .phone, #rotate .patti { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="rotate" role="dialog" aria-label="画面を横向きにしてください">
+  <div class="phone" aria-hidden="true"></div>
+  <div class="msg">
+    <div class="patti" aria-hidden="true"></div>
+    <b>スマホを横向きにしてね！</b>
+    よこにすると、<br>へんしゅうしつが<br>ぜんぶ見えるよ！
+  </div>
+  <button class="anyway" type="button">このまま見る</button>
+</div>
+
+<div id="wrap">
+  <div id="stage">
+    <img id="room" src="edit_room.png" alt="アニメーション制作の編集室">
+    <div id="editglow" aria-hidden="true"></div>
+    <div id="screen" aria-live="polite"></div>
+    <div class="plate" style="left:8px;top:14px;width:40px">ごあんない</div>
+    <div class="plate" style="left:336px;top:14px;width:40px">さくれい</div>
+
+    <div id="mayu2shadow" aria-hidden="true"></div>
+    <div id="mayu2" role="img" aria-label="マユちゃん"></div>
+    <div id="patti2shadow" aria-hidden="true"></div>
+    <div id="patti2" role="img" aria-label="パッチくん"></div>
+
+    <button id="backlink" aria-label="へやにもどる"><span class="tri" aria-hidden="true"></span></button>
+
+    <div id="talkbox">
+      <span class="name">マユ</span>
+      <span id="talktext">ここはアニメの編集室！<br>左のパネルをおすと、モニターにうつるよ！</span>
+      <span class="cursor" aria-hidden="true"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const stage = document.getElementById('stage');
+function fitStage() {
+  const s = Math.max(0.5, Math.min(window.innerWidth / 384, window.innerHeight / 240));
+  stage.style.transform = `scale(${s})`;
+}
+window.addEventListener('resize', fitStage);
+window.addEventListener('load', fitStage);
+if (window.ResizeObserver) new ResizeObserver(fitStage).observe(document.documentElement);
+fitStage();
+document.querySelector('#rotate .anyway')
+  .addEventListener('click', () => document.body.classList.add('seeanyway'));
+
+const talktext = document.getElementById('talktext');
+const tbName = document.querySelector('#talkbox .name');
+const TALK_DEFAULT = 'ここはアニメの編集室！<br>左のパネルをおすと、モニターにうつるよ！';
+function setTalk(html, who) {
+  tbName.textContent = who || 'マユ';
+  tbName.classList.toggle('patti', who === 'パッチ');
+  talktext.innerHTML = html;
+}
+
+/* ── モニタに映す中身 ── */
+const DOCS = [
+ { label: 'アニメーションを<br>もつ意味',
+   talk: 'キャラクターは、<br>動かすと"資産"になるんだって！',
+   html: `<div class="doc">
+    <h2>キャラクターは動かすと"資産"になる</h2>
+    <p>描いて終わり、にしない。<br>
+    キャラクターの設計・デザインから、<br>
+    動かすところまで一貫してつくります。</p>
+    <p style="margin-top:4px">動いたキャラクターは、映像でもSNSでも<br>
+    くり返し活躍する、会社の財産になります。</p>
+    <div class="ft">STUDIO PATTI ─ アニメーション制作</div>
+    <div class="scan"></div></div>` },
+ { label: 'アニメーションの<br>メリット',
+   talk: 'はじめての会社でも<br>あんしんして頼めるんだよ！',
+   html: `<div class="doc">
+    <h2>たのむとこうなる</h2>
+    <ul>
+     <li>企画もディレクションも、こちらで持つ。<br>だから、はじめての会社でも安心。</li>
+     <li>1社に固定しない。目的・予算に合わせて<br>ベストなチームを編成します。</li>
+     <li>Live2Dから、ハイエンドな3DCG・VFX、<br>手づくりのコマ撮りまで。「何を達成する<br>映像か」から表現を選びます。</li>
+    </ul>
+    <div class="scan"></div></div>` },
+ { label: 'スタジオパッチの<br>特徴',
+   talk: '4つのとくちょう、<br>モニターに出したよ！',
+   html: `<div class="doc">
+    <h2>スタジオパッチの特徴</h2>
+    <div class="grid">
+     <div class="cell"><b>01 設計から、動かす</b><span>"人格"から作るから、動いてもキャラがブレない。</span></div>
+     <div class="cell"><b>02 元テレビDが構成</b><span>「何のための映像か」から逆算して組む。</span></div>
+     <div class="cell"><b>03 1社に縛られない</b><span>案件ごとにベストなスタジオを編成。質もコストも最適。</span></div>
+     <div class="cell"><b>04 権利の透明性</b><span>使える範囲を先に確定。あとで揉めない。</span></div>
+    </div>
+    <div class="scan"></div></div>` },
+ { label: '連携会社',
+   talk: '心づよい仲間たち！<br>右のパネルで作例も見てね！',
+   html: `<div class="doc">
+    <h2>連携会社</h2>
+    <p><b style="color:#9cc7f7">Amused Art Japan</b>（Tokyo / Taipei / Beijing）<br>
+    3DCG・VFX、広告・ブランド映像</p>
+    <p style="margin-top:3px"><b style="color:#9cc7f7">samillia</b> film + animation<br>
+    アナログ・クラフト、映画劇中アニメーション</p>
+    <p style="margin-top:4px;color:#b9c6e8">※右のパネルの作例は、協力会社の制作実績です。</p>
+    <div class="ft">「これ、動かせる？」の一言からOK！ご相談はへやの赤いポストへ</div>
+    <div class="scan"></div></div>` },
+];
+const REELS = [
+ { label: '3DCG・VFX<br>シネマティック', c: 'Amused Art Japan',
+   src: 'https://player.vimeo.com/video/1166568421?title=0&byline=0&portrait=0' },
+ { label: '広告・ブランド<br>映像', c: 'Amused Art Japan',
+   src: 'https://player.vimeo.com/video/1029119982?title=0&byline=0&portrait=0' },
+ { label: 'アナログ・<br>クラフト', c: 'samillia',
+   src: 'https://www.youtube-nocookie.com/embed/Y3UOLaso-MI?rel=0' },
+ { label: '映画劇中<br>アニメーション', c: 'samillia',
+   src: 'https://player.vimeo.com/video/1084182206?title=0&byline=0&portrait=0' },
+];
+
+const screen = document.getElementById('screen');
+const LYS = [22, 46, 70, 94];
+const btnsL = [], btnsR = [];
+
+function select(kind, i) {
+  btnsL.forEach((b, j) => b.classList.toggle('active', kind === 'doc' && i === j));
+  btnsR.forEach((b, j) => b.classList.toggle('active', kind === 'reel' && i === j));
+  if (kind === 'doc') {
+    screen.innerHTML = DOCS[i].html;
+    setTalk(DOCS[i].talk);
+  } else {
+    const r = REELS[i];
+    screen.innerHTML = `<iframe src="${r.src}" title="${r.label.replace('<br>', '')}" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+    setTalk(`さいせい中！<br>${r.c} さんの制作実績だよ！`);
+  }
+}
+
+DOCS.forEach((s, i) => {
+  const b = document.createElement('button');
+  b.className = 'panel';
+  b.style.cssText = `left:8px;top:${LYS[i]}px;width:82px;height:20px`;
+  b.innerHTML = `<span class="cur" aria-hidden="true"></span><span>${s.label}</span>`;
+  b.addEventListener('click', () => select('doc', i));
+  b.addEventListener('mouseenter', () => setTalk(s.label.replace('<br>', '') + 'のパネル！<br>おすとモニターにうつるよ！'));
+  b.addEventListener('mouseleave', () => setTalk(TALK_DEFAULT));
+  stage.appendChild(b);
+  btnsL.push(b);
+});
+REELS.forEach((s, i) => {
+  const b = document.createElement('button');
+  b.className = 'panel r';
+  b.style.cssText = `left:294px;top:${LYS[i]}px;width:82px;height:20px`;
+  b.innerHTML = `<span class="cur" aria-hidden="true"></span><span>${s.label}</span>`;
+  b.addEventListener('click', () => select('reel', i));
+  b.addEventListener('mouseenter', () => setTalk('作例のパネルだよ！<br>おすとモニターで映像が流れるよ！'));
+  b.addEventListener('mouseleave', () => setTalk(TALK_DEFAULT));
+  stage.appendChild(b);
+  btnsR.push(b);
+});
+
+/* ホバーで解説だけするゾーン */
+function zone(x, y, w, h, text, who) {
+  const z = document.createElement('button');
+  z.className = 'talkzone';
+  z.style.cssText = `left:${x}px;top:${y}px;width:${w}px;height:${h}px;cursor:default`;
+  z.setAttribute('aria-hidden', 'true'); z.tabIndex = -1;
+  z.addEventListener('mouseenter', () => setTalk(text, who));
+  z.addEventListener('mouseleave', () => setTalk(TALK_DEFAULT));
+  stage.appendChild(z);
+}
+zone(226, 104, 68, 28, 'それは編集機！<br>ボタンがいっぱいでキラキラなの！');
+zone(168, 96, 60, 84, 'ゲーミングチェア！<br>ここに座って、カタカタってするの');
+zone(304, 150, 40, 54, 'ボクはここのかんとく！<br>いいアニメ、いっしょに作ろうね！', 'パッチ');
+zone(28, 126, 44, 76, 'わたしがこの部屋の案内がかり！<br>なんでも聞いてね！');
+
+/* もどる矢印 */
+const back = document.getElementById('backlink');
+back.addEventListener('mouseenter', () => setTalk('ひだりのやじるしで、<br>パッチくんのへやにもどるよ！'));
+back.addEventListener('mouseleave', () => setTalk(TALK_DEFAULT));
+back.addEventListener('click', () => {
+  stage.style.transition = 'transform .3s ease-in, opacity .3s ease-in';
+  stage.style.opacity = '0';
+  setTimeout(() => location.href = 'index.html', 300);
+});
+
+select('doc', 0);
+</script>
+</body>
+</html>

@@ -14,6 +14,8 @@ python shade_mayu.py
 rem 月のおばけボンボン（Bonbon.aseprite → シート → 月あかりトーン）
 %ASE% -b "..\..\Bonbon\Bonbon.aseprite" --sheet "bonbon.png" --sheet-type horizontal --data "bonbon.json" --format json-array --list-tags
 python shade_bonbon.py
+rem アニメ編集室ページの素材（背景・編集機のキラキラ・立ちマユちゃん）
+python make_edit_room.py
 rem 部屋のレイヤー分けAsepriteファイル（room.aseprite）を組み直す
 python make_aseprite.py
 rem UI用のドット絵（スマホを横にしてね のアニメ）
