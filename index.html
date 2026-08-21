@@ -64,7 +64,7 @@
 
   /* ─── 重なり順をここで一元管理(レイヤー事故防止) ─── */
   #room { z-index: 1; }
-  #speopclip, #winbars, #garland, #globespin, #jukeglow, #jukehalo, #clockhands, #doorGlowL, #doorGlowR, #signGlowL, #signGlowR { z-index: 2; }
+  #speopclip, #winbars, #garland, #globespin, #jukeglow, #jukehalo, #clockhands, #doorGlowL, #doorGlowR, #signGlowL, #signGlowR, #pcscreen { z-index: 2; }
   .hs, #jukebox { z-index: 3; }
   #mshadow, #mayu, #pshadow, #patti { z-index: 4; }
   #navbar, #talkbox { z-index: 6; }
@@ -325,6 +325,16 @@
   /* 専用の演出を持つ場所(テレビ/絵本/ギャラリー/PC)は光を重ねない */
   .hs.nobg::after { content: none; }
   @media (prefers-reduced-motion: reduce) { .hs::after { transition: none; } }
+  /* COMPANYモニタ: カーソルを合わせると会社概要の1ページ目が映る */
+  #pcscreen {
+    position: absolute; left: 150px; top: 100px;   /* 画面の内側そのもの */
+    width: 92px; height: 28px;                     /* = 23:7 (約3.29:1) */
+    image-rendering: pixelated; pointer-events: none;
+    opacity: 0; transition: opacity .25s ease;
+  }
+  #companylink:hover ~ #pcscreen,
+  #companylink:focus-visible ~ #pcscreen { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { #pcscreen { transition: none; } }
   /* 月のおばけボンボン(窓の向こう) */
   #bonbon {
     position: absolute; left: 44px; top: 2px;
@@ -479,8 +489,8 @@
             aria-label="デザイン室（CHARACTER DESIGN・準備中）"></button>
     <button id="doorR" class="hs" style="left:343px;top:48px;width:33px;height:168px;--gi:.4"
             aria-label="編集室（CONTENTS CREATIVE・準備中）"></button>
-    <button id="companylink" class="hs" style="left:144px;top:100px;width:104px;height:42px;--gw:114%;--gh:126%"
-            aria-label="COMPANY（会社概要・準備中）"></button>
+    <button id="companylink" class="hs nobg" style="left:144px;top:100px;width:104px;height:42px"
+            aria-label="COMPANY（会社概要をひらく）"></button>
     <button id="spooklink" class="hs" style="left:254px;top:82px;width:68px;height:56px;--gw:114%;--gh:126%;--gi:.7"
             aria-label="Patti the Spook（準備中）"></button>
     <button id="booklink" class="hs" style="left:72px;top:82px;width:28px;height:28px;--gw:160%;--gh:160%"
@@ -489,6 +499,7 @@
             aria-label="ギャラリー"></button>
     <button id="postlink" class="hs" style="left:318px;top:112px;width:34px;height:78px;--gw:148%;--gh:148%;--gi:.78"
             aria-label="お問い合わせ（ポスト）"></button>
+    <img id="pcscreen" src="pc_company.png" alt="" aria-hidden="true">
     <div id="navbar">
       <div class="brand"><img src="nav_logo.png" alt="STUDIO PATTI"></div>
       <nav>
@@ -753,6 +764,7 @@ function hotspot(id, hoverText, onClick) {
 // サイトエンジン: ズーム遷移 + 各詳細ビュー
 // ─────────────────────────────────────────────
 const CCL_URL = 'https://ikemotodir.github.io/chara-chara-lab/';
+const COMPANY_URL = 'https://canva.link/5xu274fv1b00091';   // 会社概要(Canva)
 const CHANNELS = [
   { t: '3DCG・VFX シネマティック', c: 'Amused Art Japan',
     src: 'https://player.vimeo.com/video/1166568421?title=0&byline=0&portrait=0' },
@@ -1025,7 +1037,7 @@ const BUILDERS = {
     const head = document.createElement('div');
     head.style.cssText = `position:absolute;left:${162/384*100}%;top:${40/240*100}%;` +
       'font-size:clamp(13px,1.9vw,19px);color:#3a2a20;';
-    head.textContent = 'おてがみを書く';
+    head.textContent = 'お問合せフォーム';
     const field = (row, ph, id, type) => {
       const el = document.createElement('input');
       el.id = id; el.placeholder = ph; if (type) el.type = type;
@@ -1115,14 +1127,15 @@ hotspot('doorL', 'デザイン室！キャラクターが生まれる部屋だ�
   () => tease('CHARACTER DESIGN'));
 hotspot('doorR', '編集室！アニメーションを創ってる部屋だよ！<br>（いま準備中…もうすぐ開くよ！）',
   () => tease('CONTENTS CREATIVE'));
-hotspot('companylink', 'スタジオパッチの会社案内が見られる<br>パソコンだよ！',
-  () => tease('COMPANY'));
+hotspot('companylink', 'スタジオパッチの会社案内が見られる<br>パソコンだよ！クリックしてみて！',
+  () => window.open(COMPANY_URL, '_blank', 'noopener'));
 hotspot('spooklink', '『おばけのパッチ』の世界への入口！<br>大きな月の絵だよ！',
   () => tease('Patti the Spook'));
 
 // 上部ナビゲーション(部屋の中の入口と同じところへ案内する)
 const NAV_ACT = {
-  company:  { talk: '会社概要のページだよ！（いま準備中）', act: () => tease('COMPANY') },
+  company:  { talk: '会社概要だよ！パソコンの画面と同じところへ行くよ！',
+              act: () => window.open(COMPANY_URL, '_blank', 'noopener') },
   chdesign: { talk: 'キャラクターデザインのページだよ！（いま準備中）', act: () => tease('CHARACTER DESIGN') },
   contents: { talk: 'アニメーションなど制作のページだよ！（いま準備中）', act: () => tease('CONTENTS CREATIVE') },
   spook:    { talk: '『おばけのパッチ』の世界のページだよ！（いま準備中）', act: () => tease('Patti the Spook') },

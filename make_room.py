@@ -386,7 +386,13 @@ for xx in range(340, 381):
         PXL('furniture', xx, yy, c)
 R('furniture', 381, 21, 1, 26, 'ink'); R('furniture', 339, 29, 1, 19, 'ink')
 PXL('furniture', 379, 23, 'pnkc')
-bake_sign_img('sign_hensyu_s.png', 340, 380, signR_top, 3, 'pnkc')
+# パネルは上辺だけが強く傾く台形なので、上辺基準だと奥側で文字が下枠に寄る。
+# 上辺と下辺の中心線に載せて、手前も奥も余白が均等になるようにする
+def signR_text_top(xx):
+    t = (380 - xx) / 40.0
+    ybotS = int(46 + 1 * t + 0.5)
+    return int((signR_top(xx) + ybotS) / 2.0 - 5 + 0.5)   # 文字の高さ11pxの半分
+bake_sign_img('sign_hensyu_s.png', 340, 380, signR_text_top, 0, 'pnkc')
 
 # ─── 壁かけの棚(板+ブラケット)と本たち ───
 C_shade = {'m2':'m0','cor':'brick','g2':'g0','b3':'b0','m1':'m0','cream':'cor2','b2':'b0','m3':'m1','g1':'g0','r2':'r0'}
@@ -415,8 +421,8 @@ obj('おばけのパッチの絵本')
 # 実際の装丁と同じ正方形の表紙(白地に大きな円、円の中にパッチの後ろ姿)。棚の中央に置く
 O('furniture', 74, 84, 24, 24, 'wht', 'ink')
 R('furniture', 75, 85, 22, 1, 'ivory2')
-R('furniture', 75, 86, 22, 3, 'b2')                    # タイトル帯
-EL('furniture', 78, 91, 93, 104, out='b2')             # 大きな円
+R('furniture', 75, 86, 22, 3, 'r2')                    # タイトル帯(赤)
+EL('furniture', 78, 91, 93, 104, out='r2')             # 大きな円(赤)
 EL('furniture', 82, 93, 89, 101, fill='wht', out='ink')# パッチの後ろ姿
 R('furniture', 83, 102, 2, 1, 'ink'); R('furniture', 87, 102, 2, 1, 'ink')
 R('furniture', 77, 105, 18, 1, 'gray1')
