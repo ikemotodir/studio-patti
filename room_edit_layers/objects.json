@@ -1,0 +1,60 @@
+[
+ {
+  "layer": "bg",
+  "children": [
+   {
+    "name": "スタジオへの戸口",
+    "file": "objects/bg__009_スタジオへの戸口.png"
+   },
+   {
+    "name": "その他",
+    "file": "objects/bg__999_その他.png"
+   }
+  ]
+ },
+ {
+  "layer": "furniture",
+  "children": [
+   {
+    "name": "スタジオへの戸口",
+    "file": "objects/furniture__001_スタジオへの戸口.png"
+   },
+   {
+    "name": "スタジオの看板",
+    "file": "objects/furniture__002_スタジオの看板.png"
+   },
+   {
+    "name": "メニューパネル",
+    "file": "objects/furniture__003_メニューパネル.png"
+   },
+   {
+    "name": "大スクリーン",
+    "file": "objects/furniture__004_大スクリーン.png"
+   },
+   {
+    "name": "カテゴリ表示",
+    "file": "objects/furniture__005_カテゴリ表示.png"
+   },
+   {
+    "name": "数字ボタンパネル",
+    "file": "objects/furniture__006_数字ボタンパネル.png"
+   },
+   {
+    "name": "編集卓",
+    "file": "objects/furniture__007_編集卓.png"
+   },
+   {
+    "name": "ゲーミングチェア",
+    "file": "objects/furniture__008_ゲーミングチェア.png"
+   }
+  ]
+ },
+ {
+  "layer": "props",
+  "children": []
+ },
+ {
+  "layer": "light",
+  "children": []
+ }
+]
