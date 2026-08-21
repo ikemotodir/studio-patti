@@ -35,6 +35,7 @@ P = {
  'pnk0': (132, 54, 96), 'pnk1': (186, 88, 140),
  'pnk2': (236, 148, 190), 'pnkc': (255, 212, 232),
  'wwht': (58, 56, 92),
+ 'cyn0': (16, 84, 104), 'cyn1': (44, 164, 186), 'cyn2': (126, 224, 235), 'cync': (214, 250, 252),
 }
 
 names = ["bg", "furniture", "props", "light"]
@@ -109,13 +110,14 @@ def NTXT(l, x, y, ch, c):
             if bit == '1': PXL(l, x + rx, y + ry, c)
 
 # ═══════════════ 主要座標(ここだけ見れば配置が分かる) ═══════════════
-MENU = (48, 24, 86, 110)        # メニューパネル外形 x,y,w,h
-SCR  = (140, 26, 148, 84)       # スクリーン画面(16:9)
-CATP = (296, 22, 42, 24)        # カテゴリ名表示パネル
-BTNP = (296, 52, 42, 58)        # 数字ボタンパネル
-BTNC = [(307, 67), (327, 67), (307, 87), (327, 87)]   # 丸ボタン中心
+MENU = (47, 24, 79, 114)        # メニューパネル外形 x,y,w,h (デスクに立つボード)
+SCR  = (134, 26, 142, 80)       # スクリーン画面(16:9, センター205=チェアと同心)
+CATP = (283, 22, 55, 26)        # カテゴリ名表示パネル
+BTNP = (283, 54, 55, 56)        # 数字ボタンパネル
+BTNC = [(297, 69), (324, 69), (297, 95), (324, 95)]   # 丸ボタン中心(18px)
 DESK_Y = 138                    # 編集卓の天板
-CHAIR = (177, 116)              # ゲーミングチェア左上
+CHAIR = (185, 116)              # ゲーミングチェア左上(センター205)
+EDITC = (150, 120, 110)         # 編集機 x,y,幅 (センター205)
 
 # ═══════════════ bg : TOPの部屋と同じ壁・床・天井 ═══════════════
 obj()
@@ -167,10 +169,27 @@ for bi, (by0, by1) in enumerate([(149,161),(162,175),(176,189),(190,203),(204,21
 for wx5, wy5 in [(88,171),(132,178),(210,166),(262,181),(150,186),(238,192),(302,188),
                  (180,232),(280,226),(120,224)]:
     PXL('bg', wx5, wy5, 'q0'); PXL('bg', wx5 + 1, wy5, 'q2')
-for sx5 in range(56, W - 48, 24):
-    PXL('bg', sx5, 160, 'm1'); PXL('bg', sx5 + 12, 174, 'm0')
+for si, sx5 in enumerate(range(56, W - 48, 24)):
+    PXL('bg', sx5, 160, 'm1' if si % 2 else 'cyn1')       # 走行灯はピンクとシアンの交互
+    PXL('bg', sx5 + 12, 174, 'm0' if si % 2 else 'cyn0')
 DI('bg', 0, 224, W, 6, 'q1', 'q0')
 DI('bg', 0, 230, W, 10, 'q0', 'ink')
+
+# ─── シアターの赤絨毯ランナー(スクリーンへ誘う) ───
+for yy in range(150, 236):
+    t = (yy - 150) / 86.0
+    half = int(52 + 30 * t + 0.5)
+    x0c, x1c = 205 - half, 205 + half
+    for xx in range(x0c, x1c + 1):
+        if xx == x0c or xx == x1c:
+            c = 'm0'
+        elif xx <= x0c + 2 or xx >= x1c - 2:
+            c = 'r1'
+        else:
+            c = 'r1' if (xx * 3 + yy * 7) % 13 == 0 else 'r0'
+        if yy >= 226 and (xx + yy) % 2:
+            c = 'q0'                                       # 手前は床のビネットと同じく沈める
+        PXL('bg', xx, yy, c)
 
 # ─── 側壁(TOPと同じ台形) ───
 def side_wall(left):
@@ -245,37 +264,24 @@ def bake_sign_img(img_name, x0, x1, ytop_fn, yoff, core):
 
 obj('スタジオの看板')
 def signS_top(xx):
-    return int(21 + 8 * (xx - 4) / 40.0 + 0.5)
-for xx in range(4, 45):
-    t = (xx - 4) / 40.0
+    return int(21 + 8 * (xx - 4) / 36.0 + 0.5)
+for xx in range(4, 41):
+    t = (xx - 4) / 36.0
     ytopS = signS_top(xx)
     ybotS = int(45 + 1 * t + 0.5)
     for yy in range(ytopS, ybotS + 1):
         if yy == ytopS or yy == ybotS:
             c = 'ink'
         elif yy == ytopS + 1:
-            c = 'gray2'
+            c = 'q4'
         elif yy == ybotS - 1:
-            c = 'gray0'
+            c = 'q2'
         else:
             c = 'q0'
         PXL('furniture', xx, yy, c)
-R('furniture', 3, 21, 1, 25, 'ink'); R('furniture', 45, 29, 1, 18, 'ink')
-PXL('furniture', 5, 23, 'wht'); PXL('furniture', 43, 44, 'wht')
-bake_sign_img('sign_studio_s.png', 4, 44, signS_top, 5, 'wht')
-
-# ─── 奥壁: メニューパネル(左) ───
-obj('メニューパネル')
-mx, my, mw, mh = MENU
-O('furniture', mx, my, mw, mh, 'n0', 'ink')
-R('furniture', mx + 1, my + 1, mw - 2, 1, 'pnk2')       # 上縁のピンクアクセント
-R('furniture', mx + 1, my + mh - 2, mw - 2, 1, 'pnk0')
-R('furniture', mx + 1, my + 2, 1, mh - 4, 'q2')
-R('furniture', mx + mw - 2, my + 2, 1, mh - 4, 'q0')
-for i in range(1, 5):                                    # 項目の仕切り線(5行)
-    yy = my + 4 + i * 21
-    R('furniture', mx + 4, yy, mw - 8, 1, 'q1')
-PXL('furniture', mx + 3, my + 3, 'pnk2')                 # 電源ランプ
+R('furniture', 3, 21, 1, 25, 'ink'); R('furniture', 41, 29, 1, 18, 'ink')
+PXL('furniture', 5, 23, 'wht'); PXL('furniture', 39, 44, 'wht')
+bake_sign_img('sign_studio_s.png', 4, 40, signS_top, 5, 'wht')
 
 # ─── 奥壁: 大スクリーン(壁掛け・16:9) ───
 obj('大スクリーン')
@@ -287,13 +293,22 @@ R('furniture', sx, sy, sw, sh, 'n0')                     # 消灯した画面
 DI('furniture', sx, sy + sh - 4, sw, 4, 'n0', 'n1')      # 画面下のわずかな反射
 PXL('furniture', sx + sw - 5, sy + 3, 'n2'); PXL('furniture', sx + sw - 7, sy + 5, 'n1')
 PXL('furniture', sx + sw + 2, sy + sh + 2, 'g2')         # 電源LED
+# スクリーン背面のシアンLED(アンビエントライト)。ベゼルの外周に点線の光
+for xx in range(sx - 5, sx + sw + 5, 2):
+    PXL('furniture', xx, sy - 5, 'cyn1')
+    PXL('furniture', xx + 1, sy + sh + 4, 'cyn0')
+for yy in range(sy - 3, sy + sh + 3, 2):
+    PXL('furniture', sx - 5, yy, 'cyn1')
+    PXL('furniture', sx + sw + 4, yy, 'cyn0')
+PXL('furniture', sx - 5, sy - 5, 'cyn2'); PXL('furniture', sx + sw + 4, sy - 5, 'cyn2')
 
 # ─── 奥壁: カテゴリ名表示パネル(右上) ───
 obj('カテゴリ表示')
 cx, cy, cw, ch = CATP
 O('furniture', cx, cy, cw, ch, 'n0', 'ink')
-R('furniture', cx + 1, cy + 1, cw - 2, 1, 'pnk1')
-R('furniture', cx + 1, cy + ch - 2, cw - 2, 1, 'pnk0')
+R('furniture', cx + 1, cy + 1, cw - 2, 1, 'cyn1')
+R('furniture', cx + 1, cy + ch - 2, cw - 2, 1, 'cyn0')
+PXL('furniture', cx + 2, cy + 2, 'cyn2')
 
 # ─── 奥壁: 数字ボタンパネル(右) ───
 obj('数字ボタンパネル')
@@ -302,9 +317,9 @@ O('furniture', bx, by, bw, bh, 'q1', 'ink')
 R('furniture', bx + 1, by + 1, bw - 2, 1, 'q4')
 R('furniture', bx + 1, by + bh - 2, bw - 2, 1, 'q0')
 for i, (bcx, bcy) in enumerate(BTNC):
-    EL('furniture', bcx - 7, bcy - 7, bcx + 7, bcy + 7, fill='pnk1', out='ink')
-    EL('furniture', bcx - 5, bcy - 5, bcx + 5, bcy + 5, fill='pnk2')
-    PXL('furniture', bcx - 3, bcy - 3, 'pnkc'); PXL('furniture', bcx - 2, bcy - 4, 'pnkc')
+    EL('furniture', bcx - 9, bcy - 9, bcx + 9, bcy + 9, fill='pnk1', out='ink')
+    EL('furniture', bcx - 7, bcy - 7, bcx + 7, bcy + 7, fill='pnk2')
+    EL('furniture', bcx - 5, bcy - 6, bcx - 2, bcy - 3, fill='pnkc')
     NTXT('furniture', bcx - 2, bcy - 2, str(i + 1), 'ink')
 
 # ─── 編集卓(壁ぎわのカウンター=ミキサー卓。ボタンいっぱい) ───
@@ -317,28 +332,75 @@ for lx in (47, 104, 162, 220, 278, 336):
     R('furniture', lx, DESK_Y + 6, 1, 20, 'q0')
 R('furniture', 47, DESK_Y + 24, 290, 2, 'q0')
 R('furniture', 47, DESK_Y + 26, 290, 2, 'ink')
+R('furniture', 47, DESK_Y + 7, 290, 1, 'pnk0', 255)      # 前板のほのかな席明かりライン
 R('furniture', 49, DESK_Y + 28, 286, 2, 'q0')            # 接地影
 
-# 天板の上のボタン列(色とりどりの2x2ボタン)
-BTN_COLS = ['y1', 'g1', 'b3', 'm2', 'cor', 'pnk2']
+# ─── 編集機(デスクの上・チェアの奥のミキサー卓。少し立体) ───
+obj('編集機')
+EX, EB, EW = EDITC
+ET = EB + 6                                # 操作面の上端
+MCOLS = ['g1', 'y1', 'cyn1', 'm2', 'b3', 'pnk2']
 LEDS = []
-k = 0
-for lx in range(54, 332, 9):
-    c = BTN_COLS[k % len(BTN_COLS)]
-    R('furniture', lx, DESK_Y + 1, 2, 2, c)
-    PXL('furniture', lx, DESK_Y + 3, 'ink')
-    LEDS.append((lx, DESK_Y + 1, c))
-    k += 1
-# 前板上部のフェーダーとLED(編集機らしい列)
-k = 0
-for lx in range(52, 334, 13):
-    R('furniture', lx, DESK_Y + 8, 1, 8, 'q3')                       # フェーダー溝
-    R('furniture', lx - 1, DESK_Y + 9 + (k * 3) % 6, 3, 2, 'gray1')  # ノブ
-    c = BTN_COLS[(k + 2) % len(BTN_COLS)]
-    PXL('furniture', lx + 5, DESK_Y + 10, c)                         # 小さいLED
-    PXL('furniture', lx + 5, DESK_Y + 18, 'q2')
-    LEDS.append((lx + 5, DESK_Y + 10, c))
-    k += 1
+# 背面の低いメーターブリッジ
+R('furniture', EX + 4, EB, EW - 8, 6, 'q1')
+R('furniture', EX + 4, EB, EW - 8, 1, 'q3')
+R('furniture', EX + 4, EB + 5, EW - 8, 1, 'q0')
+R('furniture', EX + 3, EB, 1, 6, 'ink'); R('furniture', EX + EW - 4, EB, 1, 6, 'ink')
+for k, lx in enumerate(range(EX + 8, EX + EW - 8, 7)):   # メーターLED列(キラキラ)
+    c = MCOLS[k % len(MCOLS)]
+    PXL('furniture', lx, EB + 2, c)
+    LEDS.append((lx, EB + 2, c, 1))
+# 傾斜した操作面(手前へ少し広がる台形=立体感)
+for yy in range(ET, ET + 10):
+    t = (yy - ET) / 9.0
+    x0e = int(EX + 2 - 2 * t + 0.5)
+    x1e = int(EX + EW - 3 + 2 * t + 0.5)
+    for xx in range(x0e, x1e + 1):
+        if xx == x0e or xx == x1e:
+            c = 'ink'
+        elif yy == ET:
+            c = 'q4'
+        elif xx <= x0e + 1:
+            c = 'q3'
+        else:
+            c = 'q2'
+        PXL('furniture', xx, yy, c)
+# 前面の厚み
+R('furniture', EX - 1, ET + 10, EW + 2, 3, 'q0')
+R('furniture', EX - 1, ET + 13, EW + 2, 1, 'ink')
+# 左翼(チェアに隠れない): フェーダー4本
+for i in range(4):
+    lx = EX + 6 + i * 7
+    R('furniture', lx, ET + 2, 1, 6, 'q0')
+    R('furniture', lx - 1, ET + 3 + (i * 2) % 4, 3, 2, 'gray2')
+# 右翼: ジョグダイヤル大小 + ボタン
+EL('furniture', EX + EW - 22, ET + 1, EX + EW - 12, ET + 9, fill='q3', out='ink')
+EL('furniture', EX + EW - 20, ET + 3, EX + EW - 16, ET + 6, fill='q4')
+PXL('furniture', EX + EW - 15, ET + 3, 'gray2')
+EL('furniture', EX + EW - 34, ET + 3, EX + EW - 28, ET + 8, fill='q3', out='ink')
+PXL('furniture', EX + EW - 31, ET + 4, 'gray1')
+for i in range(2):
+    lx = EX + EW - 10 + i * 4
+    c = MCOLS[(i + 3) % len(MCOLS)]
+    R('furniture', lx, ET + 7, 2, 2, c)
+    LEDS.append((lx, ET + 7, c, 2))
+
+# ─── メニューパネル(デスクに立つ大きなプログラムボード) ───
+obj('メニューパネル')
+mx, my, mw, mh = MENU
+O('furniture', mx, my, mw, mh, 'n0', 'ink')
+R('furniture', mx + 1, my + 1, mw - 2, 1, 'pnk2')        # ネオンの上縁
+R('furniture', mx + 2, my + 2, mw - 4, 1, 'pnk0')
+R('furniture', mx + 1, my + mh - 2, mw - 2, 1, 'pnk0')
+R('furniture', mx + 1, my + 2, 1, mh - 4, 'q2')
+R('furniture', mx + mw - 2, my + 2, 1, mh - 4, 'q0')
+for i in range(1, 5):                                     # 項目の仕切り
+    yy = my + 2 + i * 22
+    R('furniture', mx + 4, yy, mw - 8, 1, 'q1')
+PXL('furniture', mx + 3, my + 3, 'pnkc')
+PXL('furniture', mx + mw - 4, my + 3, 'pnkc')
+R('furniture', mx + 6, my + mh, 3, 2, 'ink')              # デスクへの接地脚
+R('furniture', mx + mw - 9, my + mh, 3, 2, 'ink')
 
 # ─── ゲーミングチェア(編集卓の手前・後ろ姿) ───
 obj('ゲーミングチェア')
@@ -408,6 +470,7 @@ CHAINS = [
  ['g0','g1','g2','g3'],
  ['b0','b1','b2','b3','b4','b5'],
  ['gray0','gray1','gray2'],
+ ['cyn0','cyn1','cyn2','cync'],
 ]
 LIGHTER, DARKER = {}, {}
 for chain in CHAINS:
@@ -415,7 +478,7 @@ for chain in CHAINS:
         LIGHTER[P[a]] = P[b]
         DARKER[P[b]] = P[a]
 INK = P['ink']
-CRTC = (214, 68)     # 大スクリーンの画面中心
+CRTC = (205, 66)     # 大スクリーンの画面中心
 
 def relight(layer):
     im = L[layer]
@@ -551,12 +614,15 @@ DARKER[P['pnk1']] = P['q2']; DARKER[P['pnk0']] = P['q1']
 DARKER[P['o2']] = P['o1']; DARKER[P['o1']] = P['o0']; DARKER[P['o0']] = P['brick']
 DARKER[P['wht']] = P['gray2']; DARKER[P['ivory']] = P['ivory2']
 DARKER[P['wwht']] = P['n2']
+DARKER[P['cync']] = P['cyn2']
 
 SOURCES = [
-    {'pos': (214, 68),  'r': 155, 's': 1.30, 'e': 1.4, 'tint': P['b4'],   'occ': True},   # 大スクリーン
+    {'pos': (205, 66),  'r': 155, 's': 1.30, 'e': 1.4, 'tint': P['b4'],   'occ': True},   # 大スクリーン
+    {'pos': (205, 24),  'r': 60,  's': 0.40, 'e': 1.4, 'tint': P['cyn1'], 'occ': False},  # アンビエントライト上
     {'pos': (24, 118),  'r': 82,  's': 0.95, 'e': 1.3, 'tint': P['gray2'],'occ': False},  # スタジオの白い灯り
-    {'pos': (317, 78),  'r': 46,  's': 0.45, 'e': 1.4, 'tint': P['pnk2'], 'occ': False},  # 数字ボタン
-    {'pos': (190, 143), 'r': 96,  's': 0.38, 'e': 1.3, 'tint': P['m3'],   'occ': False},  # 編集卓のLED
+    {'pos': (311, 82),  'r': 52,  's': 0.50, 'e': 1.4, 'tint': P['pnk2'], 'occ': False},  # 数字ボタン
+    {'pos': (86, 82),   'r': 46,  's': 0.34, 'e': 1.4, 'tint': P['pnk2'], 'occ': False},  # メニューパネル
+    {'pos': (205, 128), 'r': 80,  's': 0.42, 'e': 1.3, 'tint': P['m3'],   'occ': False},  # 編集機のLED
     {'pos': (192, 150), 'r': 185, 's': 0.32, 'e': 1.2, 'tint': P['q5'],   'occ': False},  # 室内バウンス
 ]
 AMB = 0.40
@@ -612,11 +678,13 @@ def apply_illum(layer):
             if c[3] == 0 or c[:3] == INK:
                 continue
             if layer == 'furniture':
+                if c[:3] in (P['cyn0'], P['cyn1'], P['cyn2'], P['cync']):
+                    continue    # シアンのアンビエントライトは自ら光る
                 if sx <= xx < sx + sw and sy <= yy < sy + sh:
                     continue    # スクリーンは自ら光る(消灯でも保護)
                 if 10 <= xx <= 39 and 49 <= yy <= 215:
                     continue    # スタジオの戸口の光
-                if 3 <= xx <= 45 and 21 <= yy <= 47:
+                if 3 <= xx <= 41 and 21 <= yy <= 47:
                     continue    # スタジオの看板
                 if bx + 2 <= xx <= bx + bw - 3 and by + 2 <= yy <= by + bh - 3:
                     continue    # 数字ボタンは光る
@@ -710,19 +778,19 @@ json.dump(manifest, io.open(os.path.join(LAY, "objects.json"), "w", encoding="ut
           ensure_ascii=False, indent=1)
 print("プロップ切り分け:", sum(len(m["children"]) for m in manifest), "枚")
 
-# ── 編集卓のキラキラ点滅(3コマ・LEDの明滅) ──
-BY0, BBH = DESK_Y, 22
+# ── 編集機のキラキラ点滅(3コマ・LEDの明滅) ──
+BY0, BBH = 118, 24
 blink = Image.new("RGBA", (W * 3, BBH), (0, 0, 0, 0))
 bd = ImageDraw.Draw(blink)
-BRIGHT = {'y1': 'y2', 'g1': 'g2', 'b3': 'b4', 'm2': 'm3', 'cor': 'cor2', 'pnk2': 'pnkc'}
-_desk_oid = OBJ_ID.get(('furniture', '編集卓'))
+BRIGHT = {'y1': 'y2', 'g1': 'g2', 'b3': 'b4', 'm2': 'm3', 'cyn1': 'cyn2', 'pnk2': 'pnkc'}
+_mc_oid = OBJ_ID.get(('furniture', '編集機'))
 _own = OWNER['furniture'].load()
-LEDS = [(lx, ly, c) for (lx, ly, c) in LEDS if _own[lx, ly] == _desk_oid]  # チェアに隠れたLEDは光らせない
+LEDS = [t for t in LEDS if _own[t[0], t[1]] == _mc_oid]   # チェアに隠れたLEDは光らせない
 for f in range(3):
-    for i, (lx, ly, c) in enumerate(LEDS):
+    for i, (lx, ly, c, szb) in enumerate(LEDS):
         if (i + f) % 3 == 0:
             bc = C(BRIGHT.get(c, 'wht'))
-            if ly == DESK_Y + 1:
+            if szb == 2:
                 bd.rectangle([f * W + lx, ly - BY0, f * W + lx + 1, ly - BY0 + 1], fill=bc)
             else:
                 bd.point((f * W + lx, ly - BY0), fill=bc)

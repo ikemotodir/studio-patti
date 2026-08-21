@@ -106,10 +106,10 @@
 
   /* ─── 編集卓のボタンのキラキラ(3コマ・LEDの明滅) ─── */
   #editblink {
-    position: absolute; left: 0; top: 138px;
-    width: 384px; height: 22px; pointer-events: none;
+    position: absolute; left: 0; top: 118px;
+    width: 384px; height: 24px; pointer-events: none;
     background-image: url(edit_blink.png);
-    background-size: 1152px 22px;
+    background-size: 1152px 24px;
     animation: editblink 1.15s steps(1) infinite;
   }
   @keyframes editblink {
@@ -121,65 +121,84 @@
 
   /* ─── 大スクリーン(中身はここに載る) ─── */
   #screenbox {
-    position: absolute; left: 140px; top: 26px;
-    width: 148px; height: 84px; overflow: hidden;
+    position: absolute; left: 134px; top: 26px;
+    width: 142px; height: 80px; overflow: hidden;
     background: transparent;
   }
   #screenglow {
-    position: absolute; left: 128px; top: 16px; width: 172px; height: 104px;
+    position: absolute; left: 120px; top: 14px; width: 170px; height: 104px;
     pointer-events: none; mix-blend-mode: screen; display: none;
-    background: radial-gradient(closest-side, rgba(156, 199, 247, .22), rgba(156, 199, 247, 0) 80%);
+    background: radial-gradient(closest-side, rgba(126, 224, 235, .20), rgba(126, 224, 235, 0) 80%);
   }
-  #scrwait {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
+  #scrwait { position: absolute; inset: 0; }
+  #wstars { position: absolute; left: 0; top: 0; }
+  #wplay {
+    position: absolute; left: 0; top: 16px; width: 142px;
     font-family: 'DotGothic16', 'MS Gothic', monospace;
-    color: #4d5f9e; font-size: 7px; line-height: 1.8; text-align: center;
+    color: #7ecfe0; font-size: 17px; text-align: center;
+    text-shadow: 0 0 4px rgba(126, 224, 235, .9);
+    animation: wbreath 2.4s ease-in-out infinite;
   }
+  #wtext {
+    position: absolute; left: 0; top: 44px; width: 142px;
+    font-family: 'DotGothic16', 'MS Gothic', monospace;
+    color: #6d7fc0; font-size: 7px; line-height: 1.8; text-align: center;
+  }
+  @keyframes wbreath { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+  #scrsnd {
+    position: absolute; right: 2px; bottom: 2px; display: none;
+    border: 1px solid rgba(126, 224, 235, .55); background: rgba(8, 6, 40, .78);
+    color: #b8ecf4; cursor: pointer; padding: 1px 3px;
+    font-family: 'DotGothic16', 'MS Gothic', monospace; font-size: 6px; line-height: 1.2;
+  }
+  #scrsnd:hover, #scrsnd:focus-visible { color: #ffffff; background: rgba(126, 224, 235, .25); outline: none; }
+  @media (prefers-reduced-motion: reduce) { #wplay { animation: none; } }
   #scrframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: none; background: #000; }
+  #scrguard { position: absolute; inset: 0; display: none; }   /* 動画の上の透明ガード(UIを出さない) */
   #bookbox { position: absolute; inset: 0; display: none; background: #0a0820; }
   #bkimg {
-    position: absolute; left: 14px; top: 0; width: 120px; height: 78px;
+    position: absolute; left: 14px; top: 0; width: 114px; height: 74px;
     object-fit: contain; image-rendering: auto;
   }
   .bknav {
-    position: absolute; top: 0; width: 14px; height: 78px;
+    position: absolute; top: 0; width: 14px; height: 74px;
     border: 0; background: transparent; cursor: pointer; padding: 0;
     font-family: 'DotGothic16', 'MS Gothic', monospace;
-    color: #f2eefc; font-size: 9px; line-height: 78px; text-align: center;
+    color: #f2eefc; font-size: 9px; line-height: 74px; text-align: center;
   }
   .bknav:hover, .bknav:focus-visible { color: #fcc800; background: rgba(252, 200, 0, .10); outline: none; }
   #bkprev { left: 0; }
   #bknext { right: 0; }
   #bknum {
-    position: absolute; left: 0; bottom: 0; width: 148px; height: 7px;
+    position: absolute; left: 0; bottom: 0; width: 142px; height: 7px;
     font-family: 'DotGothic16', 'MS Gothic', monospace;
     color: #8a86b0; font-size: 5px; line-height: 7px; text-align: center;
   }
 
   /* ─── 左のメニューパネル(5項目・▶で選ぶ) ─── */
   .mi {
-    position: absolute; left: 50px; width: 82px; height: 21px;
-    border: 0; background: transparent; cursor: pointer; padding: 0 0 0 3px;
-    box-sizing: border-box; text-align: left;
+    position: absolute; left: 49px; width: 76px; height: 22px;
+    border: 0; background: transparent; cursor: pointer; padding: 0 0 0 2px;
+    box-sizing: border-box; text-align: left; white-space: nowrap;
+    display: flex; align-items: center;
     font-family: 'DotGothic16', 'MS Gothic', monospace;
-    color: #b9b4d8; font-size: 6px; line-height: 1.25;
+    color: #b9b4d8; font-size: 6px; line-height: 1;
   }
-  .mi .cur { color: #f79db8; margin-right: 1px; visibility: hidden; }
+  .mi .cur { position: absolute; left: -7px; color: #f79db8; visibility: hidden; }
   .mi.sel { color: #ffffff; }
   .mi.sel .cur { visibility: visible; }
   .mi:hover, .mi:focus-visible { color: #ffffff; background: rgba(236, 148, 190, .12); outline: none; }
 
   /* ─── 右のカテゴリ表示と数字ボタン ─── */
   #catname {
-    position: absolute; left: 297px; top: 23px; width: 40px; height: 22px;
+    position: absolute; left: 286px; top: 24px; width: 49px; height: 22px;
     display: flex; align-items: center; justify-content: center;
     font-family: 'DotGothic16', 'MS Gothic', monospace;
-    color: #ffd4e8; font-size: 5.5px; line-height: 1.35; text-align: center;
+    color: #b8ecf4; font-size: 6px; line-height: 1.35; text-align: center;
     pointer-events: none;
   }
   .nb {
-    position: absolute; width: 16px; height: 16px;
+    position: absolute; width: 19px; height: 19px;
     border: 0; background: transparent; cursor: pointer; padding: 0;
     border-radius: 50%;
   }
@@ -188,8 +207,11 @@
     background: radial-gradient(closest-side, rgba(255, 212, 232, .55), rgba(255, 212, 232, 0) 78%);
     mix-blend-mode: screen; opacity: 0; transition: opacity .15s ease;
   }
-  .nb:hover:not(.off)::after, .nb:focus-visible:not(.off)::after { opacity: 1; }
-  .nb.on::after { opacity: 1; }
+  .nb:not(.off)::after { animation: nbreath 3.2s ease-in-out infinite; }
+  .nb:hover:not(.off)::after, .nb:focus-visible:not(.off)::after { animation: none; opacity: 1; }
+  .nb.on::after { animation: none; opacity: 1; }
+  @keyframes nbreath { 0%, 100% { opacity: 0; } 50% { opacity: .38; } }
+  @media (prefers-reduced-motion: reduce) { .nb:not(.off)::after { animation: none; } }
   .nb.off { cursor: default; }
   .nb.off::before {
     content: ''; position: absolute; inset: 0; border-radius: 50%;
@@ -198,28 +220,34 @@
 
   /* ─── キャラクター ─── */
   #patti {
-    position: absolute; left: 252px; top: 136px;
-    width: 36px; height: 48px;
-    background-image: url(patti_shaded.png);
+    position: absolute; left: 254px; top: 136px;
+    width: 32px; height: 48px;
+    background-image: url(patti_front_shaded.png);
     background-repeat: no-repeat;
+    background-size: 384px 48px;
     transform: scale(.75); transform-origin: 50% 100%;
+    animation: pattichar 1.2s steps(12) infinite;
   }
+  @keyframes pattichar { from { background-position: 0 0; } to { background-position: -384px 0; } }
   #pshadow {
     position: absolute; left: 259px; top: 180px;
     width: 22px; height: 5px;
     border-radius: 50%; background: rgba(64, 24, 108, .5);
   }
   #mayu {
-    position: absolute; left: 100px; top: 112px;
-    width: 40px; height: 72px;
-    background-image: url(mayu_stand.png);
+    position: absolute; left: 112px; top: 112px;
+    width: 30px; height: 72px;
+    background-image: url(mayu_back_shaded.png);
     background-repeat: no-repeat;
-    background-size: 160px 72px;
+    background-size: 360px 72px;
     transform: scale(.75); transform-origin: 50% 100%;
+    animation: mayuchar 1.2s steps(12) infinite;
   }
+  @keyframes mayuchar { from { background-position: 0 0; } to { background-position: -360px 0; } }
+  @media (prefers-reduced-motion: reduce) { #patti, #mayu { animation: none; } }
   #mshadow {
-    position: absolute; left: 107px; top: 180px;
-    width: 26px; height: 5px;
+    position: absolute; left: 116px; top: 180px;
+    width: 20px; height: 5px;
     border-radius: 50%; background: rgba(64, 24, 108, .5);
   }
 
@@ -328,7 +356,11 @@
     <div id="screenglow" aria-hidden="true"></div>
 
     <div id="screenbox">
-      <div id="scrwait">左のパネルを ▶ でえらんで<br>右のすうじをおしてね</div>
+      <div id="scrwait">
+        <canvas id="wstars" width="142" height="80" aria-hidden="true"></canvas>
+        <div id="wplay" aria-hidden="true">▶</div>
+        <div id="wtext">左のパネルを ▶ でえらんで<br>右のすうじをおしてね</div>
+      </div>
       <iframe id="scrframe" title="作品の再生画面" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
       <div id="bookbox">
         <img id="bkimg" src="" alt="絵本のページ">
@@ -336,6 +368,8 @@
         <button id="bknext" class="bknav" type="button" aria-label="次のページに進む">▶</button>
         <div id="bknum"></div>
       </div>
+      <div id="scrguard" aria-hidden="true"></div>
+      <button id="scrsnd" type="button" aria-label="音を出す">♪ おとを出す</button>
     </div>
 
     <button id="doorStudio" class="hs" style="left:8px;top:48px;width:33px;height:168px;--gi:.4"
@@ -411,8 +445,12 @@ function hoverTalk(el, text) {
 // ─────────────────────────────────────────────
 // カテゴリと作品(左パネルの項目 → 右パネルの数字)
 // ─────────────────────────────────────────────
-const V = id => 'https://player.vimeo.com/video/' + id + '?title=0&byline=0&portrait=0';
-const Y = id => 'https://www.youtube-nocookie.com/embed/' + id + '?rel=0';
+// 再生画面にボタン類を出さない工夫:
+// - 自動再生(ミュート)+ループで「上映」として流す。音は画面右下の「♪」ボタンで出す
+// - iframeの上に透明ガードを重ねてマウスを渡さない(VimeoのUIはホバーが無ければ出ない)
+// - Vimeoのbackgroundモードは有料プラン限定のため使わない
+const V = id => 'https://player.vimeo.com/video/' + id + '?autoplay=1&muted=1&loop=1&title=0&byline=0&portrait=0&dnt=1';
+const Y = id => 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&mute=1&controls=0&loop=1&playlist=' + id + '&rel=0&playsinline=1&enablejsapi=1';
 const CATS = [
   { name: 'コンテンツクリエイティブ', disp: 'コンテンツ<br>クリエイティブ',
     items: [] },                                     // 後日そろう予定(いまは準備中)
@@ -426,8 +464,8 @@ const CATS = [
     items: [Y('lcd2cR3ceaI'), Y('PJ-stpaVk5I'), Y('VtyGpJFycNc')] },
 ];
 
-const MENU_TOP = 29, MENU_H = 21;
-const BTN_POS = [[299, 59], [319, 59], [299, 79], [319, 79]];   // 丸ボタン(16x16)の左上
+const MENU_TOP = 26, MENU_H = 22;
+const BTN_POS = [[288, 60], [315, 60], [288, 86], [315, 86]];   // 丸ボタン(18x18)の左上
 
 const scrwait = document.getElementById('scrwait');
 const scrframe = document.getElementById('scrframe');
@@ -445,7 +483,7 @@ CATS.forEach((c, i) => {
   const b = document.createElement('button');
   b.className = 'mi';
   b.style.top = (MENU_TOP + i * MENU_H) + 'px';
-  b.innerHTML = '<span class="cur">▶</span>' + c.disp;
+  b.innerHTML = '<span class="cur">▶</span>' + c.name;   // メニューは1行(dispはカテゴリ表示板用)
   b.setAttribute('aria-label', c.name);
   b.addEventListener('click', () => selectCat(i));
   hoverTalk(b, '「' + c.name + '」だよ！<br>右のパネルのすうじで作品がえらべるよ！');
@@ -471,13 +509,39 @@ BTN_POS.forEach(([x, y], j) => {
   nbEls.push(b);
 });
 
+const scrsnd = document.getElementById('scrsnd');
+let sndOn = false;
+
+function applySound() {
+  const w = scrframe.contentWindow;
+  if (!w || scrframe.style.display === 'none') return;
+  if (scrframe.src.indexOf('vimeo') >= 0) {
+    w.postMessage(JSON.stringify({ method: 'setMuted', value: !sndOn }), '*');
+    w.postMessage(JSON.stringify({ method: 'setVolume', value: sndOn ? 1 : 0 }), '*');
+  } else {
+    w.postMessage(JSON.stringify({ event: 'command', func: sndOn ? 'unMute' : 'mute', args: [] }), '*');
+    if (sndOn) w.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+  }
+}
+function setSnd(on) {
+  sndOn = on;
+  scrsnd.textContent = on ? '♪ おとを消す' : '♪ おとを出す';
+  scrsnd.setAttribute('aria-label', on ? '音を消す' : '音を出す');
+  applySound();
+}
+scrsnd.addEventListener('click', () => setSnd(!sndOn));
+
 function stopScreen() {
   num = -1;
   scrframe.src = 'about:blank';
   scrframe.style.display = 'none';
+  document.getElementById('scrguard').style.display = 'none';
   bookbox.style.display = 'none';
-  scrwait.style.display = 'flex';
+  scrwait.style.display = 'block';
   screenglow.style.display = 'none';
+  scrsnd.style.display = 'none';
+  sndOn = false;
+  scrsnd.textContent = '♪ おとを出す';
   nbEls.forEach(b => b.classList.remove('on'));
 }
 
@@ -509,6 +573,8 @@ function selectNum(j) {
   if (item === 'book') {
     scrframe.src = 'about:blank';
     scrframe.style.display = 'none';
+    document.getElementById('scrguard').style.display = 'none';
+    scrsnd.style.display = 'none';
     bookbox.style.display = 'block';
     bkpage = 0;
     drawBook();
@@ -516,6 +582,12 @@ function selectNum(j) {
     bookbox.style.display = 'none';
     scrframe.src = item;
     scrframe.style.display = 'block';
+    document.getElementById('scrguard').style.display = 'block';
+    sndOn = false;
+    scrsnd.textContent = '♪ おとを出す';
+    scrsnd.style.display = 'block';
+    // 読み込み直後にミュート状態を確実にそろえる
+    scrframe.addEventListener('load', applySound, { once: true });
   }
 }
 
@@ -571,96 +643,66 @@ brand.addEventListener('click', () => { location.href = 'index.html'; });
 brand.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') location.href = 'index.html'; });
 
 // ─────────────────────────────────────────────
-// キャラクター: パッチ(idle+瞬き) / マユちゃん(立ち・たまに瞬き)
+// キャラクター: マユちゃん(後ろ姿でスクリーンを見ている) / パッチ(正面)
+// どちらも multishot の12コマをCSSの steps(12) で再生している(JSは不要)
 // ─────────────────────────────────────────────
-class Player {
-  constructor(el) { this.el = el; this.tag = null; this.i = 0; this.t = 0; this.onEnd = null; }
-  load(data) {
-    this.frames = data.frames.map(f => ({ x: f.frame.x, ms: f.duration }));
-    this.tags = {};
-    for (const t of data.meta.frameTags) this.tags[t.name] = t;
-    this.h = data.frames[0].frame.h;
-    this.el.style.backgroundSize = `${data.meta.size.w}px ${this.h}px`;
-  }
-  order(tag) {
-    const seq = [];
-    for (let i = tag.from; i <= tag.to; i++) seq.push(i);
-    if (tag.direction === 'reverse') seq.reverse();
-    if (tag.direction === 'pingpong' && seq.length > 2) {
-      for (let i = seq.length - 2; i > 0; i--) seq.push(seq[i]);
-    }
-    return seq;
-  }
-  play(name, { loop = true } = {}) {
-    const tag = this.tags[name];
-    if (!tag) return Promise.resolve();
-    this.tag = tag; this.seq = this.order(tag); this.loop = loop;
-    this.i = 0; this.t = 0; this.draw();
-    return new Promise(res => { this.onEnd = res; });
-  }
-  draw() { this.el.style.backgroundPosition = `-${this.frames[this.seq[this.i]].x}px 0`; }
-  tick(dt) {
-    if (!this.tag) return;
-    this.t += dt;
-    const dur = this.frames[this.seq[this.i]].ms;
-    if (this.t < dur) return;
-    this.t -= dur;
-    this.i++;
-    if (this.i >= this.seq.length) {
-      if (this.loop) { this.i = 0; }
-      else { this.i = this.seq.length - 1; const f = this.onEnd; this.onEnd = null; this.tag = null; if (f) f(); return; }
-    }
-    this.draw();
-  }
-}
-
-const wait = ms => new Promise(r => setTimeout(r, ms));
-const rand = (a, b) => a + Math.random() * (b - a);
-
-const p = new Player(document.getElementById('patti'));
-async function pattiBehave() {
-  p.play('idle');
-  while (true) {
-    await wait(rand(3200, 7000));
-    await p.play('blink', { loop: false });
-    p.play('idle');
-  }
-}
-
-// マユちゃん(mayu_stand.png 4コマ40x72: 0=よこ向き 3=よこ向きウィンク)
 const mayuEl = document.getElementById('mayu');
-async function mayuBehave() {
-  while (true) {
-    mayuEl.style.backgroundPosition = '0 0';
-    await wait(rand(6000, 13000));
-    mayuEl.style.backgroundPosition = '-120px 0';
-    await wait(220);
-  }
-}
 mayuEl.style.pointerEvents = 'auto';
 mayuEl.addEventListener('mouseenter', () =>
   setTalk('マユちゃんも作品を見に来たんだって！<br>いっしょに見よう！'));
 mayuEl.addEventListener('mouseleave', () => setTalk(TALK_DEFAULT));
 
-let last = performance.now();
-function loop(t) {
-  const dt = Math.min(100, t - last);
-  p.tick(dt);
-  last = t;
-  requestAnimationFrame(loop);
-}
+const pattiEl = document.getElementById('patti');
+pattiEl.style.pointerEvents = 'auto';
+pattiEl.addEventListener('mouseenter', () =>
+  setTalk('ここでボクたちの作品が上映されるんだ！<br>ゆっくり見ていってね！'));
+pattiEl.addEventListener('mouseleave', () => setTalk(TALK_DEFAULT));
 
 document.querySelector('#rotate .anyway')
   .addEventListener('click', () => document.body.classList.add('seeanyway'));
 
-fetch('patti.json', NOCACHE).then(r => r.json())
-  .then(pdata => {
-    p.load(pdata);
-    requestAnimationFrame(loop);
-    pattiBehave();
-    mayuBehave();
-  })
-  .catch(e => console.error(e));
+// ─────────────────────────────────────────────
+// 待機中のスクリーン: 星がまたたくスクリーンセーバー(シアン系)
+// ─────────────────────────────────────────────
+(() => {
+  const cv = document.getElementById('wstars');
+  const g = cv.getContext('2d');
+  const SW = 142, SH = 80;
+  const TONE = ['#1c5a74', '#2ca4ba', '#7ee0eb', '#d6faff'];
+  const stars = [];
+  for (let i = 0; i < 22; i++) {
+    // 説明文の帯(y42..70)を避けて散らす
+    const yy = Math.random() < 0.8 ? Math.floor(Math.random() * 40)
+                                   : 72 + Math.floor(Math.random() * 7);
+    stars.push({ x: Math.floor(Math.random() * SW), y: yy,
+                 ph: Math.random() * Math.PI * 2, sp: 0.6 + Math.random() * 1.2 });
+  }
+  const draw = (t) => {
+    g.clearRect(0, 0, SW, SH);
+    for (const st of stars) {
+      const k = (Math.sin(t / 1000 * st.sp + st.ph) + 1) / 2;
+      const ti = Math.min(3, Math.floor(k * 4));
+      g.fillStyle = TONE[ti];
+      g.fillRect(st.x, st.y, 1, 1);
+      if (ti === 3) {                       // いちばん明るい瞬間は十字にきらめく
+        g.fillStyle = TONE[1];
+        g.fillRect(st.x - 1, st.y, 1, 1); g.fillRect(st.x + 1, st.y, 1, 1);
+        g.fillRect(st.x, st.y - 1, 1, 1); g.fillRect(st.x, st.y + 1, 1, 1);
+      }
+    }
+  };
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (still) { draw(0); return; }
+  let prev = 0;
+  const tick = (t) => {
+    requestAnimationFrame(tick);
+    if (document.hidden || scrwait.style.display === 'none') return;
+    if (t - prev < 1000 / 12) return;       // 12コマ/秒(ドット絵らしい間引き)
+    prev = t;
+    draw(t);
+  };
+  requestAnimationFrame(tick);
+})();
 </script>
 </body>
 </html>
