@@ -9,7 +9,7 @@ python make_room.py
 rem パッチくんに陰影を乗せる（原本はいじらない）
 python shade_patti.py
 rem マユちゃん（Mayu.aseprite → シート+JSON → 夜トーン）
-%ASE% -b "..\..\Mayu\Mayu.aseprite" --sheet "mayu.png" --sheet-type horizontal --data "mayu.json" --format json-array --list-tags
+%ASE% -b "..\..\..\Mayu\Mayu.aseprite" --sheet "mayu.png" --sheet-type horizontal --data "mayu.json" --format json-array --list-tags
 python shade_mayu.py
 rem 月のおばけボンボン（Bonbon.aseprite → シート → 月あかりトーン）
 %ASE% -b "..\..\Bonbon\Bonbon.aseprite" --sheet "bonbon.png" --sheet-type horizontal --data "bonbon.json" --format json-array --list-tags

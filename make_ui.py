@@ -63,8 +63,8 @@ room = Image.open(os.path.join(HERE, "room.png")).convert("RGBA")
 mayu = Image.open(os.path.join(HERE, "mayu_shaded.png")).convert("RGBA")
 patti = Image.open(os.path.join(HERE, "patti_shaded.png")).convert("RGBA")
 scene = room.copy()
-scene.alpha_composite(mayu.crop((0, 0, 76, 58)), (66, 112))
-scene.alpha_composite(patti.crop((0, 0, 36, 48)), (196, 122))
+scene.alpha_composite(mayu.crop((0, 0, 76, 58)), (94, 124))
+scene.alpha_composite(patti.crop((0, 0, 36, 48)), (200, 134))
 big = scene.resize((384 * 3, 240 * 3), Image.NEAREST)      # 1152x720
 ogp = Image.new("RGBA", (1200, 630), (5, 3, 15, 255))
 ogp.alpha_composite(big.crop((0, 45, 1152, 675)), (24, 0))  # 上下を45pxずつ落として630に

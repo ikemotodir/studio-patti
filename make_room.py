@@ -116,30 +116,24 @@ R('bg', 0, 6, W, 1, 'q1')
 R('bg', 0, 10, W, 2, 'q0')
 for x in range(4, W, 24):
     PXL('bg', x, 4, 'r1'); PXL('bg', x + 1, 4, 'r1')
-for x in range(20, W, 48):                          # 赤い吊りタブ(sankou流)
+for x in range(68, W - 48, 48):                     # 赤い吊りタブ(sankou流)
     R('bg', x, 10, 5, 6, 'm1')
     R('bg', x, 10, 5, 1, 'm0')
     PXL('bg', x + 2, 13, 'm0')
 
-R('bg', 0, 12, W, 20, 'n3')                          # 壁: 多段グラデーション
+R('bg', 0, 12, W, 20, 'n3')                          # 奥壁: 多段グラデーション
 DI('bg', 0, 24, W, 4, 'n4', 'n3', 1)
 DI('bg', 0, 32, W, 8, 'n3', 'n2')
 R('bg', 0, 40, W, 56, 'n2')
 DI('bg', 0, 96, W, 8, 'n2', 'n1')
 R('bg', 0, 104, W, 38, 'n1')
 DI('bg', 0, 132, W, 10, 'n1', 'n0')
-DI('bg', 0, 12, 6, 130, 'n0', 'n1')                  # 四隅ビネット
-DI('bg', 6, 12, 6, 130, 'n1', 'n2', 1)
-DI('bg', W - 6, 12, 6, 130, 'n0', 'n1')
-DI('bg', W - 12, 12, 6, 130, 'n1', 'n2', 1)
 for x in [96, 192, 288]:
     R('bg', x, 12, 1, 130, 'n1')
-for gx, gy in [(150, 100, ), (30, 60), (350, 120)][:0]:
-    pass
 R('bg', 0, 142, W, 4, 'ink')
 R('bg', 0, 146, W, 2, 'q0')
 
-R('bg', 0, 148, W, 92, 'q1')
+R('bg', 0, 148, W, 92, 'q1')                         # 床
 R('bg', 0, 148, W, 3, 'q0')
 for i, y in enumerate([161, 175, 189, 203, 217, 231]):    # 床の継ぎ目はマゼンタに光る(sankou流)
     R('bg', 0, y, W, 1, 'm0')
@@ -152,10 +146,10 @@ for i, x in enumerate(range(0, W + 32, 32)):
 for x, y in [(60,168),(150,183),(250,170),(340,180),(90,194),(230,194),(160,222),(320,226),(50,232)]:
     R('bg', x, y, 3, 1, 'q0')
 # 画面から出る光の床への映り込み(濡れた床のゲーム表現)
-for rx in range(136, 178, 7):
-    R('bg', rx, 149, 1, 5 - (rx // 7) % 3, 'g0')
-    R('bg', rx + 1, 149, 1, 2, 'g0')
-for rx in range(300, 344, 8):
+for rx in range(170, 226, 7):
+    R('bg', rx, 149, 1, 5 - (rx // 7) % 3, 'b1')
+    R('bg', rx + 1, 149, 1, 2, 'b1')
+for rx in range(254, 300, 8):
     R('bg', rx, 149, 1, 4 - (rx // 8) % 2, 'n4')
     PXL('bg', rx + 1, 149, 'n4')
 # 床板ごとのトーン差と摩耗(1pxのこだわりゾーン)
@@ -165,16 +159,44 @@ for bi, (by0, by1) in enumerate([(149,161),(162,175),(176,189),(190,203),(204,21
             for xx5 in range(0, W):
                 if (xx5 + yy5 + bi) % 6 == 0:
                     PXL('bg', xx5, yy5, 'q2')
-for wx5, wy5 in [(24,157),(88,171),(132,178),(210,166),(262,181),(322,158),(356,178),
-                 (44,196),(150,186),(238,192),(302,188),(70,224),(180,232),(280,226),(330,234)]:
+for wx5, wy5 in [(88,171),(132,178),(210,166),(262,181),(150,186),(238,192),(302,188),
+                 (180,232),(280,226),(120,224)]:
     PXL('bg', wx5, wy5, 'q0'); PXL('bg', wx5 + 1, wy5, 'q2')
-for sx5 in range(8, W, 24):
+for sx5 in range(56, W - 48, 24):
     PXL('bg', sx5, 160, 'm1'); PXL('bg', sx5 + 12, 174, 'm0')
 DI('bg', 0, 224, W, 6, 'q1', 'q0')
 DI('bg', 0, 230, W, 10, 'q0', 'ink')
 
-# ═══════════════ window : 楕円窓(上へ移動) ═══════════════
-WX, WY, WRX, WRY = 312, 44, 42, 30
+# ─── 側壁: 左=デザイン室 / 右=編集室 へつづく(奥に向かって狭まる) ───
+def side_wall(left):
+    for i in range(47):
+        xx = i if left else W - 1 - i
+        t = i / 46.0
+        ytop = int(2 + 12 * t + 0.5)
+        ybot = int(234 - 66 * t + 0.5)
+        for yy in range(ytop, ybot + 1):
+            if yy <= ytop + 1:
+                c = 'ink'
+            elif yy <= ytop + 3:
+                c = 'q1'
+            elif yy >= ybot - 1:
+                c = 'q0'
+            elif yy == ybot - 2:
+                c = 'ink'
+            elif yy >= ybot - 5:
+                c = 'q1'
+            else:
+                base = 'n1' if t > 0.55 else 'n2'
+                c = 'n0' if (xx * 13 + yy * 7) % 37 == 0 else base
+            PXL('bg', xx, yy, c)
+    cx0 = 46 if left else W - 47
+    R('bg', cx0, 13, 1, 156, 'ink')                  # 奥の縦の角
+    R('bg', cx0 + (1 if left else -1), 14, 1, 154, 'n3')
+side_wall(True)
+side_wall(False)
+
+# ═══════════════ window : 楕円窓(右上・編集室側) ═══════════════
+WX, WY, WRX, WRY = 290, 44, 42, 30
 obj('楕円窓')
 EL('window', WX-WRX-4, WY-WRY-4, WX+WRX+4, WY+WRY+4, fill='ink')
 EL('window', WX-WRX-1, WY-WRY-1, WX+WRX+1, WY+WRY+1, fill='q3')
@@ -200,11 +222,11 @@ L['window'].paste(Image.composite(tmp, L['window'], mask), (0,0))
 for i in range(-WRX + 8, WRX - 8):
     hh = int(5 + 3 * math.sin(i * 0.11))
     R('window', WX + i, WY + WRY - 8 - hh, 1, hh, 'n1')
-for sx, sy in [(284,30),(300,24),(330,20),(344,34),(292,44),(340,52),(300,60),(322,62),(286,56),(314,26)]:
+for sx, sy in [(262,30),(278,24),(308,20),(322,34),(270,44),(318,52),(278,60),(300,62),(264,56),(292,26)]:
     PXL('window', sx, sy, 'b5' if (sx+sy)%3 else 'wht')
-PXL('window', 300, 23, 'b3'); PXL('window', 300, 25, 'b3'); PXL('window', 299, 24, 'b3'); PXL('window', 301, 24, 'b3')
+PXL('window', 278, 23, 'b3'); PXL('window', 278, 25, 'b3'); PXL('window', 277, 24, 'b3'); PXL('window', 279, 24, 'b3')
 # 月はBonbon(月のおばけ)がその位置に入るためアート削除。ハローは残す
-for cx5, cy5, cw5 in [(286, 28, 16), (330, 52, 12)]:  # 夜雲のシルエット
+for cx5, cy5, cw5 in [(264, 28, 16), (308, 52, 12)]:  # 夜雲のシルエット
     R('window', cx5, cy5, cw5, 3, 'n1')
     R('window', cx5 + 2, cy5 - 2, cw5 - 5, 2, 'n1')
     R('window', cx5 + 1, cy5 + 3, cw5 - 2, 1, 'b0')
@@ -218,154 +240,208 @@ EL('window', WX-WRX-4, WY-WRY-4, WX+WRX+4, WY+WRY+4, out='ink', ow=2)
 PXL('window', WX-WRX+7, WY-WRY+10, 'q5')
 
 # ═══════════════ furniture ═══════════════
-def counter(x, w):
-    R('furniture', x, 106, w, 1, 'mauve')
-    R('furniture', x, 107, w, 3, 'q4')
-    R('furniture', x, 110, w, 2, 'q2')
-    R('furniture', x, 112, w, 1, 'q0')
-obj('カウンター')
-counter(84, 212)
-counter(300, 84)
-for lx in [88, 180, 284, 304, 372]:
-    R('furniture', lx, 112, 5, 34, 'q2')
-    R('furniture', lx, 112, 1, 34, 'q4')
-    R('furniture', lx + 4, 112, 1, 34, 'q0')
-R('furniture', 92, 130, 88, 2, 'q2')
-R('furniture', 92, 132, 88, 1, 'q0')
+# 追加パレット(この部屋の材質)
+P['chrome'] = (206, 208, 222); P['chrome2'] = (150, 152, 172)
+P['ivory'] = (247, 238, 216); P['ivory2'] = (206, 194, 172)
+P['wood'] = (126, 78, 46); P['wood2'] = (92, 54, 32)
+P['tuber'] = (214, 46, 62)
+P['wwarm'] = (52, 48, 88)     # 電球の暖色が当たる壁(紺に馴染む暖紫)
+P['wneon'] = (42, 36, 80)
+P['spill'] = (62, 122, 106)
+P['bulbc'] = (255, 246, 200)  # 電球コア
+P['bulbh'] = (176, 138, 74)   # 電球ハロー
 
-# 本棚
+FONT.update({
+ 'M': "101 111 101 101 101", 'N': "110 101 101 101 101",
+ 'Y': "101 101 010 010 010", 'E': "111 100 110 100 111",
+ 'K': "101 110 100 110 101", 'L': "100 100 100 100 111",
+ 'G': "011 100 101 101 011", 'W': "101 101 101 111 101",
+})
+def TXT2(l, x, y, s, c):
+    cx = x
+    for ch in s:
+        rows = FONT.get(ch, FONT[' ']).split()
+        for ry, row in enumerate(rows):
+            for rx, bit in enumerate(row):
+                if bit == '1': R(l, cx + rx * 2, y + ry * 2, 2, 2, c)
+        cx += 8
+
+def dpatch(l, x, y, w, h, c, den=2, ph=0):
+    for yy in range(y, y + h):
+        for xx in range(x, x + w):
+            if (xx + yy + ph) % den == 0:
+                PXL(l, xx, yy, c)
+
+# ─── 左の壁: デザイン室の戸口(あたたかい黄色の光がもれる) ───
+obj('デザイン室の入口')
+for xx in range(10, 39):
+    t = (xx - 10) / 28.0
+    ytopD = int(58 - 8 * t + 0.5)
+    ybotD = int(214 - 46 * t + 0.5)
+    for yy in range(ytopD, ybotD):
+        rel = (yy - ytopD) / float(ybotD - ytopD)
+        if xx <= 11 or xx >= 37:
+            c = 'q3'                     # 戸口の枠(木)
+        elif rel < 0.10:
+            c = 'brick' if (xx + yy) % 2 else 'o0'
+        elif rel < 0.34:
+            c = 'o0' if (xx + yy) % 2 else 'o1'
+        elif rel < 0.62:
+            c = 'o1' if (xx + yy) % 2 else 'o2'
+        elif rel < 0.86:
+            c = 'o2'
+        else:
+            c = 'bulbc' if (xx + yy) % 2 else 'o2'   # 床からの照り返しがいちばん明るい
+        PXL('furniture', xx, yy, c)
+    PXL('furniture', xx, ytopD, 'ink')
+    PXL('furniture', xx, ybotD, 'ink')
+R('furniture', 9, 58, 1, 157, 'ink')
+R('furniture', 39, 50, 1, 119, 'ink')
+R('furniture', 8, 58, 1, 157, 'q1')
+# 奥へ向かう光のすじ(戸口の中の廊下感)
+for k in range(4):
+    R('furniture', 14 + k * 6, 62 - k, 1, 140 - k * 10, 'o2' if k % 2 else 'o1')
+
+obj('デザイン室の看板')
+R('furniture', 8, 13, 1, 8, 'ink'); R('furniture', 22, 13, 1, 8, 'ink')   # 吊り紐
+O('furniture', 4, 20, 24, 32, 'wood', 'ink')          # 木の札(文字はWeb側)
+R('furniture', 6, 22, 20, 1, 'ivory2')
+R('furniture', 6, 49, 20, 1, 'wood2')
+PXL('furniture', 6, 24, 'wood2'); PXL('furniture', 24, 46, 'wood2')
+
+# ─── 右の壁: 編集室の戸口(淡い紫の光がもれる) ───
+obj('編集室の入口')
+for xx in range(346, 375):
+    t = (374 - xx) / 28.0
+    ytopD = int(58 - 8 * t + 0.5)
+    ybotD = int(214 - 46 * t + 0.5)
+    for yy in range(ytopD, ybotD):
+        rel = (yy - ytopD) / float(ybotD - ytopD)
+        if xx <= 347 or xx >= 373:
+            c = 'q3'
+        elif rel < 0.10:
+            c = 'q1' if (xx + yy) % 2 else 'cool1'
+        elif rel < 0.34:
+            c = 'cool1' if (xx + yy) % 2 else 'q2'
+        elif rel < 0.62:
+            c = 'cool1' if (xx + yy) % 2 else 'cool2'
+        elif rel < 0.86:
+            c = 'cool2'
+        else:
+            c = 'b5' if (xx + yy) % 2 else 'cool2'
+        PXL('furniture', xx, yy, c)
+    PXL('furniture', xx, ytopD, 'ink')
+    PXL('furniture', xx, ybotD, 'ink')
+R('furniture', 374, 58, 1, 157, 'ink')
+R('furniture', 345, 50, 1, 119, 'ink')
+R('furniture', 375, 58, 1, 157, 'q1')
+for k in range(4):
+    R('furniture', 368 - k * 6, 62 - k, 1, 140 - k * 10, 'cool2' if k % 2 else 'cool1')
+
+obj('編集室の看板')
+R('furniture', 361, 13, 1, 8, 'ink'); R('furniture', 375, 13, 1, 8, 'ink')
+O('furniture', 357, 20, 24, 32, 'wood', 'ink')
+R('furniture', 359, 22, 20, 1, 'ivory2')
+R('furniture', 359, 49, 20, 1, 'wood2')
+PXL('furniture', 359, 24, 'wood2'); PXL('furniture', 377, 46, 'wood2')
+
+# ─── 掛け時計(針はWeb側でリアルタイム描画) ───
+obj('掛け時計')
+EL('furniture', 61, 21, 95, 55, fill='ivory', out='ink')
+EL('furniture', 63, 23, 93, 53, out='q4')
+for i in range(12):
+    ang = i * math.pi / 6
+    tx = int(round(78 + math.sin(ang) * 14))
+    ty = int(round(38 - math.cos(ang) * 14))
+    if i % 3 == 0:
+        R('furniture', tx - 1, ty - 1, 2, 2, 'ink')
+    else:
+        PXL('furniture', tx, ty, 'gray1')
+R('furniture', 77, 37, 2, 2, 'ink')                    # 中心ピン
+PXL('furniture', 68, 27, 'wht')                        # ガラスのツヤ
+
+# ─── 本棚(左)と絵本の表紙 ───
 obj('本棚')
-O('furniture', 6, 22, 66, 124, 'q0', 'ink')
-R('furniture', 8, 24, 62, 2, 'q4')
-for sy in [46, 74, 102, 130]:
-    R('furniture', 9, sy, 60, 3, 'q3')
-    R('furniture', 9, sy, 60, 1, 'q5')
-R('furniture', 6, 22, 2, 124, 'q3'); R('furniture', 70, 22, 2, 124, 'q3')
-C_shade = {'m2':'m0','cor':'brick','g2':'g0','b3':'b0','m1':'m0','cream':'cor2','b2':'b0','m3':'m1','g1':'g0','r2':'r0'}
-def bookrow(y, specs):
-    bx = 11
+O('furniture', 50, 58, 62, 108, 'q0', 'ink')
+R('furniture', 52, 60, 58, 2, 'q4')
+for sy in (86, 112, 140):
+    R('furniture', 53, sy, 56, 3, 'q3')
+    R('furniture', 53, sy, 56, 1, 'q5')
+R('furniture', 50, 58, 2, 108, 'q3'); R('furniture', 110, 58, 2, 108, 'q3')
+def bookrow(y, specs, bx=55):
     for bw, bh, c in specs:
         R('furniture', bx, y - bh, bw, bh, c)
         R('furniture', bx, y - bh, bw, 2, 'ink')
         R('furniture', bx, y - bh, 1, bh, C_shade.get(c, 'ink'))
         PXL('furniture', bx + bw - 1, y - bh + 3, 'cream')
         bx += bw + 1
-bookrow(45, [(4,17,'m2'),(5,15,'cor'),(4,18,'g2'),(5,16,'b3'),(4,14,'m1'),(5,17,'cream'),(4,15,'b2'),(5,18,'m3'),(4,13,'g1'),(5,16,'r2'),(4,17,'b3')])
-bookrow(73, [(5,18,'b2'),(4,15,'m3'),(5,17,'cream'),(4,16,'g1'),(5,14,'cor'),(4,18,'m1'),(5,15,'b3'),(4,17,'r2'),(5,16,'g2'),(4,13,'m2')])
-bookrow(129, [(5,16,'cor'),(4,18,'b3'),(5,14,'m2'),(4,17,'g2'),(5,15,'m1'),(4,16,'cream'),(5,18,'b2'),(4,14,'r2')])
-obj('緑の図鑑')
-R('furniture', 12, 88, 22, 14, 'ink')
-R('furniture', 13, 89, 20, 12, 'g1')                   # 緑の図鑑
-R('furniture', 13, 89, 20, 2, 'g2')
-R('furniture', 14, 92, 18, 3, 'cream')                 # タイトル帯
-R('furniture', 16, 93, 6, 1, 'g0'); R('furniture', 24, 93, 4, 1, 'g0')
-PXL('furniture', 22, 98, 'y1'); PXL('furniture', 23, 99, 'y1')  # 菱形の箔
-PXL('furniture', 22, 100, 'y1'); PXL('furniture', 21, 99, 'y1')
+C_shade = {'m2':'m0','cor':'brick','g2':'g0','b3':'b0','m1':'m0','cream':'cor2','b2':'b0','m3':'m1','g1':'g0','r2':'r0'}
+bookrow(85, [(4,17,'m2'),(5,15,'cor'),(4,18,'g2'),(5,16,'b3'),(4,14,'m1'),(5,17,'cream'),(4,15,'b2'),(5,18,'m3'),(4,13,'g1'),(5,16,'r2')])
+bookrow(139, [(5,18,'b2'),(4,15,'m3'),(5,17,'cream'),(4,16,'g1'),(5,14,'cor'),(4,18,'m1'),(5,15,'b3'),(4,17,'r2'),(5,16,'g2')])
+bookrow(164, [(5,16,'cor'),(4,18,'b3'),(5,14,'m2'),(4,17,'g2'),(5,15,'m1'),(4,16,'cream'),(5,18,'b2'),(4,14,'r2')])
+# 中段: 絵本『おばけのパッチ』の表紙を面出しで飾る(クリックで絵本ビューア)
+obj('おばけのパッチの絵本')
+O('furniture', 56, 88, 20, 24, 'cream', 'ink')
+R('furniture', 57, 89, 18, 3, 'b2')                    # タイトル帯
+EL('furniture', 59, 93, 73, 107, out='b2')             # 大きな円
+R('furniture', 63, 97, 7, 7, 'wht')                    # パッチの後ろ姿
+R('furniture', 62, 98, 1, 5, 'wht'); R('furniture', 70, 98, 1, 5, 'wht')
+R('furniture', 64, 104, 2, 2, 'wht'); R('furniture', 67, 104, 2, 2, 'wht')
+PXL('furniture', 64, 97, 'ink'); PXL('furniture', 69, 97, 'ink')
+R('furniture', 58, 109, 16, 1, 'gray1')                # 作者名のライン
+obj('本棚')
+bookrow(111, [(5,16,'m1'),(4,13,'g2'),(5,15,'b3'),(4,17,'cor')], bx=80)
+R('furniture', 101, 100, 2, 11, 'q4'); R('furniture', 101, 109, 5, 2, 'q4')   # ブックエンド
+
+# ─── 本棚の上: 地球儀(池本の金色を移設)・鉢植え・ミニパッチ ───
 obj('地球儀')
-EL('furniture', 42, 80, 60, 98, fill='b2', out='ink')     # 地球儀
-for xx, yy, w2, h2 in [(45,84,6,4),(52,82,5,3),(48,90,7,4),(55,92,4,3)]:
+EL('furniture', 88, 36, 106, 54, fill='b2', out='ink')
+for xx, yy, w2, h2 in [(91,40,6,4),(98,38,5,3),(94,46,7,4),(101,48,4,3)]:
     R('furniture', xx, yy, w2, h2, 'g1')
     PXL('furniture', xx, yy, 'g2')
-R('furniture', 58, 78, 2, 4, 'y0')
-R('furniture', 48, 98, 8, 3, 'q3')
-R('furniture', 50, 101, 4, 1, 'ink')
-PXL('furniture', 46, 83, 'b4'); PXL('furniture', 47, 84, 'b4')
+R('furniture', 104, 34, 2, 4, 'y0')
+R('furniture', 94, 54, 8, 3, 'q3')
+R('furniture', 96, 57, 4, 1, 'ink')
+PXL('furniture', 92, 39, 'b4'); PXL('furniture', 93, 40, 'b4')
+obj('鉢植え')
+R('furniture', 54, 51, 7, 7, 'brick')
+PXL('furniture', 56, 48, 'g1'); PXL('furniture', 58, 47, 'g2'); PXL('furniture', 59, 49, 'g1')
+PXL('furniture', 55, 49, 'g0'); PXL('furniture', 57, 50, 'g1')
+obj('ミニパッチ人形')
+EL('furniture', 66, 48, 72, 57, fill='wht', out='ink')
+PXL('furniture', 68, 51, 'ink'); PXL('furniture', 70, 51, 'ink')
+R('furniture', 68, 54, 3, 1, 'y1')
 
-# ブラウン管テレビ
-obj('ブラウン管テレビ')
-tvx, tvy = 122, 50
-O('furniture', tvx, tvy, 66, 56, 'q3', 'ink')
-R('furniture', tvx + 2, tvy + 2, 62, 2, 'q5')
-R('furniture', tvx + 2, tvy + 52, 62, 2, 'q1')
-O('furniture', tvx + 5, tvy + 7, 48, 40, 'n0', 'ink')
-R('furniture', tvx + 7, tvy + 9, 44, 34, 'n0')
-R('furniture', tvx + 55, tvy + 8, 8, 38, 'q1')
-EL('furniture', tvx+56, tvy+10, tvx+61, tvy+15, fill='q5', out='ink')
-EL('furniture', tvx+56, tvy+18, tvx+61, tvy+23, fill='q5', out='ink')
-R('furniture', tvx + 56, tvy + 28, 6, 2, 'm2')
-R('furniture', tvx + 56, tvy + 32, 6, 2, 'g1')
-PXL('furniture', tvx + 57, tvy + 40, 'y1')
-for i in range(4):
-    R('furniture', tvx + 8 + i * 12, tvy + 50, 8, 1, 'q0')
-R('furniture', tvx + 14, tvy - 12, 2, 12, 'gray1')
-R('furniture', tvx + 40, tvy - 10, 2, 10, 'gray1')
-R('furniture', tvx + 8, tvy - 14, 10, 3, 'gray1'); R('furniture', tvx + 8, tvy - 14, 10, 1, 'gray2')
-R('furniture', tvx + 38, tvy - 12, 10, 3, 'gray1'); R('furniture', tvx + 38, tvy - 12, 10, 1, 'gray2')
-R('furniture', tvx + 10, 106, 8, 2, 'ink'); R('furniture', tvx + 48, 106, 8, 2, 'ink')
-
-# デスクトップPC(窓の下)
-obj('PCモニタ')
-mx, my = 300, 74
-O('furniture', mx, my, 48, 28, 'n0', 'ink')
-R('furniture', mx + 1, my + 1, 46, 1, 'q5')
-R('furniture', mx + 3, my + 3, 42, 22, 'q1')          # シンセウェーブの空
-DI('furniture', mx + 3, my + 8, 42, 3, 'q1', 'm0')
-EL('furniture', mx + 17, my + 4, mx + 31, my + 16, fill='m3')  # ネオンの太陽
-R('furniture', mx + 17, my + 9, 15, 1, 'q1'); R('furniture', mx + 17, my + 12, 15, 1, 'q1')
-R('furniture', mx + 3, my + 12, 10, 2, 'ink'); R('furniture', mx + 34, my + 11, 11, 3, 'ink')  # 山影
-R('furniture', mx + 3, my + 14, 42, 1, 'm2')          # 地平線ネオン
-R('furniture', mx + 3, my + 15, 42, 10, 'n0')         # グリッドの床
-for gy7 in (17, 20, 23):
-    R('furniture', mx + 3, my + gy7, 42, 1, 'g1')
-for gx7 in (10, 20, 28, 38):
-    R('furniture', mx + gx7, my + 15, 1, 10, 'g0')
-R('furniture', mx + 22, my + 15, 1, 10, 'm1')         # 中央グリッド
-R('furniture', mx + 20, my + 16, 4, 5, 'wht')          # 走るミニパッチ
-PXL('furniture', mx + 21, my + 17, 'ink')
-R('furniture', mx + 21, my + 20, 2, 1, 'y1')
-R('furniture', mx + 4, my + 4, 2, 2, 'm2'); R('furniture', mx + 7, my + 4, 2, 2, 'm2')  # HUD
-R('furniture', mx + 38, my + 4, 4, 1, 'g2'); R('furniture', mx + 38, my + 6, 3, 1, 'g2')
-PXL('furniture', mx + 12, my + 5, 'g2'); PXL('furniture', mx + 36, my + 8, 'b4')  # 星
-PXL('furniture', mx + 42, my + 5, 'b5'); PXL('furniture', mx + 41, my + 6, 'b5')
-R('furniture', mx + 20, my + 28, 8, 2, 'q2')
-R('furniture', mx + 14, my + 30, 20, 2, 'q0')
+# ─── 中央のデスクと COMPANY モニタ ───
+obj('デスク')
+R('furniture', 152, 138, 88, 1, 'mauve')
+R('furniture', 152, 139, 88, 3, 'q4')
+R('furniture', 152, 142, 88, 2, 'q2')
+R('furniture', 154, 144, 5, 24, 'q2'); R('furniture', 233, 144, 5, 24, 'q2')
+R('furniture', 154, 144, 1, 24, 'q4'); R('furniture', 237, 144, 1, 24, 'q0')
+R('furniture', 156, 166, 84, 2, 'q0')
+obj('COMPANYモニタ')
+O('furniture', 160, 96, 72, 40, 'q1', 'ink')
+R('furniture', 162, 98, 68, 1, 'q4')
+R('furniture', 165, 101, 62, 30, 'ink')
+R('furniture', 166, 102, 60, 28, 'n0')
+TXT2('furniture', 169, 111, "COMPANY", 'b4')
+R('furniture', 169, 124, 54, 1, 'b1')
+PXL('furniture', 224, 104, 'b4')
+R('furniture', 192, 136, 8, 2, 'q2')                  # スタンド
+R('furniture', 186, 138, 20, 1, 'q4')
+PXL('furniture', 228, 133, 'g2')                      # 電源LED
 obj('キーボード')
-R('furniture', mx + 4, 102, 30, 4, 'q2')
-for kx in range(mx + 5, mx + 32, 3): PXL('furniture', kx, 103, 'q4')
-obj('PCタワー')
-R('furniture', 351, 102, 1, 10, 'ink')               # モニタ→タワーのケーブル
-O('furniture', 340, 112, 22, 34, 'q1', 'ink')        # PCタワー
-R('furniture', 342, 114, 18, 1, 'q4')
-PXL('furniture', 344, 118, 'g2'); PXL('furniture', 344, 121, 'm2')
-R('furniture', 343, 126, 16, 2, 'q0')
-R('furniture', 343, 130, 16, 2, 'q0')
-R('furniture', 350, 138, 6, 1, 'b3')
-
-# カウンター下(左)
-obj('赤い収納ケース')
-O('furniture', 96, 124, 26, 22, 'r1', 'ink')
-R('furniture', 98, 126, 22, 2, 'r2')
-R('furniture', 104, 132, 10, 3, 'q0')
-obj('紫の収納ケース')
-O('furniture', 126, 128, 30, 18, 'q2', 'ink')
-R('furniture', 128, 130, 26, 1, 'q4')
-R('furniture', 136, 136, 10, 2, 'mauve')
-obj('グレーの収納箱')
-R('furniture', 162, 138, 20, 8, 'gray1')
-R('furniture', 162, 138, 20, 2, 'gray2')
-R('furniture', 168, 140, 8, 3, 'ink')
-obj('カウンター下の小箱')
-R('furniture', 186, 140, 8, 6, 'cor'); R('furniture', 186, 140, 8, 2, 'cor2')
-R('furniture', 196, 142, 8, 4, 'g1')
-# カウンター下(中央) 段ボール・スピーカー・ゴミ箱
-obj('段ボール箱')
-O('furniture', 208, 124, 26, 22, 'y0', 'ink')
-R('furniture', 210, 126, 22, 2, 'y2')
-R('furniture', 214, 124, 6, 4, 'cor2'); R('furniture', 222, 124, 6, 4, 'cor2')
-EL('furniture', 216, 132, 226, 140, out='ink')
-PXL('furniture', 219, 135, 'ink'); PXL('furniture', 223, 135, 'ink')
-obj('スピーカー')
-O('furniture', 240, 118, 26, 28, 'q2', 'ink')
-EL('furniture', 245, 122, 261, 138, fill='q0', out='q4')
-EL('furniture', 249, 126, 257, 134, fill='g0')
-PXL('furniture', 252, 129, 'g1')
-obj('ゴミ箱')
-R('furniture', 270, 128, 12, 18, 'gray1')
-R('furniture', 270, 128, 12, 2, 'gray2')
-R('furniture', 272, 124, 3, 4, 'cream'); R('furniture', 277, 125, 3, 3, 'gray2')
+R('furniture', 178, 143, 30, 4, 'q2')
+for kx in range(179, 206, 3): PXL('furniture', kx, 144, 'q4')
+obj('マグカップ')
+R('furniture', 218, 131, 8, 8, 'g1'); R('furniture', 219, 130, 6, 2, 'g2')
+R('furniture', 226, 133, 2, 3, 'g1')
+obj('モニタ縁の付箋')
+R('furniture', 161, 104, 3, 4, 'y2'); R('furniture', 229, 112, 3, 3, 'g2')
 
 # ═══════════════ props ═══════════════
-GAR_SPANS = [(6, 196, 12, 9, 7), (196, 378, 12, 9, 7)]
+GAR_SPANS = [(46, 192, 14, 8, 6), (192, 338, 14, 8, 6)]
 def garland_positions():
     out = []
     for x0, x1, y0, sag, nb in GAR_SPANS:
@@ -400,267 +476,133 @@ def draw_garland(layer_draw_px, core_of, off=(0, 0)):
 obj('ガーランド')
 draw_garland(lambda x, y, c: PXL('garland', x, y, c), lambda i: 'o2')
 
-obj('スタジオ看板')
-O('props', 84, 26, 44, 24, 'q0', 'ink')              # STUDIO PATTI サイン
-R('props', 86, 28, 40, 1, 'q2')
-TXT('props', 89, 31, "STUDIO", 'm3')
-TXT('props', 93, 39, "PATTI", 'cor')
-R('props', 89, 46, 34, 1, 'm0')
-
-obj('キャラクター設計図')
-bx0, by0 = 196, 24                                   # ブループリント
-O('props', bx0, by0, 72, 52, 'b0', 'ink')
-R('props', bx0 + 1, by0 + 1, 70, 1, 'q5')
-for gx2 in range(bx0 + 4, bx0 + 70, 8):
-    for gy2 in range(by0 + 4, by0 + 50, 8):
-        PXL('props', gx2, gy2, 'b1')
-# キャラクターの3面図(正面・側面・背面)。文字なし、図面の記法だけで語る
-V_Y = by0 + 12                                                 # 各ビューの頭の上端
-def bp_view(vx, kind):
-    O('props', vx, V_Y, 14, 11, 'b0', 'cream')                 # 頭
-    R('props', vx + 6, V_Y - 3, 2, 3, 'cream')                 # アンテナ
-    PXL('props', vx + 6, V_Y - 4, 'y1')
-    O('props', vx - 1, V_Y + 13, 16, 13, 'b0', 'cream')        # 胴体
-    R('props', vx + 1, V_Y + 27, 4, 4, 'cream')                # 脚
-    R('props', vx + 9, V_Y + 27, 4, 4, 'cream')
-    if kind == 'front':
-        O('props', vx + 2, V_Y + 3, 4, 4, 'b0', 'cream')       # 両目
-        O('props', vx + 8, V_Y + 3, 4, 4, 'b0', 'cream')
-        R('props', vx + 4, V_Y + 8, 6, 1, 'cream')             # 口
-        O('props', vx + 3, V_Y + 16, 8, 6, 'b0', 'b3')         # 胸パネル
-    elif kind == 'side':
-        O('props', vx + 8, V_Y + 3, 4, 4, 'b0', 'cream')       # 片目(横顔)
-        R('props', vx - 1, V_Y + 16, 4, 8, 'b3')               # 背中のユニット
-        R('props', vx + 6, V_Y + 15, 2, 8, 'cream')            # 腕のライン
-    else:                                                       # back
-        R('props', vx + 2, V_Y + 3, 10, 1, 'b3')               # 後頭部の継ぎ目
-        R('props', vx + 3, V_Y + 16, 8, 1, 'b3')               # 背面パネル
-        R('props', vx + 3, V_Y + 20, 8, 1, 'b3')
-bp_view(bx0 + 8, 'front')
-bp_view(bx0 + 30, 'side')
-bp_view(bx0 + 52, 'back')
-for gx6 in range(bx0 + 4, bx0 + 68, 3):                        # 投影線(頭頂・あご・足元)
-    PXL('props', gx6, V_Y - 1, 'b1')
-    PXL('props', gx6 + 1, V_Y + 12, 'b1')
-    PXL('props', gx6, V_Y + 31, 'b1')
-for vx6 in (bx0 + 15, bx0 + 37, bx0 + 59):                     # 各ビューの中心線(一点鎖線)
-    for dy6 in range(V_Y - 6, V_Y + 36, 4):
-        PXL('props', vx6, dy6, 'b3')
-R('props', bx0 + 6, V_Y + 36, 26, 1, 'b3')                     # 寸法線(正面ビュー下)
-PXL('props', bx0 + 6, V_Y + 35, 'b3'); PXL('props', bx0 + 6, V_Y + 37, 'b3')
-PXL('props', bx0 + 31, V_Y + 35, 'b3'); PXL('props', bx0 + 31, V_Y + 37, 'b3')
-R('props', bx0 + 66, V_Y, 1, 31, 'b3')                         # 高さの寸法線(右端)
-PXL('props', bx0 + 65, V_Y, 'b3'); PXL('props', bx0 + 67, V_Y, 'b3')
-PXL('props', bx0 + 65, V_Y + 30, 'b3'); PXL('props', bx0 + 67, V_Y + 30, 'b3')
-
-def frame(x, y, w, h, matc, edge='q4'):
+# ─── ギャラリー: 額縁の壁(1枚ずつ全部ちがうデザイン) ───
+def frame2(x, y, w, h, matc, edge='q4'):
     O('props', x, y, w, h, matc, 'ink')
     R('props', x + 1, y + 1, w - 2, 1, edge)
-# ギャラリー: 大きな額縁(右の空きスペースまで広げる)と、その中央に来る傘ライト
-obj('傘ライト')
-R('props', 97, 56, 2, 2, 'q4')                        # ライトのアーム
-R('props', 90, 52, 16, 4, 'q3')                       # 傘シェード
-R('props', 91, 51, 14, 1, 'mauve')
-R('props', 91, 55, 14, 1, 'y0')                       # 内側(未点灯の金)
-obj('額縁(ギャラリー)')
-frame(76, 58, 44, 24, 'cream')                        # 額縁(44x24)
-R('props', 78, 60, 40, 20, 'ink')                     # 落とし込み
-R('props', 79, 61, 38, 18, 'n1')                      # 夜空
-for sx0, sy0 in [(83,64),(91,63),(104,65),(112,68),(86,72),(99,74),(110,62),(95,69)]:
-    PXL('props', sx0, sy0, 'b5')
-EL('props', 105, 63, 112, 70, fill='b4')              # 月
-EL('props', 103, 62, 109, 68, fill='n1')
-R('props', 88, 66, 7, 7, 'wht')                       # 飛ぶパッチ
-R('props', 87, 67, 1, 4, 'wht'); R('props', 95, 67, 1, 4, 'wht')
-PXL('props', 90, 68, 'ink'); PXL('props', 93, 68, 'ink')
-R('props', 89, 71, 5, 1, 'y1')                        # 蝶ネクタイ
-PXL('props', 88, 74, 'wht'); PXL('props', 91, 75, 'wht'); PXL('props', 94, 74, 'wht')
-for tx0 in range(80, 116, 4):                          # 額の内側の面取り
-    PXL('props', tx0, 59, 'mauve')
-# (ミント額はTVと被るため撤去。ギャラリー入口はクリーム額に一本化)
-obj('額縁(抽象画)')
-frame(148, 14, 22, 18, 'q4')
-R('props', 150, 18, 8, 10, 'wht')
-R('props', 160, 16, 7, 12, 'brick')
-R('props', 161, 21, 5, 6, 'm2')
-obj('額縁(青)')
-frame(174, 18, 16, 14, 'b3')
-DI('props', 176, 20, 12, 10, 'b2', 'b0')
+obj('額縁の壁(ギャラリー)')
+# ─ 1段目 ─
+frame2(136, 46, 24, 18, 'cream')                       # 丘と月の風景
+R('props', 138, 48, 20, 14, 'n1')
+R('props', 138, 56, 20, 6, 'g0'); R('props', 138, 56, 20, 1, 'g1')
+EL('props', 150, 49, 155, 54, fill='b4')
+frame2(164, 44, 16, 20, 'b3')                          # ミニパッチの肖像
+R('props', 166, 46, 12, 16, 'n0')
+R('props', 169, 50, 6, 7, 'wht')
+PXL('props', 170, 52, 'ink'); PXL('props', 173, 52, 'ink')
+R('props', 170, 58, 4, 1, 'y1')
+frame2(184, 48, 26, 14, 'q4')                          # 夕焼けのグラデ
+R('props', 186, 50, 22, 2, 'n1')
+for i, c in enumerate(['m3', 'm2', 'cor', 'y0']):
+    R('props', 186, 52 + i * 2, 22, 2, c)
+frame2(214, 44, 20, 18, 'y0')                          # 金の額に星
+R('props', 216, 46, 16, 14, 'n2')
+for sx, sy in [(223,49),(222,52),(224,52),(221,53),(225,53),(223,55)]:
+    PXL('props', sx, sy, 'y2')
+PXL('props', 223, 52, 'wht')
+frame2(238, 48, 12, 14, 'brick')                       # 市松の抽象
+DI('props', 240, 50, 8, 10, 'm2', 'q1')
+# ─ 2段目 ─
+frame2(134, 68, 18, 20, 'g1')                          # 観葉植物の絵
+R('props', 136, 70, 14, 16, 'cream')
+R('props', 141, 80, 4, 4, 'brick')
+R('props', 142, 74, 2, 6, 'g1'); PXL('props', 140, 75, 'g2'); PXL('props', 145, 74, 'g2')
+frame2(156, 66, 28, 20, 'cream', 'y2')                 # ARTの看板額(ギャラリーの顔)
+R('props', 158, 68, 24, 16, 'n1')
+TXT('props', 165, 73, "ART", 'y2')
+R('props', 160, 81, 20, 1, 'y0')
+frame2(188, 66, 22, 20, 'mauve')                       # 渦巻きの抽象
+EL('props', 191, 69, 206, 82, out='m3')
+EL('props', 195, 73, 202, 78, out='b4')
+frame2(214, 66, 24, 16, 'q3')                          # 夜の波
+R('props', 216, 68, 20, 12, 'b1')
+for wx in range(216, 236, 4):
+    PXL('props', wx, 74 + (wx // 4) % 2, 'b3'); PXL('props', wx + 2, 76, 'b0')
+PXL('props', 231, 70, 'b5')
+frame2(242, 66, 10, 18, 'g2')                          # ボトルの静物
+R('props', 244, 68, 6, 14, 'n1')
+R('props', 246, 72, 2, 8, 'g1'); PXL('props', 246, 70, 'g2')
+# ─ 3段目(デスクの左右に流す) ─
+frame2(134, 92, 20, 14, 'b2')                          # 星座図
+R('props', 136, 94, 16, 10, 'n0')
+for sx, sy in [(139,96),(143,99),(148,95),(150,101)]:
+    PXL('props', sx, sy, 'b5')
+PXL('props', 141, 97, 'b3'); PXL('props', 145, 98, 'b3'); PXL('props', 147, 97, 'b3')
+frame2(238, 88, 16, 16, 'cor')                         # りんごの静物
+R('props', 240, 90, 12, 12, 'cream')
+EL('props', 243, 94, 249, 100, fill='m2')
+PXL('props', 246, 93, 'g1'); PXL('props', 245, 92, 'q3')
 
-obj('デジタル時計')
-O('props', 356, 26, 26, 14, 'n0', 'ink')                 # デジタル時計(表示はWeb側)
-R('props', 357, 27, 24, 1, 'q4')
-R('props', 358, 28, 22, 10, 'n0')
-PXL('props', 368, 31, 'g0'); PXL('props', 368, 34, 'g0')   # 消灯時のコロン
+# ─── Patti the Spook の大きな額(世界観の入口) ───
+obj('Patti the Spookの額')
+O('props', 256, 84, 80, 52, 'q3', 'ink')
+R('props', 258, 86, 76, 1, 'q5'); R('props', 258, 133, 76, 1, 'q1')
+O('props', 260, 88, 72, 44, 'y0', 'q1')
+R('props', 262, 90, 68, 40, 'n0')
+EL('props', 310, 92, 326, 108, fill='b4')              # 大きな月
+EL('props', 306, 89, 320, 103, fill='n0')              # 三日月に欠けさせる
+for sx, sy in [(266,93),(274,98),(283,92),(297,95),(291,102),(268,106),(302,108)]:
+    PXL('props', sx, sy, 'b5')
+R('props', 262, 118, 68, 12, 'n1')                     # 丘
+R('props', 262, 118, 68, 1, 'cool1')
+R('props', 278, 99, 11, 11, 'wht')                     # 飛ぶパッチ(大きめ)
+R('props', 277, 101, 1, 7, 'wht'); R('props', 289, 101, 1, 7, 'wht')
+R('props', 279, 98, 9, 1, 'wht')
+for ox9, oy9 in [(277,100),(276,103),(276,106),(290,100),(291,103),(291,106),(280,97),(286,97)]:
+    PXL('props', ox9, oy9, 'n2')                       # ふわっとした輪郭のなじませ
+PXL('props', 281, 103, 'ink'); PXL('props', 285, 103, 'ink')
+R('props', 282, 106, 3, 1, 'ink')
+R('props', 281, 108, 5, 2, 'y1')
+PXL('props', 278, 110, 'wht'); PXL('props', 280, 111, 'wht')
+PXL('props', 283, 110, 'wht'); PXL('props', 286, 111, 'wht'); PXL('props', 288, 110, 'wht')
+TXT('props', 267, 123, "PATTI THE SPOOK", 'y2')
 
-obj('カレンダー')
-O('props', 268, 82, 18, 22, 'cream', 'ink')           # カレンダー 8.8
-R('props', 270, 84, 14, 5, 'm2')
-TXT('props', 273, 92, "8.8", 'ink')
-R('props', 274, 80, 2, 3, 'gray1')
+# ─── 赤いポスト(お問い合わせ) ───
+obj('赤いポスト')
+EL('props', 322, 138, 347, 156, fill='r1', out='ink')
+R('props', 323, 148, 24, 30, 'r1')
+R('props', 323, 148, 1, 30, 'ink'); R('props', 346, 148, 1, 30, 'ink')
+R('props', 325, 149, 2, 26, 'r0')
+R('props', 342, 149, 2, 26, 'r2')
+R('props', 321, 144, 28, 3, 'r0')
+R('props', 321, 144, 28, 1, 'ink')
+R('props', 327, 152, 17, 7, 'cream')                   # POSTの白票
+TXT('props', 329, 153, "POST", 'r0')
+R('props', 327, 162, 16, 4, 'ink')                     # 投函口
+R('props', 327, 167, 16, 1, 'r0')
+R('props', 331, 170, 8, 1, 'cream')                    # 〒マーク
+R('props', 331, 173, 8, 1, 'cream')
+R('props', 334, 174, 2, 3, 'cream')
+O('props', 324, 178, 22, 6, 'q2', 'ink')               # 台座
+R('props', 322, 184, 26, 2, 'q0')                      # 接地影
 
-obj('コルクボード')
-O('props', 84, 84, 44, 20, 'y0', 'ink')               # コルクボード
-R('props', 86, 86, 40, 1, 'y2')
-for nx, ny, c in [(88,88,'cream'),(100,89,'g2'),(112,87,'m3'),(94,95,'b4'),(107,96,'cor')]:
-    R('props', nx, ny, 9, 7, c)
-    PXL('props', nx + 4, ny - 1, 'r2')
-
-# (ペナントはTVと被るため撤去)
-
-# フィギュア棚(ブループリント下)
-obj('フィギュア棚')
-R('props', 232, 90, 34, 3, 'q4'); R('props', 232, 90, 34, 1, 'mauve')
-R('props', 234, 93, 2, 3, 'q1'); R('props', 262, 93, 2, 3, 'q1')
-EL('props', 234, 78, 242, 89, fill='wht', out='ink')
-PXL('props', 236, 82, 'ink'); PXL('props', 239, 82, 'ink')
-R('props', 236, 86, 4, 2, 'y1')
-R('props', 246, 80, 8, 4, 'brick'); PXL('props', 250, 78, 'brick')
-R('props', 247, 84, 6, 3, 'cream'); R('props', 247, 87, 6, 3, 'm2')
-EL('props', 257, 80, 264, 88, fill='g2', out='g0')
-PXL('props', 259, 83, 'ink'); PXL('props', 262, 83, 'ink')
-
-obj('カメラ')
-cx2, cy2 = 208, 92                                    # 一眼カメラ
-O('props', cx2, cy2, 24, 14, 'q0', 'ink')
-R('props', cx2 + 2, cy2 + 1, 20, 2, 'q2')
-R('props', cx2 + 6, cy2 - 3, 8, 4, 'q0')
-EL('props', cx2 + 8, cy2 + 3, cx2 + 17, cy2 + 12, fill='q2', out='ink')
-EL('props', cx2 + 10, cy2 + 5, cx2 + 15, cy2 + 10, fill='b1')
-PXL('props', cx2 + 11, cy2 + 6, 'b4')
-PXL('props', cx2 + 20, cy2 + 2, 'm2')
-R('props', cx2 - 3, cy2 + 3, 3, 1, 'q3'); R('props', cx2 + 24, cy2 + 3, 3, 1, 'q3')
-
-obj('マグカップ')
-R('props', 196, 98, 8, 8, 'g1'); R('props', 197, 97, 6, 2, 'g2')   # マグ
-R('props', 204, 100, 2, 3, 'g1')
-obj('ラジオ')
-R('props', 240, 96, 14, 10, 'q2'); R('props', 241, 95, 12, 2, 'q4')  # ラジオ
-PXL('props', 243, 99, 'y1'); R('props', 246, 99, 5, 3, 'n0')
-obj('小さな本')
-R('props', 258, 100, 10, 6, 'cor'); R('props', 258, 100, 10, 2, 'cor2')  # 本
-obj('観葉植物')
-R('props', 90, 96, 12, 10, 'm1'); R('props', 90, 96, 12, 3, 'm2')   # 植物
-for dx, dy, hh in [(2,-7,8),(5,-11,12),(8,-6,7),(0,-4,5),(10,-3,4)]:
-    R('props', 90 + dx, 96 + dy, 2, hh, 'g0')
-    R('props', 90 + dx - 1, 96 + dy - 2, 4, 3, 'g1')
-    PXL('props', 90 + dx, 96 + dy - 2, 'g2')
-
-obj('換気口')
-R('props', 8, 16, 10, 6, 'gray0'); R('props', 9, 17, 8, 4, 'ink')   # 換気口
-R('props', 9, 18, 8, 1, 'gray0'); R('props', 9, 20, 8, 1, 'gray0')
-obj('レコード')
-EL('props', 356, 84, 370, 98, fill='m0', out='ink')                 # レコード
-EL('props', 360, 88, 366, 94, fill='q0')
-PXL('props', 358, 87, 'm3')
-obj('ポスター筒')
-R('props', 366, 128, 12, 26, 'q2'); R('props', 366, 128, 12, 2, 'q4')  # ポスター筒
-R('props', 368, 132, 2, 18, 'm2'); R('props', 372, 132, 2, 18, 'g1')
-obj('電気スイッチ')
-R('props', 76, 96, 5, 7, 'gray2'); R('props', 77, 98, 3, 3, 'ink')  # スイッチ
-# 小さな換気口と床の点はジュークボックスの定位置と重なるので廃止
+# ─── デスクの下の暮らし感 ───
+obj('雑誌')
+for i2 in range(3):
+    R('props', 162 + i2 * 2, 152 - i2, 3, 16 + i2, ['b3', 'cream', 'm3'][i2])
+    R('props', 162 + i2 * 2, 152 - i2, 3, 2, 'ink')
+obj('ボール')
+EL('props', 206, 156, 216, 166, fill='m2', out='ink')
+PXL('props', 209, 159, 'm4')
 obj()
-for xx in range(58, 118, 2): PXL('props', xx, 156 + (xx // 2) % 2, 'ink')  # ジュークボックスの右端から
+# ホコリ(光のチリ)と蓄光星シール
+for dx4, dy4, dc in [(263, 62, 'b4'), (275, 74, 'b4'), (319, 78, 'b4'),
+                     (100, 30, 'o2'), (180, 27, 'o2'), (258, 29, 'o2'),
+                     (128, 46, 'g2')]:
+    PXL('props', dx4, dy4, dc)
+for dx4, dy4 in [(170, 152), (188, 148), (204, 152)]:
+    PXL('props', dx4, dy4, 'g1')
+obj('床の紙きれ')
+R('props', 292, 220, 10, 6, 'cream')
+R('props', 294, 222, 6, 1, 'gray1'); R('props', 294, 224, 5, 1, 'gray1')
+obj('えんぴつ')
+R('props', 130, 226, 7, 2, 'y1'); PXL('props', 137, 226, 'ink')
+PXL('props', 129, 227, 'cor')
+obj('カセットテープ')
+R('props', 246, 228, 9, 6, 'q2'); R('props', 247, 229, 7, 2, 'm2')
 
-def bookstack(x, y):                                  # 絵本の山
-    for i, (w2, c, c2) in enumerate([(26,'b2','b3'),(24,'cor','cor2'),(28,'m2','m3'),(22,'g1','g2')]):
-        yy = y - i * 5
-        R('props', x + (28 - w2)//2, yy, w2, 5, c)
-        R('props', x + (28 - w2)//2, yy, w2, 1, c2)
-        R('props', x + (28 - w2)//2, yy, 2, 5, 'ink')
-# (本の山はジュークボックスの場所と重なるため撤去。前景に十分ある)
-obj('青い星の本')
-O('props', 44, 196, 18, 24, 'b2', 'ink')               # 青い星の本(前景へ移動)
-R('props', 45, 197, 16, 3, 'b4')
-R('props', 47, 202, 12, 2, 'cream')
-PXL('props', 52, 209, 'y1'); PXL('props', 51, 210, 'y1'); PXL('props', 53, 210, 'y1')
-PXL('props', 52, 211, 'y1'); PXL('props', 50, 211, 'y1'); PXL('props', 54, 211, 'y1')
-PXL('props', 52, 212, 'y1')
-R('props', 48, 215, 10, 1, 'b0')
-R('props', 43, 219, 20, 2, 'q0')
-
-def rug(x, y, w, h):
-    O('props', x, y, w, h, 'r1', 'r0')
-    R('props', x + 3, y + 3, w - 6, h - 6, 'm0')
-    R('props', x + 6, y + 6, w - 12, h - 12, 'r1')
-    for i in range(6):
-        R('props', x + 10 + i * (w - 20) // 5, y + h // 2 - 1, 4, 2, 'm2')
-    for fx2 in range(x + 2, x + w - 2, 3):
-        PXL('props', fx2, y - 1, 'mauve'); PXL('props', fx2, y + h, 'mauve')
-obj('ラグ')
-rug(122, 148, 140, 24)
-
-# ═══ 前景ゾーン(y208〜): 転がる絵本たち + 絵本『おばけのパッチ』表紙 ═══
-def flatbook(x, y, w, c, ct):
-    R('props', x, y, w, 7, 'ink')
-    R('props', x + 1, y + 1, w - 2, 5, c)
-    R('props', x + 1, y + 1, w - 2, 1, ct)
-    R('props', x + 2, y + 5, w - 4, 1, 'cream')      # ページの小口
-obj('転がる絵本')
-flatbook(42, 226, 32, 'm2', 'm3')
-flatbook(46, 219, 28, 'b2', 'b3')
-flatbook(104, 227, 22, 'g1', 'g2')
-obj('開いた絵本')
-R('props', 12, 218, 26, 11, 'ink')                    # 開いた絵本
-R('props', 13, 219, 11, 9, 'cream')
-R('props', 25, 219, 12, 9, 'cream')
-R('props', 24, 218, 1, 11, 'q3')
-for ly in (221, 223, 225):
-    R('props', 15, ly, 7, 1, 'gray1')
-    R('props', 27, ly, 8, 1, 'gray1')
-R('props', 15, 227, 5, 1, 'cor')                      # 挿絵のつもりの色チップ
-# 『おばけのパッチ』表紙(実物の装丁を再現: 白地に大きな円、円の中にパッチの後ろ姿)
-# 床に開いて置かれた絵本(ホバーで「この本自体」がパラパラめくれる)
-# frame0 を部屋に焼き、同じ絵の6コマを bookflip.png に書き出して完全に重ねる
-def draw_openbook(px_fn, ox, oy, frame):
-    """36x22。床に寝かせたパース付きの開き本。frame0=静止"""
-    TOPL, TOPR, TY = 9, 27, 6                   # 上辺(奥・狭い)
-    BOTL, BOTR, BY = 1, 34, 19                  # 下辺(手前・広い)
-    for r8 in range(TY, BY + 1):
-        t8 = (r8 - TY) / (BY - TY)
-        lx8 = round(TOPL + (BOTL - TOPL) * t8)
-        rx8 = round(TOPR + (BOTR - TOPR) * t8)
-        for xx in range(lx8, rx8 + 1):
-            if r8 in (TY, BY) or xx in (lx8, rx8):
-                px_fn(ox + xx, oy + r8, 'ink')          # 輪郭
-            elif 17 <= xx <= 18:
-                px_fn(ox + xx, oy + r8, 'q3')           # のど
-            else:
-                px_fn(ox + xx, oy + r8, 'cream')
-    for xx in range(2, 34):
-        px_fn(ox + xx, oy + BY + 1, 'ink')              # 本の厚み
-    for xx in range(3, 33):
-        px_fn(ox + xx, oy + BY + 2, 'q0')               # 接地影
-    for (xx, yy) in [(8,10),(9,9),(10,9),(11,10),(7,11),(12,11),(8,13),(11,13),(9,14),(10,14)]:
-        px_fn(ox + xx, oy + yy, 'ink')                  # 左: パッチの挿絵
-    px_fn(ox + 9, oy + 11, 'ink'); px_fn(ox + 11, oy + 11, 'ink')
-    for ly8, lw8 in ((9, 7), (12, 8), (15, 9)):
-        for xx in range(21, 21 + lw8):
-            px_fn(ox + xx, oy + ly8, 'gray1')           # 右: 文章の線
-    if frame > 0:
-        # めくれるページは「手前(下)ののど」を軸に、右から左へ弧を描いて起き上がる
-        tips = {1: (31, 12), 2: (28, 3), 3: (17, 0), 4: (6, 3), 5: (3, 12)}
-        tipx, tipy = tips[frame]
-        x0_, y0_ = 18, BY - 1
-        steps8 = max(abs(tipx - x0_), abs(tipy - y0_), 1)
-        pts8 = []
-        for k8 in range(steps8 + 1):
-            t9 = k8 / steps8
-            xx = round(x0_ + (tipx - x0_) * t9)
-            yy = round(y0_ + (tipy - y0_) * t9 - 2.6 * (t9 - t9 * t9) * 4)  # 反り
-            pts8.append((xx, yy))
-        for (xx, yy) in pts8:                         # ページの面(厚みをもって見せる)
-            px_fn(ox + xx, oy + yy, 'ink')
-            px_fn(ox + xx, oy + yy + 1, 'wht')
-            px_fn(ox + xx, oy + yy + 2, 'cream')
-        px_fn(ox + tipx, oy + tipy, 'ink')
-
-# ═══ ジュークボックス(バブラー型・左下) 42x74 @ (14,104) ═══
-JX, JY = 14, 104
-P['chrome'] = (206, 208, 222); P['chrome2'] = (150, 152, 172)
-P['ivory'] = (247, 238, 216); P['ivory2'] = (206, 194, 172)
-P['wood'] = (126, 78, 46); P['wood2'] = (92, 54, 32)
-P['tuber'] = (214, 46, 62)
+# ═══ ジュークボックス(バブラー型・本棚の手前) 42x74 @ (52,108) ═══
+JX, JY = 52, 108
 
 def _jb(x, y, w, h, c):
     R('furniture', JX + x, JY + y, w, h, c)
@@ -724,121 +666,32 @@ def draw_jukebox():
 obj('ジュークボックス')
 draw_jukebox()
 
-def _room_px(xx, yy, c):
-    PXL('props', xx, yy, c)
-obj('おばけのパッチの絵本')
-draw_openbook(_room_px, 136, 148, 0)                    # 床(ラグの上)に開いて置く
-patti_cover = None                                      # 旧カバーは廃止
+# ═══════════════ mayu : 本物のMayu.asepriteをWebで重ねるため空 ═══════════════
 obj()
-for sx4, sy4, sw4 in [(42, 233, 32), (12, 229, 26), (104, 234, 22)]:
-    R('props', sx4, sy4, sw4, 2, 'q0')                # 接地影
 
-# 光の中のホコリ(チリ)と暗闇で光る星シール
-for dx4, dy4, dc in [(285, 62, 'b4'), (297, 74, 'b4'), (341, 80, 'b4'),
-                     (58, 30, 'o2'), (162, 27, 'o2'), (252, 29, 'o2'),
-                     (146, 46, 'g2'), (176, 100, 'g2')]:
-    PXL('props', dx4, dy4, dc)
-for dx4, dy4 in [(150, 132), (168, 128), (186, 133)]:
-    PXL('props', dx4, dy4, 'g1')                      # 蓄光星シール(カウンター下)
-obj('クッション')
-R('props', 356, 170, 26, 12, 'b1')                    # クッション
-R('props', 356, 170, 26, 3, 'b2')
-R('props', 356, 180, 26, 2, 'b0')
-PXL('props', 368, 175, 'b3')
-
-# ═══════════════ mayu : 本物のMayu.asepriteが完成したのでレイヤーは空のまま残す ═══════════════
-DRAW_MAYU_PLACEHOLDER = False
-mxx, myy = 72, 156
-obj()
-EL('mayu', mxx + 1, myy, mxx + 31, myy + 24, fill='brick', out='ink')   # マッシュルームボブ
-R('mayu', mxx + 5, myy + 2, 22, 3, 'r2')
-R('mayu', mxx + 11, myy + 1, 9, 1, 'cor2')
-R('mayu', mxx + 3, myy + 22, 28, 4, 'brick')
-R('mayu', mxx + 3, myy + 25, 28, 1, 'r0')
-PXL('mayu', mxx + 15, myy - 3, 'brick'); PXL('mayu', mxx + 16, myy - 2, 'brick')
-PXL('mayu', mxx + 17, myy - 4, 'brick'); PXL('mayu', mxx + 18, myy - 3, 'brick')
-R('mayu', mxx + 9, myy + 12, 14, 10, 'cream')                            # 顔
-R('mayu', mxx + 8, myy + 14, 1, 6, 'cream'); R('mayu', mxx + 23, myy + 14, 1, 6, 'cream')
-R('mayu', mxx + 11, myy + 15, 1, 3, 'ink'); R('mayu', mxx + 12, myy + 17, 1, 1, 'ink')  # 伏し目(左)
-R('mayu', mxx + 20, myy + 15, 1, 3, 'ink'); R('mayu', mxx + 19, myy + 17, 1, 1, 'ink')  # 伏し目(右)
-PXL('mayu', mxx + 9, myy + 19, 'm3'); PXL('mayu', mxx + 22, myy + 19, 'm3')
-R('mayu', mxx + 15, myy + 20, 2, 1, 'm2')                                # 口
-R('mayu', mxx + 7, myy + 26, 18, 12, 'm2')                               # ワンピース
-R('mayu', mxx + 7, myy + 26, 18, 2, 'm3')
-R('mayu', mxx + 7, myy + 35, 18, 3, 'm0')
-R('mayu', mxx + 9, myy + 27, 2, 2, 'cream')                              # 襟
-R('mayu', mxx + 21, myy + 27, 2, 2, 'cream')
-R('mayu', mxx + 1, myy + 33, 10, 7, 'm2')                                # あぐらの膝
-R('mayu', mxx + 21, myy + 33, 10, 7, 'm2')
-R('mayu', mxx + 1, myy + 33, 10, 2, 'm3'); R('mayu', mxx + 21, myy + 33, 10, 2, 'm3')
-R('mayu', mxx + 2, myy + 39, 8, 3, 'cream')                              # 足
-R('mayu', mxx + 22, myy + 39, 8, 3, 'cream')
-R('mayu', mxx + 4, myy + 41, 6, 2, 'brick'); R('mayu', mxx + 22, myy + 41, 6, 2, 'brick')
-R('mayu', mxx + 5, myy + 28, 10, 8, 'cream')                             # 絵本(開き)
-R('mayu', mxx + 17, myy + 28, 10, 8, 'cream')
-R('mayu', mxx + 15, myy + 27, 2, 10, 'q3')
-R('mayu', mxx + 6, myy + 30, 7, 1, 'gray1'); R('mayu', mxx + 6, myy + 32, 6, 1, 'gray1')
-R('mayu', mxx + 19, myy + 30, 7, 1, 'gray1'); R('mayu', mxx + 19, myy + 32, 6, 1, 'gray1')
-R('mayu', mxx + 3, myy + 29, 3, 5, 'cream')                              # 手
-R('mayu', mxx + 26, myy + 29, 3, 5, 'cream')
-D['mayu'].ellipse([mxx + 1, myy + 42, mxx + 31, myy + 48], fill=C('q0', 190))
-D['mayu'].ellipse([mxx + 5, myy + 43, mxx + 27, myy + 47], fill=C('ink', 120))
-if not DRAW_MAYU_PLACEHOLDER:
-    L['mayu'] = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    D['mayu'] = ImageDraw.Draw(L['mayu'])
-
-obj()
-# ═══════════════ post : ライティングを焼き込む(批評反映) ═══════════════
-P['wwarm'] = (52, 48, 88)     # 電球の暖色が当たる壁(紺に馴染む暖紫)
-P['wneon'] = (42, 36, 80)     # ネオンのマゼンタが当たる壁
-P['spill'] = (62, 122, 106)   # ブラウン管の緑がこぼれる机
-P['bulbc'] = (255, 246, 200)  # 電球コア
-P['bulbh'] = (176, 138, 74)   # 電球ハロー
-
-def dpatch(l, x, y, w, h, c, den=2, ph=0):
-    for yy in range(y, y + h):
-        for xx in range(x, x + w):
-            if (xx + yy + ph) % den == 0:
-                PXL(l, xx, yy, c)
-
+# ═══════════════ ライティングの焼き込み ═══════════════
 obj('ガーランド')
-# 1) ガーランド: オレンジ統一。ハローと壁の暖色だまり(コアのチラつきはWeb/GIF側)
 for bxg, byg in garland_positions():
     for hx, hy in [(-3, 5), (3, 5), (0, 1), (0, 9), (-2, 8), (2, 8), (-3, 3), (3, 3)]:
         PXL('garland', bxg + hx, byg + hy, 'bulbh')
     dpatch('bg', bxg - 4, byg + 10, 9, 5, 'wwarm', 2)
     dpatch('bg', bxg - 2, byg + 15, 5, 3, 'wwarm', 2, 1)
 
-obj('ブラウン管テレビ')
-# 2) ブラウン管: 画面のフチ + 壁の明るみ + 机への緑スピル + 隣接物のリム
-R('furniture', tvx + 6, tvy + 8, 46, 1, 'g1')
-R('furniture', tvx + 6, tvy + 45, 46, 1, 'g0')
-R('furniture', tvx + 6, tvy + 8, 1, 38, 'g0'); R('furniture', tvx + 51, tvy + 8, 1, 38, 'g0')
-dpatch('bg', 108, 46, 14, 62, 'n4', 2)
-dpatch('bg', 188, 46, 14, 62, 'n4', 2, 1)
-dpatch('bg', 118, 38, 74, 12, 'n4', 2)
-dpatch('furniture', tvx + 8, 107, 46, 5, 'spill', 2)
-PXL('props', 100, 82, 'g2'); PXL('props', 96, 87, 'g2'); PXL('props', 102, 89, 'g2')
-R('props', cx2 + 2, cy2, 6, 1, 'g2')
-R('props', 197, 97, 3, 1, 'g3')
-
-obj('ネオンサイン')
-# 3) ネオンサイン: 明るいコア + 壁のマゼンタ
-TXT('props', 90, 32, "STUDIO", 'm0')
-TXT('props', 89, 31, "STUDIO", 'm4')
-TXT('props', 94, 40, "PATTI", 'm0')
-TXT('props', 93, 39, "PATTI", 'cor2')
-R('props', 89, 46, 34, 1, 'm2')
-dpatch('bg', 80, 20, 52, 6, 'wneon', 2)
-dpatch('bg', 78, 26, 6, 26, 'wneon', 2, 1)
-dpatch('bg', 128, 26, 6, 26, 'wneon', 2)
-dpatch('bg', 80, 50, 52, 6, 'wneon', 2, 1)
+obj('COMPANYモニタ')
+# モニタ: 画面のフチ + 壁の明るみ + 天板への青スピル
+R('furniture', 166, 102, 60, 1, 'b1')
+R('furniture', 166, 129, 60, 1, 'b0')
+R('furniture', 166, 102, 1, 28, 'b0'); R('furniture', 225, 102, 1, 28, 'b0')
+dpatch('bg', 150, 88, 10, 50, 'n4', 2)
+dpatch('bg', 232, 88, 10, 50, 'n4', 2, 1)
+dpatch('bg', 158, 90, 78, 8, 'n4', 2)
+dpatch('furniture', 162, 139, 68, 4, 'n4', 2)
 
 obj('楕円窓')
-# 4) 窓: 月のハロー + 壁の冷たいスピル + 下の物への青リム
-mcx, mcy = 333, 33
+# 窓: 月のハロー + 壁の冷たいスピル
+mcx, mcy = 311, 33
 for yy in range(14, 60):
-    for xx in range(306, 360):
+    for xx in range(284, 338):
         dxm, dym = xx - mcx, yy - mcy
         rr = math.sqrt(dxm * dxm + dym * dym)
         if abs(yy - WY) <= 2 or abs(xx - WX) <= 1:
@@ -850,96 +703,35 @@ for yy in range(14, 60):
             PXL('window', xx, yy, 'b3')
         elif 16 <= rr < 20 and (xx + yy) % 3 == 0:
             PXL('window', xx, yy, 'b2')
-dpatch('bg', 288, 76, 74, 16, 'n4', 2)
-R('furniture', mx + 1, my, 46, 1, 'b4')
-PXL('props', 360, 84, 'b4'); PXL('props', 364, 83, 'b4')
+dpatch('bg', 266, 76, 70, 8, 'n4', 2)
+dpatch('props', 258, 85, 76, 1, 'cool2', 2)            # 額の上辺に月光のリム
+
+obj('デザイン室の入口')
+# 戸口の光が床にこぼれる(あたたかい黄色)
+for yy in range(170, 210):
+    reach = 30 + int((yy - 170) * 0.9)
+    for xx in range(4, 4 + reach):
+        if (xx * 2 + yy) % 5 == 0:
+            PXL('bg', xx, yy, 'wwarm')
+        if (xx * 2 + yy) % 9 == 0 and xx < 4 + reach // 2:
+            PXL('bg', xx, yy, 'o0')
+
+obj('編集室の入口')
+# 戸口の光が床にこぼれる(淡い紫)
+for yy in range(170, 210):
+    reach = 30 + int((yy - 170) * 0.9)
+    for xx in range(W - 4 - reach, W - 4):
+        if (xx * 2 + yy) % 5 == 0:
+            PXL('bg', xx, yy, 'wneon')
+        if (xx * 2 + yy) % 9 == 0 and xx > W - 4 - reach // 2:
+            PXL('bg', xx, yy, 'cool1')
 
 obj()
-# 5) 接地影(床の物すべて)
-# (本の山の影も撤去)
-# (面出し本の影は移動先で描画)
-R('props', 354, 182, 30, 2, 'q0')
-
-# 6) 天井から吊るす(占有と重なり)
-obj('おばけの風鈴')
-R('props', 29, 10, 1, 4, 'ink')                       # おばけの風鈴(本棚上に重なる)
-EL('props', 25, 14, 34, 23, fill='wht', out='ink')
-R('props', 25, 19, 10, 3, 'wht')
-PXL('props', 26, 22, 'wht'); PXL('props', 29, 22, 'wht'); PXL('props', 32, 22, 'wht')
-PXL('props', 28, 17, 'ink'); PXL('props', 31, 17, 'ink')
-obj('星のモビール')
-R('props', 362, 10, 1, 5, 'ink')                      # 星のモビール(窓のリングに重なる)
-R('props', 359, 15, 7, 7, 'y1'); PXL('props', 362, 13, 'y1')
-PXL('props', 360, 17, 'y2'); PXL('props', 358, 18, 'y1'); PXL('props', 366, 18, 'y1')
-
-# 7) 右下の固まり(空白つぶし+画面端の見切れ)
-obj('木箱')
-O('props', 326, 166, 30, 22, 'y0', 'ink')             # 木箱(タワー下端に重なる)
-R('props', 328, 168, 26, 2, 'y2')
-R('props', 330, 174, 8, 2, 'q0'); R('props', 342, 174, 8, 2, 'q0')
-O('props', 332, 154, 18, 12, 'cor', 'ink')
-R('props', 334, 156, 14, 2, 'cor2')
-obj('赤いポスト')
-# 赤いポスト(問い合わせ入口・クリック対象)
-EL('props', 295, 134, 320, 152, fill='r1', out='ink')
-R('props', 296, 144, 24, 30, 'r1')
-R('props', 296, 144, 1, 30, 'ink'); R('props', 319, 144, 1, 30, 'ink')
-R('props', 298, 145, 2, 26, 'r0')                     # 左の陰
-R('props', 315, 145, 2, 26, 'r2')                     # 右の月光側
-R('props', 294, 140, 28, 3, 'r0')                     # 笠
-R('props', 294, 140, 28, 1, 'ink')
-R('props', 300, 148, 16, 4, 'ink')                    # 投函口
-R('props', 300, 153, 16, 1, 'r0')
-R('props', 304, 159, 8, 1, 'cream')                   # 〒マーク
-R('props', 304, 162, 8, 1, 'cream')
-R('props', 307, 163, 2, 4, 'cream')
-O('props', 297, 174, 22, 6, 'q2', 'ink')              # 台座
-R('props', 295, 178, 26, 2, 'q0')                     # 接地影
-obj('サボテン')
-R('props', 284, 168, 9, 9, 'm1'); R('props', 284, 168, 9, 2, 'm2')   # サボテン
-R('props', 287, 162, 3, 6, 'g1'); PXL('props', 286, 164, 'g1'); PXL('props', 290, 163, 'g1')
-PXL('props', 288, 161, 'g2')
-obj('コントローラー')
-R('props', 358, 167, 12, 6, 'gray1')                  # クッションの上のコントローラー
-R('props', 358, 167, 12, 2, 'gray2')
-PXL('props', 361, 170, 'm2'); PXL('props', 366, 170, 'g1')
-obj('木箱')
-R('props', 326, 186, 32, 2, 'q0')                     # 接地影
-obj('実験メモ')
-# 実験メモ(CHARA CHARA LABへの扉・クリック対象) ※TVと被らない壁の空きへ
-O('props', 288, 84, 15, 20, 'q3', 'ink')
-R('props', 290, 86, 11, 16, 'cream')
-R('props', 290, 86, 11, 2, 'm2')                      # 表題バー
-R('props', 291, 90, 8, 1, 'g1'); R('props', 291, 93, 9, 1, 'g1')
-R('props', 291, 96, 7, 1, 'g1')
-R('props', 292, 99, 3, 2, 'g2'); PXL('props', 296, 100, 'g1')   # フラスコ落書き
-PXL('props', 295, 83, 'r2'); PXL('props', 295, 82, 'r2')        # ピン
-
-# 8) 机下の重なり(孤島解消)
-obj('ボール')
-EL('props', 118, 134, 128, 144, fill='m2', out='ink') # 赤箱に寄りかかるボール
-PXL('props', 121, 137, 'm4')
-obj('ケーブル束')
-EL('props', 232, 134, 246, 144, fill=None, out='q4')  # スピーカー前のケーブル束
-EL('props', 235, 137, 243, 141, fill=None, out='q4')
-obj('雑誌')
-for i2 in range(3):                                   # 段ボールに立てかけた雑誌
-    R('props', 200 + i2 * 2, 130 - i2, 3, 16, ['b3', 'cream', 'm3'][i2])
-    R('props', 200 + i2 * 2, 130 - i2, 3, 2, 'ink')
-
-# 9,10) 旧ブループリント補正とペナントは撤去(v13で描き直し済み)
-
-obj()
-# 11) 床の平面を明確に(家具の足元に影)
-dpatch('bg', 84, 160, 216, 10, 'q0', 2)
-dpatch('bg', 300, 160, 84, 8, 'q0', 2, 1)
-
-obj()
-# ═══════ 月光の当たり(窓に近い面へ青のディザ) ═══════
-dpatch('furniture', 300, 106, 84, 2, 'b3', 3)         # 右カウンター天板(モニタの青と同源)
-dpatch('furniture', tvx + 38, tvy + 1, 26, 2, 'cool2', 3, 1)   # テレビ天面の右側
-dpatch('furniture', 340, 118, 22, 2, 'cool2', 3)      # PCタワー上面
-dpatch('props', 326, 176, 30, 2, 'cool2', 3, 1)       # 右下の木箱の上面
+# 家具の足元に床影
+dpatch('bg', 152, 162, 90, 8, 'q0', 2)
+dpatch('bg', 50, 160, 64, 8, 'q0', 2, 1)
+# 月光の当たり(窓に近い上面へ青のディザ)
+dpatch('props', 321, 144, 28, 1, 'cool2', 2)           # ポストの笠
 
 # ═══════════════ light : (空レイヤー・自由記入用) ═══════════════
 
@@ -954,11 +746,11 @@ DARKER[P['wwarm']] = P['n2']; DARKER[P['wneon']] = P['q1']; DARKER[P['spill']] =
 DARKER[P['wht']] = P['gray2']
 
 SOURCES = [
-    {'pos': (312, 44),  'r': 150, 's': 1.46, 'e': 1.4, 'tint': P['b3'],  'occ': True},   # 窓/月
-    {'pos': (151, 76),  'r': 115, 's': 1.34, 'e': 1.4, 'tint': P['g2'],  'occ': True},   # ブラウン管
-    {'pos': (324, 88),  'r': 62,  's': 0.62, 'e': 1.5, 'tint': P['b3'],  'occ': True},   # モニタ
-    {'pos': (112, 38),  'r': 64,  's': 0.85, 'e': 1.5, 'tint': P['m3'],  'occ': True},   # ネオン
-    {'pos': (190, 150), 'r': 185, 's': 0.34, 'e': 1.2, 'tint': P['q5'],  'occ': False},  # 室内バウンス
+    {'pos': (290, 44),  'r': 150, 's': 1.46, 'e': 1.4, 'tint': P['b3'],  'occ': True},   # 窓/月
+    {'pos': (196, 116), 'r': 95,  's': 0.95, 'e': 1.4, 'tint': P['b4'],  'occ': True},   # COMPANYモニタ
+    {'pos': (24, 118),  'r': 78,  's': 0.85, 'e': 1.3, 'tint': P['o2'],  'occ': False},  # デザイン室の灯り
+    {'pos': (360, 118), 'r': 78,  's': 0.80, 'e': 1.3, 'tint': P['cool2'], 'occ': False}, # 編集室の灯り
+    {'pos': (192, 150), 'r': 185, 's': 0.34, 'e': 1.2, 'tint': P['q5'],  'occ': False},  # 室内バウンス
 ]
 for _bx, _by in garland_positions():
     SOURCES.append({'pos': (_bx, _by + 5), 'r': 36, 's': 0.52, 'e': 1.5,
@@ -1022,18 +814,18 @@ def apply_illum(layer):
                 if ex < 1:
                     continue
             if layer == 'furniture':
-                if tvx + 5 <= xx <= tvx + 53 and tvy + 7 <= yy <= tvy + 47:
-                    continue
-                if mx + 2 <= xx <= mx + 46 and my + 2 <= yy <= my + 27:
-                    continue
-            if layer == 'props' and 88 <= xx <= 126 and 30 <= yy <= 46:
-                continue
-            if layer == 'props' and 197 <= xx <= 267 and 25 <= yy <= 75:
-                continue    # キャラ設計図の中身は見せ場なので基準明度を守る
-            if layer == 'furniture' and 12 <= xx <= 58 and 102 <= yy <= 180:
-                continue    # ジュークボックスは光る箱なので基準明度を守る
-            if layer == 'props' and 134 <= xx <= 172 and 146 <= yy <= 172:
-                continue    # 絵本『おばけのパッチ』表紙はクリック対象なので目立たせる
+                if 166 <= xx <= 226 and 102 <= yy <= 130:
+                    continue    # COMPANYの画面は自ら光る
+                if 56 <= xx <= 76 and 88 <= yy <= 112:
+                    continue    # 絵本の表紙はクリック対象なので目立たせる
+                if 50 <= xx <= 96 and 106 <= yy <= 184:
+                    continue    # ジュークボックスは光る箱
+                if 10 <= xx <= 39 and 49 <= yy <= 215:
+                    continue    # デザイン室の戸口の光
+                if 345 <= xx <= 375 and 49 <= yy <= 215:
+                    continue    # 編集室の戸口の光
+                if (4 <= xx <= 28 or 357 <= xx <= 381) and 20 <= yy <= 52:
+                    continue    # 吊り看板は読ませる
             rgb = c[:3]
             v = ILL[xx // GS][yy // GS] + (((xx * 7 + yy * 13) % 5) - 2) * 0.02
             tint = TINT[xx // GS][yy // GS][0]
@@ -1074,19 +866,12 @@ def apply_illum(layer):
 for lname in ['bg', 'window', 'furniture', 'props', 'mayu']:
     apply_illum(lname)
 
-# 発光体まわりの再ブースト(ネオン文字のコアを白熱させる)
-TXT('props', 89, 31, "STUDIO", 'm4')
-TXT('props', 93, 39, "PATTI", 'cor2')
-for xx, yy in [(91, 33), (95, 31), (103, 33), (107, 31), (115, 33), (119, 31),
-               (97, 41), (101, 39), (109, 41), (113, 39)]:
-    PXL('props', xx, yy, 'wht')
-R('props', 89, 46, 34, 1, 'm3')
+# 発光体まわりの再ブースト(COMPANYの文字とPOSTの票をくっきり戻す)
+TXT2('furniture', 169, 111, "COMPANY", 'b4')
+TXT('props', 329, 153, "POST", 'r0')
 
 # 影ゾーンにある派手なプロップを沈める(視線ドロボー対策)
-for (zx, zy, zw, zh, layn) in [(208, 124, 28, 22, 'furniture'),
-                               (198, 126, 10, 21, 'props'),
-                               (330, 152, 22, 16, 'props'),
-                               (330, 162, 22, 16, 'props')]:   # 右下クレートは2段沈める
+for (zx, zy, zw, zh, layn) in []:   # いまは沈める対象なし
     pxz = L[layn].load()
     for xx in range(zx, zx + zw):
         for yy in range(zy, zy + zh):
@@ -1095,20 +880,16 @@ for (zx, zy, zw, zh, layn) in [(208, 124, 28, 22, 'furniture'),
                 continue
             pxz[xx, yy] = DARKER.get(c[:3], c[:3]) + (255,)
 
-# 画面の光だまりを机とカウンターに(ブラウン管とモニタは主役の光)
-dpatch('furniture', 120, 107, 62, 6, 'spill', 2)
-dpatch('bg', 118, 113, 66, 8, 'spill', 3)
-dpatch('bg', 112, 113, 6, 8, 'spill', 4)              # プールの縁は密度を下げて減衰
-dpatch('bg', 184, 113, 6, 8, 'spill', 4, 1)
-dpatch('bg', 118, 121, 66, 3, 'spill', 4)
-dpatch('furniture', 300, 107, 50, 6, 'n4', 2, 1)
-dpatch('bg', 296, 66, 8, 34, 'n4', 3)
-dpatch('bg', 350, 66, 10, 34, 'n4', 3, 1)
+# 画面の光だまり(COMPANYモニタが主役の光)
+dpatch('furniture', 164, 139, 64, 4, 'n4', 2, 1)
+dpatch('bg', 158, 148, 76, 8, 'n4', 3)
+dpatch('bg', 152, 148, 6, 8, 'n4', 4)
+dpatch('bg', 234, 148, 6, 8, 'n4', 4, 1)
 """
 # ↑ グローバル照明はコードを文字列として保持し、全パスの定義後(書き出し直前)にexecする
 
 # ═══════════════ asset bake : 池本の実素材をはめ込む ═══════════════
-ASSETS = os.path.abspath(os.path.join(WEB, "..", "..", "サイト用画像"))
+ASSETS = os.path.abspath(os.path.join(WEB, "..", "..", "..", "サイト用画像"))
 
 def bake_mono(path, layer, x0, y0, w, h, paper, mid, dark,
               crop_sq=False, t_dark=120, t_mid=195):
@@ -1138,104 +919,40 @@ def bake_color(path, layer, x0, y0, w, h):
 # ※実画像のベイクは縮小で判読不能になったため撤去(2026-08-09 池本判断)。
 #   額縁・設計図・モニタは手描きドット版を使う。TVの動画だけWeb側で再生する。
 
-# ═══════════════ こまごま第2弾 + 棚と床の微細陰影 ═══════════════
-obj('ペン立て')
-R('props', 186, 96, 8, 10, 'q2'); R('props', 186, 96, 8, 2, 'q4')     # ペン立て
-R('props', 188, 92, 1, 5, 'm2'); R('props', 190, 91, 1, 6, 'g1')
-R('props', 192, 93, 1, 4, 'b3')
+# ═══════════════ こまごま第2弾 + 棚の微細陰影 ═══════════════
 obj('サイコロ')
-R('props', 240, 100, 4, 4, 'wht'); PXL('props', 241, 101, 'ink')      # サイコロ
-R('props', 245, 101, 3, 3, 'gray2'); PXL('props', 246, 102, 'ink')
-obj('壁の付箋')
-R('props', 190, 64, 5, 5, 'y2'); PXL('props', 191, 66, 'q3')          # 壁の付箋たち
-R('props', 190, 71, 5, 4, 'm3')
-R('props', 191, 77, 4, 4, 'g2')
-obj('テープ')
-EL('props', 272, 99, 279, 106, fill='gray1', out='ink')               # テープ
-PXL('props', 275, 102, 'q0')
-obj('鍵フック')
-R('props', 74, 80, 1, 3, 'gray1')                                     # 鍵フック
-PXL('props', 73, 84, 'y1'); PXL('props', 74, 85, 'y1'); PXL('props', 75, 84, 'y1')
-obj('床の紙きれ')
-R('props', 300, 222, 10, 6, 'cream')                                   # 床の紙きれ
-R('props', 302, 224, 6, 1, 'gray1'); R('props', 302, 226, 5, 1, 'gray1')
-R('props', 308, 225, 10, 6, 'gray2'); R('props', 310, 227, 6, 1, 'gray0')
-obj('えんぴつ')
-R('props', 340, 228, 7, 2, 'y1'); PXL('props', 347, 228, 'ink')          # えんぴつ
-PXL('props', 339, 229, 'cor')
-R('furniture', 62, 62, 2, 11, 'q4'); R('furniture', 62, 71, 5, 2, 'q4')  # ブックエンド
-obj('鉢植え')
-R('props', 26, 15, 7, 7, 'brick')                                     # 本棚の上の鉢植え
-PXL('props', 28, 12, 'g1'); PXL('props', 30, 11, 'g2'); PXL('props', 31, 13, 'g1')
-PXL('props', 27, 13, 'g0'); PXL('props', 29, 14, 'g1')
-obj('カセットテープ')
-R('props', 112, 232, 9, 6, 'q2'); R('props', 113, 233, 7, 2, 'm2')    # 床のカセット
-obj('モニタ縁の付箋')
-R('furniture', 300, 80, 3, 4, 'y2'); R('furniture', 300, 86, 3, 3, 'g2')  # モニタ縁の付箋
-obj('ミニパッチ人形')
-EL('props', 345, 96, 351, 105, fill='wht', out='ink')                 # ミニパッチ人形(右机)
-PXL('props', 347, 99, 'ink'); PXL('props', 349, 99, 'ink')
-R('props', 347, 102, 3, 1, 'y1')
+R('props', 212, 133, 4, 4, 'wht'); PXL('props', 213, 134, 'ink')      # デスクのサイコロ
+R('props', 217, 134, 3, 3, 'gray2'); PXL('props', 218, 135, 'ink')
+obj('ペン立て')
+R('props', 224, 128, 8, 10, 'q2'); R('props', 224, 128, 8, 2, 'q4')   # ペン立て
+R('props', 226, 124, 1, 5, 'm2'); R('props', 228, 123, 1, 6, 'g1')
+R('props', 230, 125, 1, 4, 'b3')
 obj('本棚')
-# 本棚: 棚ごとの暗部と木目
-for sy5 in [46, 74, 102, 130]:
-    R('furniture', 9, sy5 + 3, 60, 1, 'ink')
-    dpatch('furniture', 10, sy5 - 26, 58, 3, 'ink', 3)
-for gy5 in range(26, 144, 5):
-    PXL('furniture', 7, gy5, 'q1'); PXL('furniture', 71, (gy5 + 2) if gy5 + 2 < 146 else 144, 'q1')
+# 本棚: 棚板の下の暗部と側板の木目
+for sy5 in (86, 112, 140):
+    R('furniture', 53, sy5 + 3, 56, 1, 'ink')
+    dpatch('furniture', 54, sy5 - 24, 54, 3, 'ink', 3)
+for gy5 in range(62, 164, 5):
+    PXL('furniture', 51, gy5, 'q1'); PXL('furniture', 111, gy5 + 2 if gy5 + 2 < 166 else 164, 'q1')
 
 # ═══════════════ detail shading : プロップの多段陰影 ═══════════════
-obj('ブラウン管テレビ')
-# ブラウン管を背景から立たせる(上端リム+右端光+背後の暗がり)
-R('furniture', tvx + 1, tvy + 1, 64, 1, 'mauve')
-R('furniture', tvx + 62, tvy + 3, 2, 50, 'q5')
-R('furniture', tvx + 6, tvy + 8, 46, 1, 'g2')
-obj()
-dpatch('bg', 112, 30, 10, 78, 'n0', 2)
-dpatch('bg', 188, 30, 8, 78, 'n0', 2, 1)
-dpatch('bg', 118, 28, 72, 8, 'n0', 2)
-obj('ブラウン管テレビ')
-# ブラウン管: 筐体の丸みをディザで
-DI('furniture', tvx + 3, tvy + 8, 3, 42, 'q2', 'q3')
-DI('furniture', tvx + 60, tvy + 6, 3, 44, 'q4', 'q3', 1)
-DI('furniture', tvx + 4, tvy + 44, 50, 4, 'q2', 'q3')
-obj()
-# 箱もの: 三面(上=明・前=中・横=暗)
-DI('furniture', 98, 138, 22, 6, 'r1', 'r0')
-R('furniture', 97, 126, 1, 19, 'r0')
-DI('furniture', 128, 140, 26, 4, 'q2', 'q1')
-R('furniture', 127, 130, 1, 15, 'q1')
-obj('段ボール箱')
-DI('furniture', 210, 138, 22, 6, 'y0', 'brick')
-R('furniture', 209, 126, 1, 19, 'brick')
-obj('スピーカー')
-DI('furniture', 242, 138, 22, 6, 'q2', 'q1', 1)
-obj('本棚')
-# 本棚: 棚板の下の奥を暗く(3D遮蔽の手描き分)
-for sy in [46, 74, 102, 130]:
-    DI('furniture', 9, sy + 3, 60, 3, 'q0', 'ink')
-DI('furniture', 8, 24, 3, 132, 'q0', 'q1')
-obj('PCモニタ')
-# モニタ: ガラスの斜めツヤ
-for k in range(12):
+obj('COMPANYモニタ')
+# モニタ: 画面ガラスの斜めツヤ
+for k in range(10):
     if k % 2 == 0:
-        PXL('furniture', mx + 38 - k, my + 4 + k, 'b4')
-    if k % 3 == 0:
-        PXL('furniture', mx + 33 - k, my + 4 + k, 'b3')
+        PXL('furniture', 224 - k, 103 + k, 'n2')
 obj('地球儀')
 # 地球儀: 下側の回り込み陰
-for xx, yy in [(45,92),(46,94),(47,95),(49,96),(51,96),(44,90),(53,95)]:
+for xx, yy in [(91,48),(92,50),(93,51),(95,52),(97,52),(90,46),(99,51)]:
     PXL('furniture', xx, yy, 'b0')
-obj('PCタワー')
-# PCタワー: 前面下部
-DI('furniture', 342, 138, 18, 7, 'q1', 'q0')
-obj()
-# ラグ: 内側の落ち影
-DI('props', 126, 202, 132, 3, 'r0', 'm0')
-obj('木箱')
-# 木箱(右下)三面
-R('props', 327, 167, 1, 20, 'y0')
-DI('props', 328, 183, 26, 4, 'y0', 'brick', 1)
+obj('本棚')
+# 本棚: 棚板の下の奥を暗く(3D遮蔽の手描き分)
+for sy in (86, 112, 140):
+    DI('furniture', 53, sy + 3, 56, 3, 'q0', 'ink')
+DI('furniture', 52, 60, 3, 104, 'q0', 'q1')
+obj('デスク')
+# デスク: 天板の下を暗く
+DI('furniture', 156, 144, 82, 3, 'q1', 'q0')
 
 obj()
 # ═══════════════ relight : プロップ単位の1px陰影と投影 ═══════════════
@@ -1256,7 +973,7 @@ for chain in CHAINS:
         LIGHTER[P[a]] = P[b]
         DARKER[P[b]] = P[a]
 INK = P['ink']
-CRTC = (151, 76)     # ブラウン管の画面中心
+CRTC = (196, 116)    # COMPANYモニタの画面中心
 # 月光(窓側)のリムは同系の明色ではなく「青みがかった明色」へ色相シフト
 COOL = {}
 for k in ['n0','n1','n2','q0','q1','q2','m0','r0','r1','b0','g0']:
@@ -1291,7 +1008,7 @@ def relight(layer):
             if c[3] == 0 or c[:3] == INK:
                 continue
             rgb = c[:3]
-            if xx >= 170:                      # 月光ゾーン(拡大): 右上から冷たい光
+            if xx >= 246:                      # 月光ゾーン: 窓の右上から冷たい光
                 litd = [(1, 0), (0, -1)]
                 dkd = [(-1, 0), (0, 1)]
             else:
@@ -1534,28 +1251,10 @@ json.dump(manifest, io.open(os.path.join(LAY, "objects.json"), "w", encoding="ut
           ensure_ascii=False, indent=1)
 print("プロップ切り分け:", sum(len(m["children"]) for m in manifest), "枚")
 
-FWt, FHt = 44, 34
-tv = Image.new("RGBA", (FWt * 2, FHt), (0, 0, 0, 0))
-td3 = ImageDraw.Draw(tv)
-for i in range(2):
-    ox = i * FWt
-    td3.rectangle([ox, 0, ox + FWt - 1, FHt - 1], fill=C('n0'))
-    td3.rectangle([ox + 2, 2, ox + FWt - 3, FHt - 3], fill=C('g1'))     # 白熱した画面
-    td3.rectangle([ox + 2, 2, ox + FWt - 3, 12], fill=C('g2'))
-    py2 = 10 + (2 if i else 0)
-    td3.ellipse([ox + 16, py2, ox + 27, py2 + 13], fill=C('wht'))
-    td3.point((ox + 20, py2 + 5), fill=C('ink')); td3.point((ox + 23, py2 + 5), fill=C('ink'))
-    td3.rectangle([ox + 20, py2 + 9, ox + 23, py2 + 10], fill=C('y1'))
-    td3.rectangle([ox + 4, FHt - 8, ox + FWt - 5, FHt - 6], fill=C('g3'))
-    for y3 in range(2, FHt - 2, 3):
-        td3.line([(ox + 2, y3), (ox + FWt - 3, y3)], fill=C('g0', 120))
-    td3.point((ox + FWt - 7, 4), fill=C('g3'))
-    td3.rectangle([ox + 30, 16, ox + 39, 22], fill=C('g3'))             # 明るいUI窓
-tv.save(os.path.join(WEB, "tv.png"))
-print("tv.png", tv.size)
+
 
 # ガーランドのチラつきアニメ(3コマ) — コアの色が波打つ
-GY0, GBH = 10, 26
+GY0, GBH = 14, 26
 gar = Image.new("RGBA", (W * 3, GBH), (0, 0, 0, 0))
 gd = ImageDraw.Draw(gar)
 CORE_CYCLE = ['o2', 'o1', 'o0']
@@ -1571,15 +1270,7 @@ for f in range(3):
 gar.save(os.path.join(WEB, "garland.png"))
 print("garland.png", gar.size, "band y", GY0, "h", GBH)
 
-# 絵本ホバー用: 部屋に置いた開き本と同一絵の6コマ(34x26)
-bf = Image.new("RGBA", (36 * 6, 22), (0, 0, 0, 0))
-bfd_px = bf.load()
-for f6 in range(6):
-    def _strip_px(xx, yy, c, _o=f6 * 36):
-        if 0 <= yy - 148 < 22:
-            bfd_px[_o + (xx - 136), yy - 148] = C(c)
-    draw_openbook(_strip_px, 136, 148, f6)
-bf.save(os.path.join(WEB, "bookflip.png"))
+
 
 # 地球儀の回転6コマ: 池本が塗った実物ピクセルを行ごとにロールさせる
 _usrF = Image.open(os.path.join(WEB, "user_layers", "furniture.png")).convert("RGBA")
@@ -1629,16 +1320,15 @@ jbg.save(os.path.join(WEB, "jukebox_glow.png"))
 
 print("jukebox_glow.png written", jbg.size)
 gs.save(os.path.join(WEB, "globe_spin.png"))
-print("bookflip.png / globe_spin.png written")
+print("globe_spin.png written")
 json.dump(["#%02X%02X%02X" % P[k] for k in P], open(os.path.join(LAY, "palette.json"), "w"))
 
 _shaded = os.path.join(WEB, "patti_shaded.png")
 sheet = Image.open(_shaded if os.path.exists(_shaded)
                    else os.path.join(WEB, "patti.png")).convert("RGBA")
 prev = flat.copy()
-prev.alpha_composite(tv.crop((0, 0, FWt, FHt)), (129, 59))
 pd2 = ImageDraw.Draw(prev)
-pd2.ellipse([213, 185, 243, 191], fill=(64, 24, 108, 140))
-prev.alpha_composite(sheet.crop((0, 0, 36, 48)), (210, 190 - 48))
+pd2.ellipse([203, 179, 233, 185], fill=(64, 24, 108, 140))
+prev.alpha_composite(sheet.crop((0, 0, 36, 48)), (200, 182 - 48))
 prev.convert("RGB").resize((W * 2, H * 2), Image.NEAREST).save(SP + "room3_preview.png")
 print("preview written")

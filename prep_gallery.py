@@ -9,7 +9,7 @@ from PIL import Image
 import os, glob, json, io, re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SRC = os.path.abspath(os.path.join(HERE, "..", "..", "サイト用画像", "gallery"))
+SRC = os.path.abspath(os.path.join(HERE, "..", "..", "..", "サイト用画像", "gallery"))
 DST = os.path.join(HERE, "gallery")
 os.makedirs(DST, exist_ok=True)
 MAX = 1600

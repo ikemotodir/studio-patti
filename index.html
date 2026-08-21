@@ -62,26 +62,51 @@
   }
   @keyframes tbc { 0%,50% { opacity: 1; } 50.01%,100% { opacity: 0; } }
 
-  /* 絵本『おばけのパッチ』のクリック範囲 */
-  #booklink {
-    position: absolute; left: 138px; top: 140px;
-    width: 32px; height: 32px;
-    display: block; cursor: pointer;
-    border: 0; background: transparent; padding: 0;
+  /* ─── 重なり順をここで一元管理(レイヤー事故防止) ─── */
+  #room { z-index: 1; }
+  #speopclip, #winbars, #garland, #globespin, #jukeglow, #jukehalo, #clockhands, .doorsign { z-index: 2; }
+  .hs, #jukebox { z-index: 3; }
+  #mshadow, #mayu, #pshadow, #patti { z-index: 4; }
+  #navbar, #talkbox { z-index: 6; }
+
+  /* ─── 上部ナビゲーション ─── */
+  #navbar {
+    position: absolute; left: 0; top: 0; width: 384px; height: 15px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(8, 6, 40, .92); border-bottom: 1px solid #2a2560;
+    font-family: 'DotGothic16', 'MS Gothic', monospace;
+    padding: 0 4px; box-sizing: border-box;
   }
-  /* 絵本ホバー: ページがパラパラめくれる */
-  #bookflip {
-    position: absolute; left: 136px; top: 148px;
-    width: 36px; height: 22px; display: none;
-    background-image: url(bookflip.png);
-    background-size: 216px 22px;
-    animation: bookflipanim .8s steps(6) infinite;
-    pointer-events: none;
+  #navbar .brand { display: flex; align-items: center; gap: 3px; color: #f2eefc; font-size: 7px; letter-spacing: .5px; }
+  #navbar .brand img { width: 12px; height: 12px; image-rendering: pixelated; }
+  #navbar nav { display: flex; align-items: center; gap: 2px; }
+  #navbar nav button {
+    border: 0; background: transparent; color: #c9c9d4; cursor: pointer;
+    font-family: inherit; font-size: 6px; line-height: 1.1; padding: 1px 3px; text-align: center;
   }
-  @keyframes bookflipanim { from { background-position: 0 0; } to { background-position: -216px 0; } }
+  #navbar nav button:hover, #navbar nav button:focus-visible { color: #fcc800; background: rgba(252, 200, 0, .12); outline: none; }
+
+  /* ─── 吊り看板の文字(縦書き) ─── */
+  .doorsign {
+    position: absolute; pointer-events: none;
+    writing-mode: vertical-rl; display: flex; align-items: center; justify-content: center;
+    color: #f7eed8; font-family: 'DotGothic16', 'MS Gothic', monospace;
+    font-size: 5px; letter-spacing: .6px; text-shadow: 0 0 2px #14081c;
+    overflow: hidden; white-space: nowrap;
+  }
+
+  /* ─── 戸口: 斜めの壁に沿ったクリック形状と光 ─── */
+  #doorL { clip-path: polygon(6% 6%, 94% 1%, 94% 72%, 6% 99%); }
+  #doorR { clip-path: polygon(9% 1%, 94% 6%, 94% 99%, 9% 72%); }
+  #doorR::after {
+    background: radial-gradient(closest-side,
+      rgba(216, 208, 255, .58) 0%, rgba(150, 140, 214, .34) 40%,
+      rgba(96, 86, 168, .12) 70%, rgba(96, 86, 168, 0) 100%);
+  }
+
   /* 地球儀はずっと回っている */
   #globespin {
-    position: absolute; left: 40px; top: 76px;
+    position: absolute; left: 86px; top: 32px;
     width: 24px; height: 28px;
     background-image: url(globe_spin.png);
     background-size: 144px 28px;
@@ -89,31 +114,21 @@
     pointer-events: none;
   }
   @keyframes globespinanim { from { background-position: 0 0; } to { background-position: -144px 0; } }
-  /* ギャラリー: 傘型ライトが点いて光が差す */
-  #gallight {
-    position: absolute; left: 82px; top: 55px;
-    width: 32px; height: 28px; display: none;
-    clip-path: polygon(22% 0, 78% 0, 100% 100%, 0 100%);
-    background: linear-gradient(rgba(255, 214, 140, .62), rgba(255, 214, 140, 0));
-    mix-blend-mode: screen; pointer-events: none;
+  /* 掛け時計の針(リアルタイム・JSが1px線で描く) */
+  #clockhands {
+    position: absolute; left: 59px; top: 19px;
+    width: 38px; height: 38px; pointer-events: none;
+    image-rendering: pixelated;
   }
-  /* PC画面: 横長の楕円グロー(画面が周りをほわーっと照らす) */
-  #monglow {
-    position: absolute; left: 282px; top: 62px;
-    width: 84px; height: 52px; display: none;
-    background: radial-gradient(ellipse at center, rgba(140, 190, 255, .55), rgba(140, 190, 255, 0) 70%);
-    mix-blend-mode: screen; pointer-events: none;
-  }
-  /* デジタル時計(閲覧者のローカル時刻) */
-  /* ジュークボックス(左下のデッドスペース) */
+  /* ジュークボックス(本棚の手前) */
   #jukebox {
-    position: absolute; left: 14px; top: 104px;
+    position: absolute; left: 52px; top: 108px;
     width: 42px; height: 74px; cursor: pointer;
     border: 0; background: transparent; padding: 0;
   }
   /* 灯りのコマ(消灯時は非表示。再生中=速い点滅／ホバー中=ゆっくり点滅) */
   #jukeglow {
-    position: absolute; left: 14px; top: 104px;
+    position: absolute; left: 52px; top: 108px;
     width: 42px; height: 74px; display: none;
     background-image: url(jukebox_glow.png);
     background-size: 168px 74px;
@@ -126,7 +141,7 @@
     75%,100%   { background-position: -126px 0; }
   }
   #jukehalo {
-    position: absolute; left: 2px; top: 92px;
+    position: absolute; left: 40px; top: 96px;
     width: 66px; height: 98px; display: none;
     background: radial-gradient(ellipse at center, rgba(255,170,90,.34), rgba(255,170,90,0) 70%);
     mix-blend-mode: screen; pointer-events: none;
@@ -147,43 +162,28 @@
   @media (prefers-reduced-motion: reduce) {
     #jukeglow, #jukehalo { animation: none !important; }
   }
-  #clockdisp {
-    position: absolute; left: 357px; top: 29px;
-    width: 24px; height: 9px; pointer-events: none;
-    font-family: 'DotGothic16','MS Gothic',monospace;
-    font-size: 7px; line-height: 9px; text-align: center;
-    color: #8ef0d0;
-  }
-
-  /* テレビ画面：池本のアニメーション動画をループ再生 */
-  #tv {
-    position: absolute; left: 129px; top: 59px;
-    width: 44px; height: 34px;
-    image-rendering: pixelated;   /* 44x34へ縮小描画=映像もドット化 */
-    object-fit: cover; display: block;
-  }
 
   /* パッチくんの接地影(足の黒とぶつからない紫) */
   #pshadow {
     position: absolute; width: 30px; height: 7px;
-    left: 183px; top: 166px;   /* 読み込み前もパッチの足元に */
+    left: 203px; top: 178px;   /* 読み込み前もパッチの足元に */
     border-radius: 50%; background: rgba(64, 24, 108, .5);
   }
   /* マユちゃん(左で絵本を読んでいる) */
   #mayu {
-    position: absolute; left: 66px; top: 112px;
+    position: absolute; left: 94px; top: 124px;
     width: 76px; height: 58px;   /* 足先を描き足した分だけ広い */
     background-image: url(mayu_shaded.png);
     background-repeat: no-repeat;
   }
   #mshadow {
-    position: absolute; left: 70px; top: 165px;
+    position: absolute; left: 98px; top: 177px;
     width: 62px; height: 8px;
     border-radius: 50%; background: rgba(64, 24, 108, .5);
   }
   /* 窓の向こうを飛ぶおばけ(Speop)。楕円でクリップして桟の奥に見せる */
   #speopclip {
-    position: absolute; left: 273px; top: 17px;
+    position: absolute; left: 251px; top: 17px;
     width: 78px; height: 54px;
     clip-path: ellipse(39px 27px at 39px 27px);
     pointer-events: none;
@@ -200,7 +200,7 @@
   }
   /* ガーランドのチラつき(3コマ) */
   #garland {
-    position: absolute; left: 0; top: 10px;
+    position: absolute; left: 0; top: 14px;
     width: 384px; height: 26px;
     background-image: url(garland.png);
     background-size: 1152px 26px;
@@ -395,16 +395,9 @@
     width: 36px; height: 48px;
     background-image: url(patti_shaded.png);
     background-repeat: no-repeat;
-    left: 180px; top: 122px;   /* GROUND_Y(170) - 48。JS初期値と一致させる */
+    left: 200px; top: 134px;   /* GROUND_Y(182) - 48。JS初期値と一致させる */
   }
 
-  /* テレビのクリック範囲。本番ではここが <a href="/animation"> になる */
-  #tvlink {
-    position: absolute; left: 116px; top: 34px;
-    width: 78px; height: 78px;
-    display: block; cursor: pointer;
-    border: 0; background: transparent; padding: 0;
-  }
 
   #hud { font-size: 13px; letter-spacing: .04em; }
   #hud b { color: #fcc800; font-weight: 500; }
@@ -414,7 +407,7 @@
     padding: 10px 16px; font-size: 13px; opacity: 0;
     transition: opacity .25s; pointer-events: none;
   }
-  @media (prefers-reduced-motion: reduce) { #tv { animation: none; } }
+  
 </style>
 </head>
 <body>
@@ -432,44 +425,44 @@
 <div id="wrap">
   <div id="stage">
     <img id="room" src="room.png" alt="パッチくんの部屋">
-    <video id="tvsrc" src="tv_video.mp4" autoplay muted loop playsinline
-           style="display:none" aria-hidden="true"></video>
-    <canvas id="tv" width="44" height="34" aria-hidden="true"></canvas>
     <div id="speopclip" aria-hidden="true"><div id="bonbon"></div><div id="speop"></div></div>
-    <div id="bookflip" aria-hidden="true"></div>
     <div id="globespin" aria-hidden="true"></div>
-    <div id="gallight" aria-hidden="true"></div>
-    <div id="monglow" aria-hidden="true"></div>
-    <div id="clockdisp" aria-hidden="true"></div>
+    <canvas id="clockhands" width="38" height="38" aria-hidden="true"></canvas>
     <button id="jukebox" aria-label="ジュークボックス（クリックで曲が変わります）"></button>
     <div id="jukeglow" aria-hidden="true"></div>
     <div id="jukehalo" aria-hidden="true"></div>
     <img id="winbars" src="window_bars.png" alt="" aria-hidden="true">
     <div id="garland" aria-hidden="true"></div>
+    <div class="doorsign" aria-hidden="true" style="left:4px;top:20px;width:24px;height:32px">デザイン室</div>
+    <div class="doorsign" aria-hidden="true" style="left:357px;top:20px;width:24px;height:32px">編集室</div>
     <div id="mshadow" aria-hidden="true"></div>
     <div id="mayu" role="img" aria-label="絵本を読むマユちゃん"></div>
     <div id="pshadow" aria-hidden="true"></div>
     <div id="patti" role="img" aria-label="パッチくん"></div>
-    <button id="tvlink" class="hs" style="left:116px;top:34px;width:78px;height:78px"
-            aria-label="テレビ（アニメーション制作事例）"></button>
-    <button id="booklink" class="hs" style="left:134px;top:146px;width:40px;height:26px"
+    <button id="doorL" class="hs" style="left:8px;top:48px;width:33px;height:168px;--gi:.55"
+            aria-label="デザイン室（CHARACTER DESIGN・準備中）"></button>
+    <button id="doorR" class="hs" style="left:343px;top:48px;width:33px;height:168px;--gi:.55"
+            aria-label="編集室（CONTENTS CREATIVE・準備中）"></button>
+    <button id="companylink" class="hs" style="left:158px;top:94px;width:78px;height:50px;--gw:118%;--gh:130%"
+            aria-label="COMPANY（会社概要・準備中）"></button>
+    <button id="spooklink" class="hs" style="left:254px;top:82px;width:84px;height:56px;--gw:112%;--gh:124%;--gi:.7"
+            aria-label="Patti the Spook（準備中）"></button>
+    <button id="booklink" class="hs" style="left:52px;top:84px;width:28px;height:30px;--gw:150%;--gh:150%"
             aria-label="絵本『おばけのパッチ』を読む"></button>
-    <button id="bplink" class="hs" style="left:194px;top:22px;width:76px;height:56px;--gw:112%;--gh:122%;--gi:.7"
-            aria-label="キャラクター設計・デザインについて"></button>
-    <button id="monlink" class="hs" style="left:296px;top:60px;width:56px;height:48px"
-            aria-label="メタバース制作について"></button>
-    <button id="gallink" class="hs" style="left:76px;top:52px;width:44px;height:32px"
+    <button id="gallink" class="hs" style="left:132px;top:42px;width:122px;height:66px;--gw:106%;--gh:112%;--gi:.6"
             aria-label="ギャラリー"></button>
-    <button id="camlink" class="hs" style="left:204px;top:86px;width:32px;height:22px;--gw:150%;--gh:190%;--gi:.85"
-            aria-label="ドキュメンタリー映像制作"></button>
-    <button id="postlink" class="hs" style="left:293px;top:132px;width:30px;height:50px;--gw:148%;--gh:152%;--gi:.78"
+    <button id="postlink" class="hs" style="left:318px;top:114px;width:34px;height:74px;--gw:148%;--gh:148%;--gi:.78"
             aria-label="お問い合わせ（ポスト）"></button>
-    <button id="editlink" aria-label="アニメの編集室へ"
-            style="position:absolute;left:370px;top:96px;width:14px;height:48px;border:0;background:transparent;cursor:pointer;padding:0">
-      <span aria-hidden="true" style="position:absolute;right:3px;top:50%;margin-top:-5px;width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:7px solid #fcc800;animation:tbc 1s steps(1) infinite"></span>
-    </button>
-    <button id="memolink" class="hs" style="left:286px;top:82px;width:19px;height:24px;--gw:210%;--gh:180%"
-            aria-label="実験メモ（CHARA CHARA LABへ）"></button>
+    <div id="navbar">
+      <div class="brand"><img src="favicon.png" alt=""><span>STUDIO PATTI</span></div>
+      <nav>
+        <button data-k="company">COMPANY</button>
+        <button data-k="chdesign">CHARACTER<br>DESIGN</button>
+        <button data-k="contents">CONTENTS<br>CREATIVE</button>
+        <button data-k="spook">Patti the Spook</button>
+        <button data-k="contact">CONTACT US</button>
+      </nav>
+    </div>
     <div id="talkbox">
       <span class="name">パッチ</span>
       <span id="talktext">ここはスタジオパッチのホームページだよ！<br>気になるところをクリックしてね！</span>
@@ -493,9 +486,9 @@
 // ─────────────────────────────────────────────
 // 設定：ここだけ触れば動きが変わる
 // ─────────────────────────────────────────────
-const GROUND_Y   = 170;   // 足の裏が乗る高さ（ドット）※下部はテキストボックス帯
-const WALK_MIN_X = 172;   // 歩ける左端(マユちゃんの右から)
-const WALK_MAX_X = 246;   // 歩ける右端(サボテンの鉢と赤いポストの手前で止まる)
+const GROUND_Y   = 182;   // 足の裏が乗る高さ（ドット）※下部はテキストボックス帯
+const WALK_MIN_X = 178;   // 歩ける左端(マユちゃんの右から)
+const WALK_MAX_X = 280;   // 歩ける右端(赤いポストの手前で止まる)
 const WALK_SPEED = 20;    // 歩く速さ（ドット/秒）※歩行コマと同期する速度
 const ART_FACES  = 'left';// 描いた絵が向いている方向。'right' なら書き換える
 
@@ -557,7 +550,7 @@ class Player {
 const p = new Player(el);
 p.hud = true;
 const mp = new Player(document.getElementById('mayu'));   // マユちゃん
-let x = 180, facing = 1;   // facing: 1 = 絵のまま, -1 = 左右反転
+let x = 200, facing = 1;   // facing: 1 = 絵のまま, -1 = 左右反転
 
 function place() {
   const xi = Math.round(x);              // 整数スナップでドットのズレ/ジッタを防ぐ
@@ -706,34 +699,6 @@ const setTalk = t => {                              // 改行位置は<br>で明
   talktext.innerHTML = t;
 };
 
-// テレビ: ふだんは砂嵐、カーソルを合わせている間だけ動画が流れる(ドット化+走査線)
-const tvv = document.getElementById('tvsrc');
-const tvcv = document.getElementById('tv');
-const tctx = tvcv.getContext('2d');
-let tvHover = false, tvNoiseT = 0;
-function setTvHover(on) {
-  tvHover = on;
-  if (on) tvv.play().catch(() => {}); else tvv.pause();
-}
-(function tvDraw(t) {
-  if (tvHover && tvv.readyState >= 2 && tvv.videoWidth) {
-    const cw = tvv.videoHeight * 44 / 34;
-    tctx.drawImage(tvv, (tvv.videoWidth - cw) / 2, 0, cw, tvv.videoHeight, 0, 0, 44, 34);
-    tctx.fillStyle = 'rgba(4,2,20,0.3)';
-    for (let y = 0; y < 34; y += 3) tctx.fillRect(0, y, 44, 1);
-  } else if (!tvHover && (t || 0) - tvNoiseT > 90) {
-    tvNoiseT = t || 0;                       // 砂嵐(約11fps)
-    for (let y = 0; y < 34; y++) for (let x = 0; x < 44; x++) {
-      const v = (Math.random() * 46 | 0) + 8;
-      tctx.fillStyle = `rgb(${v},${v},${v + 10})`;
-      tctx.fillRect(x, y, 1, 1);
-    }
-    tctx.fillStyle = 'rgba(4,2,20,0.32)';
-    for (let y = 0; y < 34; y += 3) tctx.fillRect(0, y, 44, 1);
-  }
-  requestAnimationFrame(tvDraw);
-})(0);
-
 window.addEventListener('keydown', e => {
   if (e.key === 'Escape' && currentView) closeDetail();
 });
@@ -752,7 +717,6 @@ function hotspot(id, hoverText, onClick) {
 // サイトエンジン: ズーム遷移 + 各詳細ビュー
 // ─────────────────────────────────────────────
 const CCL_URL = 'https://ikemotodir.github.io/chara-chara-lab/';
-const SHOW_CAMERA = true;
 const CHANNELS = [
   { t: '3DCG・VFX シネマティック', c: 'Amused Art Japan',
     src: 'https://player.vimeo.com/video/1166568421?title=0&byline=0&portrait=0' },
@@ -1099,63 +1063,52 @@ const BUILDERS = {
   },
 };
 
-hotspot('tvlink', 'それはテレビ！<br>アニメーション制作の事例が見られるよ！',
-  () => zoomOpen('tv', 116, 34, 78, 78));
+// ページ準備中のご案内(リンク先ページができたら差し替える)
+function tease(name) {
+  setTalk('「' + name + '」のページは いま準備中！<br>たのしみに待っててね！');
+  clearTimeout(window._tz);
+  window._tz = setTimeout(() => setTalk(TALK_DEFAULT), 3200);
+}
 hotspot('booklink', 'それは絵本『おばけのパッチ』！<br>ボクが主役の絵本、ここで読めるよ！',
-  () => zoomOpen('book', 134, 146, 40, 26));
-hotspot('bplink', 'キャラクター設計図！<br>スタジオパッチのキャラデザインのお話だよ！',
-  () => zoomOpen('blueprint', 194, 22, 76, 56));
-hotspot('monlink', 'メタバース「おばけの街」が<br>見られるパソコンだよ！',
-  () => zoomOpen('monitor', 296, 60, 56, 48));
-hotspot('gallink', 'ギャラリー！<br>ボクの絵がいっぱいあるよ！',
-  () => zoomOpen('gallery', 76, 52, 44, 32));
-hotspot('camlink', 'ドキュメンタリーのカメラだよ！',
-  () => zoomOpen('camera', 204, 86, 32, 22));
+  () => zoomOpen('book', 52, 84, 28, 30));
+hotspot('gallink', 'ギャラリーのかべ！<br>ボクの絵がいっぱいあるよ！',
+  () => zoomOpen('gallery', 132, 42, 122, 66));
 hotspot('postlink', '赤いポスト！<br>お手紙（お問い合わせ）はここからどうぞ！',
-  () => zoomOpen('post', 293, 132, 30, 50));
-hotspot('memolink', '実験メモ！<br>CHARA CHARA LABへ飛べるよ！',
-  () => window.open(CCL_URL, '_blank'));
+  () => zoomOpen('post', 318, 114, 34, 74));
+hotspot('doorL', 'デザイン室！キャラクターが生まれる部屋だよ！<br>（いま準備中…もうすぐ開くよ！）',
+  () => tease('CHARACTER DESIGN'));
+hotspot('doorR', '編集室！アニメーションを創ってる部屋だよ！<br>（いま準備中…もうすぐ開くよ！）',
+  () => tease('CONTENTS CREATIVE'));
+hotspot('companylink', 'スタジオパッチの会社案内が見られる<br>パソコンだよ！',
+  () => tease('COMPANY'));
+hotspot('spooklink', '『おばけのパッチ』の世界への入口！<br>大きな月の絵だよ！',
+  () => tease('Patti the Spook'));
+
+// 上部ナビゲーション(部屋の中の入口と同じところへ案内する)
+const NAV_ACT = {
+  company:  { talk: '会社概要のページだよ！（いま準備中）', act: () => tease('COMPANY') },
+  chdesign: { talk: 'キャラクターデザインのページだよ！（いま準備中）', act: () => tease('CHARACTER DESIGN') },
+  contents: { talk: 'アニメーションなど制作のページだよ！（いま準備中）', act: () => tease('CONTENTS CREATIVE') },
+  spook:    { talk: '『おばけのパッチ』の世界のページだよ！（いま準備中）', act: () => tease('Patti the Spook') },
+  contact:  { talk: 'お問い合わせフォームをひらくよ！', act: () => zoomOpen('post', 318, 114, 34, 74) },
+};
+document.querySelectorAll('#navbar nav button').forEach(b => {
+  const a = NAV_ACT[b.dataset.k];
+  b.addEventListener('mouseenter', () => setTalk(a.talk));
+  b.addEventListener('mouseleave', () => setTalk(TALK_DEFAULT));
+  b.addEventListener('click', a.act);
+});
 
 // スマホ(縦持ち)の案内。横にすればCSSが自動で引っ込める
 document.querySelector('#rotate .anyway')
   .addEventListener('click', () => document.body.classList.add('seeanyway'));
 
-// 右端の矢印: アニメの編集室へ部屋移動
-const editB = document.getElementById('editlink');
-editB.addEventListener('mouseenter', () => setTalk('このさきはアニメの編集室！<br>マユちゃんが案内してくれるよ！'));
-editB.addEventListener('mouseleave', () => setTalk(TALK_DEFAULT));
-editB.addEventListener('click', () => {
-  stage.style.transition = 'opacity .3s ease-in';
-  stage.style.opacity = '0';
-  setTimeout(() => location.href = 'anime.html', 300);
-});
-
-// テレビだけ特別: ハイライトの代わりに砂嵐→放送開始
-const tvB = document.getElementById('tvlink');
-tvB.classList.add('nobg');
-tvB.addEventListener('mouseenter', () => setTvHover(true));
-tvB.addEventListener('mouseleave', () => setTvHover(false));
-tvB.addEventListener('focus', () => setTvHover(true));
-tvB.addEventListener('blur', () => setTvHover(false));
 // マユちゃん: クリックはできないけど、パッチが紹介してくれる
 const mayuEl = document.getElementById('mayu');
 mayuEl.style.pointerEvents = 'auto';
 mayuEl.addEventListener('mouseenter', () =>
   setTalk('マユちゃんだよ！ボクの大切なお友達なんだ！<br>いつも一緒に絵本を読んでるの'));
 mayuEl.addEventListener('mouseleave', () => setTalk(TALK_DEFAULT));
-
-// 専用ホバー演出(絵本=パラパラ / ギャラリー=傘ライト / PC=楕円グロー)
-function hoverFx(btnId, fxId) {
-  const b = document.getElementById(btnId), fx = document.getElementById(fxId);
-  b.classList.add('nobg');
-  b.addEventListener('mouseenter', () => fx.style.display = 'block');
-  b.addEventListener('mouseleave', () => fx.style.display = 'none');
-  b.addEventListener('focus', () => fx.style.display = 'block');
-  b.addEventListener('blur', () => fx.style.display = 'none');
-}
-hoverFx('booklink', 'bookflip');
-hoverFx('gallink', 'gallight');
-hoverFx('monlink', 'monglow');
 
 // ─────────────────────────────────────────────
 // ジュークボックス: クリックで曲送り。曲名はテキストボックスに出す
@@ -1211,16 +1164,26 @@ jbBtn.addEventListener('mouseleave', () => {
   talkNormal(TALK_DEFAULT);
 });
 
-// デジタル時計: 見に来た人のPCのローカル時刻(タイムゾーン自動)
-const clockEl = document.getElementById('clockdisp');
+// 掛け時計: 見に来た人のPCのローカル時刻を長針・短針で(1pxのドット線)
+const ckv = document.getElementById('clockhands');
+const cctx = ckv.getContext('2d');
 function tickClock() {
+  cctx.clearRect(0, 0, 38, 38);
   const d = new Date();
-  clockEl.textContent =
-    String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  const mAng = (d.getMinutes() + d.getSeconds() / 60) * Math.PI / 30 - Math.PI / 2;
+  const hAng = ((d.getHours() % 12) + d.getMinutes() / 60) * Math.PI / 6 - Math.PI / 2;
+  const hand = (ang, len) => {
+    cctx.fillStyle = '#0e0a22';
+    for (let r = 2; r <= len; r++) {
+      cctx.fillRect(Math.round(19 + Math.cos(ang) * r), Math.round(19 + Math.sin(ang) * r), 1, 1);
+    }
+  };
+  hand(hAng, 7);
+  hand(mAng, 11);
+  cctx.fillRect(18, 18, 2, 2);
 }
 tickClock();
-setInterval(tickClock, 1000);
-if (!SHOW_CAMERA) document.getElementById('camlink').style.display = 'none';
+setInterval(tickClock, 5000);
 if (location.hash && BUILDERS[location.hash.slice(1)]) {
   setTimeout(() => showDetail(location.hash.slice(1)), 400);
 }
