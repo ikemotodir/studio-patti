@@ -301,33 +301,40 @@ R('furniture', 8, 58, 1, 157, 'q1')
 for k in range(4):
     R('furniture', 14 + k * 6, 62 - k, 1, 140 - k * 10, 'o2' if k % 2 else 'o1')
 
-# ─── 吊り看板: 池本さん制作のドット文字(1ドット=1px)を1画素も変えずに載せる ───
-# 文字の実寸(デザイン室78px/編集室47px)が側壁の台形パネル(最大43px)より大きいため、
-# 天井から吊るした電飾看板として前面に出す。板の厚みと吊り棒で立体感を出す。
-def hang_sign(img_name, x0, y0, core, edge_hi, edge_lo, spark, rods):
+# ─── 電飾看板: 池本さん制作のドット文字を、字画の構造を保ってパネル内寸へ縮小した
+# sign_design_s.png(41x9) / sign_hensyu_s.png(41x13) を、壁パースの傾きに沿わせて焼き込む ───
+def bake_sign_img(img_name, x0, x1, ytop_fn, yoff, core):
     m = Image.open(os.path.join(WEB, img_name)).convert('RGBA')
     tw, th = m.size
-    bw, bh = tw + 4, th + 5
-    x1, y1 = x0 + bw - 1, y0 + bh - 1
-    for rx in rods:                                    # 吊り棒(天井側はナビの裏に隠れる)
-        for yy in range(2, y0):
-            PXL('furniture', rx, yy, 'q3' if yy % 3 else 'q4')
-    R('furniture', x0, y0, bw, 1, 'ink')
-    R('furniture', x0, y1, bw, 1, 'ink')
-    R('furniture', x0, y0, 1, bh, 'ink'); R('furniture', x1, y0, 1, bh, 'ink')
-    R('furniture', x0 + 1, y0 + 1, bw - 2, 1, edge_hi)   # 上縁の灯り
-    R('furniture', x0 + 1, y0 + 2, bw - 2, bh - 4, 'q0') # 面
-    R('furniture', x0 + 1, y1 - 1, bw - 2, 1, edge_lo)   # 下縁の陰
-    PXL('furniture', x0 + 2, y0 + 2, spark)
-    R('furniture', x0 + 1, y1 + 1, bw - 2, 1, 'q1')      # 板の厚み
+    ox = x0 + (x1 - x0 + 1 - tw) // 2
     mp = m.load()
     for gy in range(th):
         for gx in range(tw):
             if mp[gx, gy][3] > 0:
-                PXL('furniture', x0 + 2 + gx, y0 + 3 + gy, core)
+                xx = ox + gx
+                PXL('furniture', xx, ytop_fn(xx) + yoff + gy, core)
 
+# 左の看板: 横書きの電飾看板(壁のパースに沿って奥へすぼむ台形)
 obj('デザイン室の看板')
-hang_sign('sign_design.png', 2, 28, 'bulbc', 'o1', 'o0', 'o2', rods=(6, 79))
+def signL_top(xx):
+    return int(21 + 8 * (xx - 4) / 40.0 + 0.5)
+for xx in range(4, 45):
+    t = (xx - 4) / 40.0
+    ytopS = signL_top(xx)
+    ybotS = int(45 + 1 * t + 0.5)
+    for yy in range(ytopS, ybotS + 1):
+        if yy == ytopS or yy == ybotS:
+            c = 'ink'
+        elif yy == ytopS + 1:
+            c = 'o1'
+        elif yy == ybotS - 1:
+            c = 'o0'
+        else:
+            c = 'q0'
+        PXL('furniture', xx, yy, c)
+R('furniture', 3, 21, 1, 25, 'ink'); R('furniture', 45, 29, 1, 18, 'ink')
+PXL('furniture', 5, 23, 'o2'); PXL('furniture', 43, 44, 'o2')
+bake_sign_img('sign_design_s.png', 4, 44, signL_top, 5, 'bulbc')
 
 # ─── 右の壁: 編集室の戸口(淡いピンクの光がもれる) ───
 obj('編集室の入口')
@@ -358,9 +365,28 @@ R('furniture', 375, 58, 1, 157, 'q1')
 for k in range(4):
     R('furniture', 368 - k * 6, 62 - k, 1, 140 - k * 10, 'pnk2' if k % 2 else 'pnk1')
 
-# 右の吊り看板: 編集室(テーマカラー=ピンク。文字は池本さんデータをピンクで焼く)
+# 右の看板: 横書きの電飾看板(ピンク・壁のパースに沿って奥へすぼむ台形)
+# 文字が13pxと高いぶん、パネルの底を左より1px深くとる
 obj('編集室の看板')
-hang_sign('sign_hensyu.png', 332, 28, 'pnkc', 'pnk1', 'pnk0', 'pnk2', rods=(336, 378))
+def signR_top(xx):
+    return int(21 + 8 * (380 - xx) / 40.0 + 0.5)
+for xx in range(340, 381):
+    t = (380 - xx) / 40.0
+    ytopS = signR_top(xx)
+    ybotS = int(46 + 1 * t + 0.5)
+    for yy in range(ytopS, ybotS + 1):
+        if yy == ytopS or yy == ybotS:
+            c = 'ink'
+        elif yy == ytopS + 1:
+            c = 'pnk2'
+        elif yy == ybotS - 1:
+            c = 'pnk1'
+        else:
+            c = 'q0'
+        PXL('furniture', xx, yy, c)
+R('furniture', 381, 21, 1, 26, 'ink'); R('furniture', 339, 29, 1, 19, 'ink')
+PXL('furniture', 379, 23, 'pnkc')
+bake_sign_img('sign_hensyu_s.png', 340, 380, signR_top, 3, 'pnkc')
 
 # ─── 壁かけの棚(板+ブラケット)と本たち ───
 C_shade = {'m2':'m0','cor':'brick','g2':'g0','b3':'b0','m1':'m0','cream':'cor2','b2':'b0','m3':'m1','g1':'g0','r2':'r0'}
@@ -589,10 +615,9 @@ O('props', 322, 181, 26, 5, 'gray1', 'ink')                # コンクリの土�
 R('props', 320, 186, 30, 2, 'q0')                          # 接地影
 
 obj()
-# ホコリ(光のチリ)
+# ホコリ(光のチリ)。緑のチリは時計の盤面に重なってゴミに見えるため廃止
 for dx4, dy4, dc in [(263, 62, 'b4'), (275, 74, 'b4'), (319, 78, 'b4'),
-                     (100, 30, 'o2'), (180, 27, 'o2'), (258, 29, 'o2'),
-                     (132, 58, 'g2')]:
+                     (100, 30, 'o2'), (180, 27, 'o2'), (258, 29, 'o2')]:
     PXL('props', dx4, dy4, dc)
 
 # ═══ ジュークボックス(バブラー型・カウンターの手前) 42x74 @ (50,110) ═══
@@ -806,8 +831,8 @@ def apply_illum(layer):
                     continue    # デザイン室の戸口の光
                 if 345 <= xx <= 375 and 49 <= yy <= 215:
                     continue    # 編集室の戸口の光
-                if (2 <= xx <= 83 and 28 <= yy <= 48) or (332 <= xx <= 382 and 28 <= yy <= 48):
-                    continue    # 吊り看板は読ませる
+                if (3 <= xx <= 45 and 21 <= yy <= 47) or (339 <= xx <= 381 and 21 <= yy <= 49):
+                    continue    # 電飾看板は読ませる
             rgb = c[:3]
             v = ILL[xx // GS][yy // GS] + (((xx * 7 + yy * 13) % 5) - 2) * 0.02
             tint = TINT[xx // GS][yy // GS][0]
@@ -1160,7 +1185,6 @@ bd2.rectangle([WX - WRX + 1, WY - 1, WX + WRX - 1, WY + 1], fill=C('q3'))
 bd2.rectangle([WX - 1, WY - WRY + 1, WX - 1, WY + WRY - 1], fill=C('q5'))
 bd2.rectangle([WX - WRX + 1, WY - 1, WX + WRX - 1, WY - 1], fill=C('q5'))
 bd2.ellipse([WX - WRX - 1, WY - WRY - 1, WX + WRX + 1, WY + WRY + 1], outline=C('q4'), width=2)
-bd2.rectangle([332, 27, 383, 49], fill=(0, 0, 0, 0))   # 吊り看板(編集室)は窓枠より手前
 bars.save(os.path.join(WEB, "window_bars.png"))
 print("window_bars.png written")
 

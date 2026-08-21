@@ -111,17 +111,17 @@
   @keyframes doorbreath { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
   /* 吊り看板のうしろの淡い光(電飾の呼吸) */
   #signGlowL, #signGlowR {
-    position: absolute; top: 22px; height: 34px;
+    position: absolute; top: 14px; height: 40px;
     pointer-events: none; mix-blend-mode: screen;
     animation: doorbreath 4.6s ease-in-out infinite;
   }
   #signGlowL {
-    left: -10px; width: 106px; animation-delay: 1.2s;
+    left: -16px; width: 80px; animation-delay: 1.2s;
     background: radial-gradient(closest-side at 50% 50%,
       rgba(255, 214, 130, .34) 0%, rgba(255, 186, 80, .16) 55%, rgba(255, 186, 80, 0) 80%);
   }
   #signGlowR {
-    left: 320px; width: 76px; animation-delay: 3.4s;
+    left: 320px; width: 80px; animation-delay: 3.4s;
     background: radial-gradient(closest-side at 50% 50%,
       rgba(255, 178, 216, .36) 0%, rgba(236, 148, 190, .17) 55%, rgba(236, 148, 190, 0) 80%);
   }
