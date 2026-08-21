@@ -71,32 +71,14 @@ ogp.alpha_composite(big.crop((0, 45, 1152, 675)), (24, 0))  # 上下を45pxず�
 ogp.convert("RGB").save(os.path.join(HERE, "ogp.png"))
 print("ogp.png written", (1200, 630))
 
-# ── ナビのロゴ: 池本の正式ロゴ「PIXEL STUDIO PATTI【White】」を論理ドットに落とす ──
+# ── ナビのロゴ: 正式ロゴ「PIXEL STUDIO PATTI【White】」をそのまま使う ──
+# (等倍ドット化は形が崩れるので廃止。表示高10px向けに高さ40pxへなめらか縮小するだけ)
 _lg = Image.open(os.path.join(HERE, "..", "..", "..", "ロゴ", "PIXEL STUDIO PATTI【White】.png")).convert("RGBA")
-_alpha = _lg.getchannel("A")
-_bbx = _alpha.getbbox()
+_bbx = _lg.getchannel("A").getbbox()
 _lg = _lg.crop(_bbx)
-# ドットの格子サイズを推定(アルファの縦エッジ間隔の最頻値)
-_ap = _lg.getchannel("A").load()
-_w9, _h9 = _lg.size
-_runs = {}
-for _yy in range(0, _h9, max(1, _h9 // 8)):
-    _last, _run = None, 0
-    for _xx in range(_w9):
-        _on = _ap[_xx, _yy] > 128
-        if _on == _last:
-            _run += 1
-        else:
-            if _last is not None and 3 <= _run <= 80:
-                _runs[_run] = _runs.get(_run, 0) + 1
-            _last, _run = _on, 1
-_grid = min(_runs, key=lambda k: (-_runs[k], k)) if _runs else 17
-_lw, _lh = max(1, round(_w9 / _grid)), max(1, round(_h9 / _grid))
-_logo = _lg.resize((_lw, _lh), Image.NEAREST)
-if _lh != 10:                                        # ナビでは高さ10pxで使う
-    _logo = _logo.resize((max(1, round(_lw * 10 / _lh)), 10), Image.NEAREST)
-_logo.save(os.path.join(HERE, "nav_logo.png"))
-print("nav_logo.png written", _logo.size, "grid=", _grid)
+_lg = _lg.resize((max(1, round(_lg.width * 40 / _lg.height)), 40), Image.LANCZOS)
+_lg.save(os.path.join(HERE, "nav_logo.png"))
+print("nav_logo.png written", _lg.size)
 
 # ── タブに出るアイコン ────────────────────────────────
 fav = Image.new("RGBA", (36, 36), (11, 8, 32, 255))
