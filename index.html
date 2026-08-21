@@ -64,7 +64,7 @@
 
   /* ─── 重なり順をここで一元管理(レイヤー事故防止) ─── */
   #room { z-index: 1; }
-  #speopclip, #winbars, #garland, #globespin, #jukeglow, #jukehalo, #clockhands, .doorsign { z-index: 2; }
+  #speopclip, #winbars, #garland, #globespin, #jukeglow, #jukehalo, #clockhands, .doorsign, #doorGlowL, #doorGlowR { z-index: 2; }
   .hs, #jukebox { z-index: 3; }
   #mshadow, #mayu, #pshadow, #patti { z-index: 4; }
   #navbar, #talkbox { z-index: 6; }
@@ -77,23 +77,49 @@
     font-family: 'DotGothic16', 'MS Gothic', monospace;
     padding: 0 4px; box-sizing: border-box;
   }
-  #navbar .brand { display: flex; align-items: center; gap: 3px; color: #f2eefc; font-size: 7px; letter-spacing: .5px; }
-  #navbar .brand img { width: 12px; height: 12px; image-rendering: pixelated; }
+  #navbar .brand { display: flex; align-items: center; gap: 3px; color: #ffffff; font-size: 7.5px; letter-spacing: 1px; text-shadow: .6px 0 0 currentColor; }
+  #navbar .brand img { height: 13px; width: auto; image-rendering: pixelated; }
   #navbar nav { display: flex; align-items: center; gap: 2px; }
   #navbar nav button {
-    border: 0; background: transparent; color: #c9c9d4; cursor: pointer;
-    font-family: inherit; font-size: 6px; line-height: 1.1; padding: 1px 3px; text-align: center;
+    border: 0; background: transparent; color: #e8e4f4; cursor: pointer;
+    font-family: inherit; font-size: 6.5px; line-height: 1.1; padding: 1px 3px; text-align: center;
+    text-shadow: .6px 0 0 currentColor;
   }
   #navbar nav button:hover, #navbar nav button:focus-visible { color: #fcc800; background: rgba(252, 200, 0, .12); outline: none; }
 
   /* ─── 吊り看板の文字(縦書き) ─── */
   .doorsign {
     position: absolute; pointer-events: none;
-    writing-mode: vertical-rl; display: flex; align-items: center; justify-content: center;
-    color: #f7eed8; font-family: 'DotGothic16', 'MS Gothic', monospace;
-    font-size: 5px; letter-spacing: .6px; text-shadow: 0 0 2px #14081c;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DotGothic16', 'MS Gothic', monospace;
     overflow: hidden; white-space: nowrap;
   }
+  #signL {
+    color: #ffe9a8; font-size: 6px; letter-spacing: 1px;
+    text-shadow: 0 0 3px rgba(255, 190, 80, .95), 0 0 6px rgba(255, 170, 60, .55);
+  }
+  #signR {
+    writing-mode: vertical-rl; color: #e6ddff; font-size: 6px; letter-spacing: 3px;
+    text-shadow: 0 0 3px rgba(178, 156, 255, .95), 0 0 6px rgba(150, 130, 240, .55);
+  }
+  /* 戸口からもれる光(淡いグローが呼吸する) */
+  #doorGlowL, #doorGlowR {
+    position: absolute; top: 40px; width: 118px; height: 186px;
+    pointer-events: none; mix-blend-mode: screen;
+    animation: doorbreath 4.6s ease-in-out infinite;
+  }
+  #doorGlowL {
+    left: -18px;
+    background: radial-gradient(closest-side at 32% 55%,
+      rgba(255, 214, 130, .52) 0%, rgba(255, 186, 80, .26) 45%, rgba(255, 186, 80, 0) 78%);
+  }
+  #doorGlowR {
+    left: 284px; animation-delay: 2.3s;
+    background: radial-gradient(closest-side at 68% 55%,
+      rgba(206, 188, 255, .5) 0%, rgba(152, 138, 230, .24) 45%, rgba(152, 138, 230, 0) 78%);
+  }
+  @keyframes doorbreath { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { #doorGlowL, #doorGlowR { animation: none; } }
 
   /* ─── 戸口: 斜めの壁に沿ったクリック形状と光 ─── */
   #doorL { clip-path: polygon(6% 6%, 94% 1%, 94% 72%, 6% 99%); }
@@ -106,7 +132,7 @@
 
   /* 地球儀はずっと回っている */
   #globespin {
-    position: absolute; left: 86px; top: 32px;
+    position: absolute; left: 106px; top: 113px;
     width: 24px; height: 28px;
     background-image: url(globe_spin.png);
     background-size: 144px 28px;
@@ -116,19 +142,19 @@
   @keyframes globespinanim { from { background-position: 0 0; } to { background-position: -144px 0; } }
   /* 掛け時計の針(リアルタイム・JSが1px線で描く) */
   #clockhands {
-    position: absolute; left: 59px; top: 19px;
+    position: absolute; left: 105px; top: 17px;
     width: 38px; height: 38px; pointer-events: none;
     image-rendering: pixelated;
   }
   /* ジュークボックス(本棚の手前) */
   #jukebox {
-    position: absolute; left: 52px; top: 108px;
+    position: absolute; left: 50px; top: 110px;
     width: 42px; height: 74px; cursor: pointer;
     border: 0; background: transparent; padding: 0;
   }
   /* 灯りのコマ(消灯時は非表示。再生中=速い点滅／ホバー中=ゆっくり点滅) */
   #jukeglow {
-    position: absolute; left: 52px; top: 108px;
+    position: absolute; left: 50px; top: 110px;
     width: 42px; height: 74px; display: none;
     background-image: url(jukebox_glow.png);
     background-size: 168px 74px;
@@ -141,7 +167,7 @@
     75%,100%   { background-position: -126px 0; }
   }
   #jukehalo {
-    position: absolute; left: 40px; top: 96px;
+    position: absolute; left: 38px; top: 98px;
     width: 66px; height: 98px; display: none;
     background: radial-gradient(ellipse at center, rgba(255,170,90,.34), rgba(255,170,90,0) 70%);
     mix-blend-mode: screen; pointer-events: none;
@@ -165,20 +191,21 @@
 
   /* パッチくんの接地影(足の黒とぶつからない紫) */
   #pshadow {
-    position: absolute; width: 30px; height: 7px;
-    left: 203px; top: 178px;   /* 読み込み前もパッチの足元に */
+    position: absolute; width: 22px; height: 5px;
+    left: 207px; top: 180px;   /* 読み込み前もパッチの足元に */
     border-radius: 50%; background: rgba(64, 24, 108, .5);
   }
   /* マユちゃん(左で絵本を読んでいる) */
   #mayu {
-    position: absolute; left: 94px; top: 124px;
+    position: absolute; left: 96px; top: 126px;
     width: 76px; height: 58px;   /* 足先を描き足した分だけ広い */
+    transform: scale(.75); transform-origin: 50% 100%;
     background-image: url(mayu_shaded.png);
     background-repeat: no-repeat;
   }
   #mshadow {
-    position: absolute; left: 98px; top: 177px;
-    width: 62px; height: 8px;
+    position: absolute; left: 112px; top: 179px;
+    width: 46px; height: 6px;
     border-radius: 50%; background: rgba(64, 24, 108, .5);
   }
   /* 窓の向こうを飛ぶおばけ(Speop)。楕円でクリップして桟の奥に見せる */
@@ -395,7 +422,8 @@
     width: 36px; height: 48px;
     background-image: url(patti_shaded.png);
     background-repeat: no-repeat;
-    left: 200px; top: 134px;   /* GROUND_Y(182) - 48。JS初期値と一致させる */
+    left: 200px; top: 136px;   /* GROUND_Y(184) - 48。JS初期値と一致させる */
+    transform: scale(.75); transform-origin: 50% 100%;
   }
 
 
@@ -433,28 +461,30 @@
     <div id="jukehalo" aria-hidden="true"></div>
     <img id="winbars" src="window_bars.png" alt="" aria-hidden="true">
     <div id="garland" aria-hidden="true"></div>
-    <div class="doorsign" aria-hidden="true" style="left:4px;top:20px;width:24px;height:32px">デザイン室</div>
-    <div class="doorsign" aria-hidden="true" style="left:357px;top:20px;width:24px;height:32px">編集室</div>
+    <div id="doorGlowL" aria-hidden="true"></div>
+    <div id="doorGlowR" aria-hidden="true"></div>
+    <div class="doorsign" id="signL" aria-hidden="true" style="left:4px;top:19px;width:40px;height:13px">デザイン室</div>
+    <div class="doorsign" id="signR" aria-hidden="true" style="left:365px;top:19px;width:14px;height:36px">編集室</div>
     <div id="mshadow" aria-hidden="true"></div>
     <div id="mayu" role="img" aria-label="絵本を読むマユちゃん"></div>
     <div id="pshadow" aria-hidden="true"></div>
     <div id="patti" role="img" aria-label="パッチくん"></div>
-    <button id="doorL" class="hs" style="left:8px;top:48px;width:33px;height:168px;--gi:.55"
+    <button id="doorL" class="hs" style="left:8px;top:48px;width:33px;height:168px;--gi:.4"
             aria-label="デザイン室（CHARACTER DESIGN・準備中）"></button>
-    <button id="doorR" class="hs" style="left:343px;top:48px;width:33px;height:168px;--gi:.55"
+    <button id="doorR" class="hs" style="left:343px;top:48px;width:33px;height:168px;--gi:.4"
             aria-label="編集室（CONTENTS CREATIVE・準備中）"></button>
-    <button id="companylink" class="hs" style="left:158px;top:94px;width:78px;height:50px;--gw:118%;--gh:130%"
+    <button id="companylink" class="hs" style="left:144px;top:100px;width:104px;height:42px;--gw:114%;--gh:126%"
             aria-label="COMPANY（会社概要・準備中）"></button>
     <button id="spooklink" class="hs" style="left:254px;top:82px;width:84px;height:56px;--gw:112%;--gh:124%;--gi:.7"
             aria-label="Patti the Spook（準備中）"></button>
-    <button id="booklink" class="hs" style="left:52px;top:84px;width:28px;height:30px;--gw:150%;--gh:150%"
+    <button id="booklink" class="hs" style="left:52px;top:82px;width:24px;height:28px;--gw:150%;--gh:150%"
             aria-label="絵本『おばけのパッチ』を読む"></button>
-    <button id="gallink" class="hs" style="left:132px;top:42px;width:122px;height:66px;--gw:106%;--gh:112%;--gi:.6"
+    <button id="gallink" class="hs" style="left:144px;top:36px;width:106px;height:68px;--gw:106%;--gh:112%;--gi:.6"
             aria-label="ギャラリー"></button>
     <button id="postlink" class="hs" style="left:318px;top:114px;width:34px;height:74px;--gw:148%;--gh:148%;--gi:.78"
             aria-label="お問い合わせ（ポスト）"></button>
     <div id="navbar">
-      <div class="brand"><img src="favicon.png" alt=""><span>STUDIO PATTI</span></div>
+      <div class="brand"><img src="nav_logo.png" alt=""><span>STUDIO PATTI</span></div>
       <nav>
         <button data-k="company">COMPANY</button>
         <button data-k="chdesign">CHARACTER<br>DESIGN</button>
@@ -486,9 +516,9 @@
 // ─────────────────────────────────────────────
 // 設定：ここだけ触れば動きが変わる
 // ─────────────────────────────────────────────
-const GROUND_Y   = 182;   // 足の裏が乗る高さ（ドット）※下部はテキストボックス帯
-const WALK_MIN_X = 178;   // 歩ける左端(マユちゃんの右から)
-const WALK_MAX_X = 280;   // 歩ける右端(赤いポストの手前で止まる)
+const GROUND_Y   = 184;   // 足の裏が乗る高さ（ドット）※下部はテキストボックス帯
+const WALK_MIN_X = 180;   // 歩ける左端(マユちゃんの右から)
+const WALK_MAX_X = 284;   // 歩ける右端(赤いポストの手前で止まる)
 const WALK_SPEED = 20;    // 歩く速さ（ドット/秒）※歩行コマと同期する速度
 const ART_FACES  = 'left';// 描いた絵が向いている方向。'right' なら書き換える
 
@@ -556,9 +586,9 @@ function place() {
   const xi = Math.round(x);              // 整数スナップでドットのズレ/ジッタを防ぐ
   el.style.left = xi + 'px';
   el.style.top  = (GROUND_Y - p.h) + 'px';
-  el.style.transform = facing === 1 ? 'none' : 'scaleX(-1)';
+  el.style.transform = facing === 1 ? 'scale(.75)' : 'scale(.75) scaleX(-1)';
   const sh = document.getElementById('pshadow');
-  sh.style.left = (xi + 3) + 'px';
+  sh.style.left = (xi + 7) + 'px';
   sh.style.top  = (GROUND_Y - 4) + 'px';
 }
 
@@ -636,7 +666,7 @@ async function speopBehave() {
         el.style.backgroundPosition = `-${fx * FW2}px 0`;
         el.style.left = Math.round(x0 + (x1 - x0) * k) + 'px';
         el.style.top = Math.round(y0 + 5 * Math.sin(k * 6.28 * 1.5)) + 'px';
-        el.style.transform = toRight ? 'none' : 'scaleX(-1)';
+        el.style.transform = toRight ? 'scale(.75)' : 'scale(.75) scaleX(-1)';
         if (k >= 1) { res(); return; }
         requestAnimationFrame(step);
       };
@@ -1070,9 +1100,9 @@ function tease(name) {
   window._tz = setTimeout(() => setTalk(TALK_DEFAULT), 3200);
 }
 hotspot('booklink', 'それは絵本『おばけのパッチ』！<br>ボクが主役の絵本、ここで読めるよ！',
-  () => zoomOpen('book', 52, 84, 28, 30));
+  () => zoomOpen('book', 52, 82, 24, 28));
 hotspot('gallink', 'ギャラリーのかべ！<br>ボクの絵がいっぱいあるよ！',
-  () => zoomOpen('gallery', 132, 42, 122, 66));
+  () => zoomOpen('gallery', 144, 36, 106, 68));
 hotspot('postlink', '赤いポスト！<br>お手紙（お問い合わせ）はここからどうぞ！',
   () => zoomOpen('post', 318, 114, 34, 74));
 hotspot('doorL', 'デザイン室！キャラクターが生まれる部屋だよ！<br>（いま準備中…もうすぐ開くよ！）',

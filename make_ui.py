@@ -63,13 +63,29 @@ room = Image.open(os.path.join(HERE, "room.png")).convert("RGBA")
 mayu = Image.open(os.path.join(HERE, "mayu_shaded.png")).convert("RGBA")
 patti = Image.open(os.path.join(HERE, "patti_shaded.png")).convert("RGBA")
 scene = room.copy()
-scene.alpha_composite(mayu.crop((0, 0, 76, 58)), (94, 124))
-scene.alpha_composite(patti.crop((0, 0, 36, 48)), (200, 134))
+scene.alpha_composite(mayu.crop((0, 0, 76, 58)).resize((57, 44), Image.NEAREST), (105, 140))
+scene.alpha_composite(patti.crop((0, 0, 36, 48)).resize((27, 36), Image.NEAREST), (205, 148))
 big = scene.resize((384 * 3, 240 * 3), Image.NEAREST)      # 1152x720
 ogp = Image.new("RGBA", (1200, 630), (5, 3, 15, 255))
 ogp.alpha_composite(big.crop((0, 45, 1152, 675)), (24, 0))  # 上下を45pxずつ落として630に
 ogp.convert("RGB").save(os.path.join(HERE, "ogp.png"))
 print("ogp.png written", (1200, 630))
+
+# ── ナビのロゴ(正式ロゴのデータ待ち。それまでPIXEL PATTIロゴのパッチを仮使用) ──
+_lg = Image.open(os.path.join(HERE, "..", "..", "..", "PIXEL PATTIロゴ.png")).convert("RGB")
+_lg = _lg.resize((40, 40), Image.NEAREST)          # 27px格子 → 論理40px
+_out = Image.new("RGBA", (40, 40), (0, 0, 0, 0))
+for _y in range(40):
+    for _x in range(40):
+        r9, g9, b9 = _lg.getpixel((_x, _y))
+        if b9 >= 150 and b9 - min(r9, g9) >= 40:
+            continue                                # グラデ背景を抜く
+        _out.putpixel((_x, _y), (r9, g9, b9, 255))
+_bb = _out.getbbox()
+_fig = _out.crop(_bb)
+_fig = _fig.resize((_fig.width // 2, _fig.height // 2), Image.NEAREST)
+_fig.save(os.path.join(HERE, "nav_logo.png"))
+print("nav_logo.png written", _fig.size)
 
 # ── タブに出るアイコン ────────────────────────────────
 fav = Image.new("RGBA", (36, 36), (11, 8, 32, 255))
