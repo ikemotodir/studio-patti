@@ -37,7 +37,7 @@
 
   /* ─── 重なり順をここで一元管理(レイヤー事故防止) ─── */
   #room { z-index: 1; }
-  #doorGlowStudio, #editblink, #screenglow { z-index: 2; }
+  #doorGlowStudio, #editblink, #marqblink, #screenglow { z-index: 2; }
   #screenbox { z-index: 3; }
   .hs, .mi, .nb, #catname { z-index: 4; }
   #mshadow, #mayu, #pshadow, #patti { z-index: 5; }
@@ -119,6 +119,22 @@
   }
   @media (prefers-reduced-motion: reduce) { #editblink { animation: none; } }
 
+  /* ─── 電飾マーキーの電球がぐるりと流れる(4コマ) ─── */
+  #marqblink {
+    position: absolute; left: 0; top: 18px;
+    width: 384px; height: 36px; pointer-events: none;
+    background-image: url(marquee_blink.png);
+    background-size: 1536px 36px;
+    animation: marqblink 1.0s steps(1) infinite;
+  }
+  @keyframes marqblink {
+    0%, 24.9% { background-position: 0 0; }
+    25%, 49.9% { background-position: -384px 0; }
+    50%, 74.9% { background-position: -768px 0; }
+    75%, 100% { background-position: -1152px 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { #marqblink { animation: none; } }
+
   /* ─── 大スクリーン(中身はここに載る) ─── */
   #screenbox {
     position: absolute; left: 134px; top: 26px;
@@ -191,10 +207,11 @@
 
   /* ─── 右のカテゴリ表示と数字ボタン ─── */
   #catname {
-    position: absolute; left: 286px; top: 24px; width: 49px; height: 22px;
+    position: absolute; left: 286px; top: 23px; width: 46px; height: 26px;
     display: flex; align-items: center; justify-content: center;
     font-family: 'DotGothic16', 'MS Gothic', monospace;
-    color: #b8ecf4; font-size: 6px; line-height: 1.35; text-align: center;
+    color: #fff6e0; font-size: 6px; line-height: 1.6; text-align: center;
+    text-shadow: 0 0 3px rgba(255, 232, 176, .55);
     pointer-events: none;
   }
   .nb {
@@ -353,6 +370,7 @@
     <img id="room" src="room_edit.png" alt="編集室">
     <div id="doorGlowStudio" aria-hidden="true"></div>
     <div id="editblink" aria-hidden="true"></div>
+    <div id="marqblink" aria-hidden="true"></div>
     <div id="screenglow" aria-hidden="true"></div>
 
     <div id="screenbox">
@@ -375,7 +393,7 @@
     <button id="doorStudio" class="hs" style="left:8px;top:48px;width:33px;height:168px;--gi:.4"
             aria-label="スタジオ(トップページ)にもどる"></button>
 
-    <div id="catname" aria-live="polite"></div>
+    <div id="catname">コンテンツ<br>クリエイティブ</div>
 
     <div id="talkbox">
       <span class="name">パッチ</span>
@@ -465,13 +483,12 @@ const CATS = [
 ];
 
 const MENU_TOP = 26, MENU_H = 22;
-const BTN_POS = [[288, 60], [315, 60], [288, 86], [315, 86]];   // 丸ボタン(18x18)の左上
+const BTN_POS = [[287, 62], [312, 62], [287, 86], [312, 86]];   // 丸ボタン(19x19)の左上
 
 const scrwait = document.getElementById('scrwait');
 const scrframe = document.getElementById('scrframe');
 const bookbox = document.getElementById('bookbox');
 const screenglow = document.getElementById('screenglow');
-const catname = document.getElementById('catname');
 
 let cat = 0, num = -1;
 let BOOK = null, bkpage = 0;
@@ -548,7 +565,6 @@ function stopScreen() {
 function selectCat(i) {
   cat = i;
   miEls.forEach((b, k) => b.classList.toggle('sel', k === i));
-  catname.innerHTML = CATS[i].disp;
   nbEls.forEach((b, j) => b.classList.toggle('off', !CATS[i].items[j]));
   stopScreen();
   if (CATS[i].items.length === 0) {

@@ -101,7 +101,7 @@ def dpatch(l, x, y, w, h, c, den=2, ph=0):
 # 数字(5x5) - 数字ボタン用
 NFONT = {
  '1': "010 110 010 010 111", '2': "110 001 010 100 111",
- '3': "110 001 010 001 110", '4': "101 101 111 001 001",
+ '3': "110 001 011 001 110", '4': "101 101 111 001 001",
 }
 def NTXT(l, x, y, ch, c):
     rows = NFONT[ch].split()
@@ -112,9 +112,9 @@ def NTXT(l, x, y, ch, c):
 # ═══════════════ 主要座標(ここだけ見れば配置が分かる) ═══════════════
 MENU = (47, 24, 79, 114)        # メニューパネル外形 x,y,w,h (デスクに立つボード)
 SCR  = (134, 26, 142, 80)       # スクリーン画面(16:9, センター205=チェアと同心)
-CATP = (283, 22, 55, 26)        # カテゴリ名表示パネル
-BTNP = (283, 54, 55, 56)        # 数字ボタンパネル
-BTNC = [(297, 69), (324, 69), (297, 95), (324, 95)]   # 丸ボタン中心(18px)
+MARQ = (281, 18, 56, 36)        # 電飾マーキー(コンテンツクリエイティブの掲示板)
+BTNP = (281, 58, 56, 52)        # 数字ボタンパネル
+BTNC = [(296, 71), (321, 71), (296, 95), (321, 95)]   # 丸ボタン中心(19px)
 DESK_Y = 138                    # 編集卓の天板
 CHAIR = (185, 116)              # ゲーミングチェア左上(センター205)
 EDITC = (150, 120, 110)         # 編集機 x,y,幅 (センター205)
@@ -251,7 +251,11 @@ for k in range(4):
     R('furniture', 14 + k * 6, 62 - k, 1, 140 - k * 10, 'gray2' if k % 2 else 'gray1')
 
 # ─── 左の看板: スタジオ(白の電飾・TOPの看板と同じ台形様式) ───
-def bake_sign_img(img_name, x0, x1, ytop_fn, yoff, core):
+def bake_sign_img(img_name, x0, x1, ytop_fn, ybot_fn, core):
+    """プレート(台形)に文字が「描いてある」ように焼く。
+    列ごとにプレートの中心線へ縦センタリングするので、パースの傾きに自然に沿う。
+    文字を縦に縮小するパースも試したが、9pxの字が6pxまで潰れて
+    「ジ」の濁点と「オ」が崩れるため、字高は一定にしている。"""
     m = Image.open(os.path.join(WEB, img_name)).convert('RGBA')
     tw, th = m.size
     ox = x0 + (x1 - x0 + 1 - tw) // 2
@@ -260,15 +264,17 @@ def bake_sign_img(img_name, x0, x1, ytop_fn, yoff, core):
         for gx in range(tw):
             if mp[gx, gy][3] > 0:
                 xx = ox + gx
-                PXL('furniture', xx, ytop_fn(xx) + yoff + gy, core)
+                cy_ = (ytop_fn(xx) + ybot_fn(xx)) / 2.0
+                PXL('furniture', xx, int(cy_ - th / 2.0 + 0.5) + gy, core)
 
 obj('スタジオの看板')
 def signS_top(xx):
     return int(21 + 8 * (xx - 4) / 36.0 + 0.5)
+def signS_bot(xx):
+    return int(45 + 1 * (xx - 4) / 36.0 + 0.5)
 for xx in range(4, 41):
-    t = (xx - 4) / 36.0
     ytopS = signS_top(xx)
-    ybotS = int(45 + 1 * t + 0.5)
+    ybotS = signS_bot(xx)
     for yy in range(ytopS, ybotS + 1):
         if yy == ytopS or yy == ybotS:
             c = 'ink'
@@ -281,7 +287,7 @@ for xx in range(4, 41):
         PXL('furniture', xx, yy, c)
 R('furniture', 3, 21, 1, 25, 'ink'); R('furniture', 41, 29, 1, 18, 'ink')
 PXL('furniture', 5, 23, 'wht'); PXL('furniture', 39, 44, 'wht')
-bake_sign_img('sign_studio_s.png', 4, 40, signS_top, 5, 'wht')
+bake_sign_img('sign_studio_s.png', 4, 40, signS_top, signS_bot, 'wht')
 
 # ─── 奥壁: 大スクリーン(壁掛け・16:9) ───
 obj('大スクリーン')
@@ -302,13 +308,25 @@ for yy in range(sy - 3, sy + sh + 3, 2):
     PXL('furniture', sx + sw + 4, yy, 'cyn0')
 PXL('furniture', sx - 5, sy - 5, 'cyn2'); PXL('furniture', sx + sw + 4, sy - 5, 'cyn2')
 
-# ─── 奥壁: カテゴリ名表示パネル(右上) ───
-obj('カテゴリ表示')
-cx, cy, cw, ch = CATP
-O('furniture', cx, cy, cw, ch, 'n0', 'ink')
-R('furniture', cx + 1, cy + 1, cw - 2, 1, 'cyn1')
-R('furniture', cx + 1, cy + ch - 2, cw - 2, 1, 'cyn0')
-PXL('furniture', cx + 2, cy + 2, 'cyn2')
+# ─── 奥壁: 電飾マーキー(この部屋の看板。小さな電球がぐるりと並ぶ) ───
+obj('電飾マーキー')
+cx, cy, cw, ch = MARQ
+O('furniture', cx, cy, cw, ch, 'q1', 'ink')              # 枠(電球の台座)
+R('furniture', cx + 1, cy + 1, cw - 2, 1, 'q3')          # 上面のハイライト
+R('furniture', cx + 1, cy + ch - 2, cw - 2, 1, 'q0')
+O('furniture', cx + 4, cy + 4, cw - 8, ch - 8, 'n0', 'ink')   # 文字が入る暗い面
+R('furniture', cx + 5, cy + 5, cw - 10, 1, 'q0')
+
+# 電球: 枠のふちを2px内側でぐるりと1周し、4pxおきに並べる
+_bl, _bt = cx + 2, cy + 2
+_br, _bb = cx + cw - 3, cy + ch - 3
+_path = ([(x, _bt) for x in range(_bl, _br + 1)] +
+         [(_br, y) for y in range(_bt + 1, _bb + 1)] +
+         [(x, _bb) for x in range(_br - 1, _bl - 1, -1)] +
+         [(_bl, y) for y in range(_bb - 1, _bt, -1)])
+MARQ_BULBS = [_path[i] for i in range(0, len(_path), 4)]
+for (bxb, byb) in MARQ_BULBS:
+    PXL('furniture', bxb, byb, 'ivory2')
 
 # ─── 奥壁: 数字ボタンパネル(右) ───
 obj('数字ボタンパネル')
@@ -320,7 +338,7 @@ for i, (bcx, bcy) in enumerate(BTNC):
     EL('furniture', bcx - 9, bcy - 9, bcx + 9, bcy + 9, fill='pnk1', out='ink')
     EL('furniture', bcx - 7, bcy - 7, bcx + 7, bcy + 7, fill='pnk2')
     EL('furniture', bcx - 5, bcy - 6, bcx - 2, bcy - 3, fill='pnkc')
-    NTXT('furniture', bcx - 2, bcy - 2, str(i + 1), 'ink')
+    NTXT('furniture', bcx - 1, bcy - 2, str(i + 1), 'ink')   # 字形3x5なので中心-1,-2 が真ん中
 
 # ─── 編集卓(壁ぎわのカウンター=ミキサー卓。ボタンいっぱい) ───
 obj('編集卓')
@@ -620,7 +638,8 @@ SOURCES = [
     {'pos': (205, 66),  'r': 155, 's': 1.30, 'e': 1.4, 'tint': P['b4'],   'occ': True},   # 大スクリーン
     {'pos': (205, 24),  'r': 60,  's': 0.40, 'e': 1.4, 'tint': P['cyn1'], 'occ': False},  # アンビエントライト上
     {'pos': (24, 118),  'r': 82,  's': 0.95, 'e': 1.3, 'tint': P['gray2'],'occ': False},  # スタジオの白い灯り
-    {'pos': (311, 82),  'r': 52,  's': 0.50, 'e': 1.4, 'tint': P['pnk2'], 'occ': False},  # 数字ボタン
+    {'pos': (309, 84),  'r': 52,  's': 0.50, 'e': 1.4, 'tint': P['pnk2'], 'occ': False},  # 数字ボタン
+    {'pos': (309, 36),  'r': 62,  's': 0.62, 'e': 1.3, 'tint': P['ivory'], 'occ': False},  # 電飾マーキー
     {'pos': (86, 82),   'r': 46,  's': 0.34, 'e': 1.4, 'tint': P['pnk2'], 'occ': False},  # メニューパネル
     {'pos': (205, 128), 'r': 80,  's': 0.42, 'e': 1.3, 'tint': P['m3'],   'occ': False},  # 編集機のLED
     {'pos': (192, 150), 'r': 185, 's': 0.32, 'e': 1.2, 'tint': P['q5'],   'occ': False},  # 室内バウンス
@@ -688,8 +707,8 @@ def apply_illum(layer):
                     continue    # スタジオの看板
                 if bx + 2 <= xx <= bx + bw - 3 and by + 2 <= yy <= by + bh - 3:
                     continue    # 数字ボタンは光る
-                if cx + 1 <= xx <= cx + cw - 2 and cy + 1 <= yy <= cy + ch - 2:
-                    continue    # カテゴリ表示は発光ディスプレイ
+                if cx <= xx <= cx + cw - 1 and cy <= yy <= cy + ch - 1:
+                    continue    # 電飾マーキーは自ら光る
             rgb = c[:3]
             v = ILL[xx // GS][yy // GS] + (((xx * 7 + yy * 13) % 5) - 2) * 0.02
             tint = TINT[xx // GS][yy // GS][0]
@@ -796,3 +815,16 @@ for f in range(3):
                 bd.point((f * W + lx, ly - BY0), fill=bc)
 blink.save(os.path.join(WEB, "edit_blink.png"))
 print("edit_blink.png", blink.size, "band y", BY0, "h", BBH)
+
+# ── マーキーの電球の流れ(4コマ・ぐるりと回るチェイス) ──
+MY0, MBH = MARQ[1], MARQ[3]
+mq = Image.new("RGBA", (W * 4, MBH), (0, 0, 0, 0))
+mqd = ImageDraw.Draw(mq)
+for f in range(4):
+    for i, (bxb, byb) in enumerate(MARQ_BULBS):
+        if (i + f) % 4 == 0:
+            mqd.point((f * W + bxb, byb - MY0), fill=C('wht'))
+        elif (i + f) % 4 == 1:
+            mqd.point((f * W + bxb, byb - MY0), fill=C('ivory'))
+mq.save(os.path.join(WEB, "marquee_blink.png"))
+print("marquee_blink.png", mq.size, "band y", MY0, "h", MBH, "電球", len(MARQ_BULBS), "個")
