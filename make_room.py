@@ -391,7 +391,7 @@ PXL('furniture', 379, 23, 'pnkc')
 def signR_text_top(xx):
     t = (380 - xx) / 40.0
     ybotS = int(46 + 1 * t + 0.5)
-    return int((signR_top(xx) + ybotS) / 2.0 - 5 + 0.5)   # 文字の高さ11pxの半分
+    return int((signR_top(xx) + ybotS) / 2.0 - 6 + 0.5)   # 文字の高さ12pxの半分
 bake_sign_img('sign_hensyu_s.png', 340, 380, signR_text_top, 0, 'pnkc')
 
 # ─── 壁かけの棚(板+ブラケット)と本たち ───

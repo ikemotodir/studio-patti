@@ -64,7 +64,7 @@
 
   /* ─── 重なり順をここで一元管理(レイヤー事故防止) ─── */
   #room { z-index: 1; }
-  #speopclip, #winbars, #garland, #globespin, #jukeglow, #jukehalo, #clockhands, #doorGlowL, #doorGlowR, #signGlowL, #signGlowR, #pcscreen { z-index: 2; }
+  #speopclip, #winbars, #garland, #globespin, #jukeglow, #jukehalo, #clockhands, #doorGlowL, #doorGlowR, #signGlowL, #signGlowR, #pcscreen, #pcmovie { z-index: 2; }
   .hs, #jukebox { z-index: 3; }
   #mshadow, #mayu, #pshadow, #patti { z-index: 4; }
   #navbar, #talkbox { z-index: 6; }
@@ -325,16 +325,17 @@
   /* 専用の演出を持つ場所(テレビ/絵本/ギャラリー/PC)は光を重ねない */
   .hs.nobg::after { content: none; }
   @media (prefers-reduced-motion: reduce) { .hs::after { transition: none; } }
-  /* COMPANYモニタ: カーソルを合わせると会社概要の1ページ目が映る */
-  #pcscreen {
+  /* COMPANYモニタ: ふだんはデスクトップ、カーソルを合わせると映像が流れる */
+  #pcscreen, #pcmovie {
     position: absolute; left: 150px; top: 100px;   /* 画面の内側そのもの */
     width: 92px; height: 28px;                     /* = 23:7 (約3.29:1) */
     image-rendering: pixelated; pointer-events: none;
-    opacity: 0; transition: opacity .25s ease;
+    object-fit: fill;
   }
-  #companylink:hover ~ #pcscreen,
-  #companylink:focus-visible ~ #pcscreen { opacity: 1; }
-  @media (prefers-reduced-motion: reduce) { #pcscreen { transition: none; } }
+  #pcmovie { opacity: 0; transition: opacity .2s ease; }
+  #companylink:hover ~ #pcmovie,
+  #companylink:focus-visible ~ #pcmovie { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { #pcmovie { transition: none; } }
   /* 月のおばけボンボン(窓の向こう) */
   #bonbon {
     position: absolute; left: 44px; top: 2px;
@@ -499,7 +500,8 @@
             aria-label="ギャラリー"></button>
     <button id="postlink" class="hs" style="left:318px;top:112px;width:34px;height:78px;--gw:148%;--gh:148%;--gi:.78"
             aria-label="お問い合わせ（ポスト）"></button>
-    <img id="pcscreen" src="pc_company.png" alt="" aria-hidden="true">
+    <img id="pcscreen" src="pc_desktop.png" alt="" aria-hidden="true">
+    <video id="pcmovie" src="pc_movie.mp4" muted loop playsinline preload="auto" aria-hidden="true"></video>
     <div id="navbar">
       <div class="brand"><img src="nav_logo.png" alt="STUDIO PATTI"></div>
       <nav>
@@ -1129,6 +1131,18 @@ hotspot('doorR', '編集室！アニメーションを創ってる部屋だよ�
   () => tease('CONTENTS CREATIVE'));
 hotspot('companylink', 'スタジオパッチの会社案内が見られる<br>パソコンだよ！クリックしてみて！',
   () => window.open(COMPANY_URL, '_blank', 'noopener'));
+// モニタの映像はカーソルが乗っているあいだだけ流す(ループ)
+(() => {
+  const pc = document.getElementById('companylink');
+  const mv = document.getElementById('pcmovie');
+  if (!pc || !mv) return;
+  const play = () => { const r = mv.play(); if (r) r.catch(() => {}); };
+  const stop = () => mv.pause();
+  pc.addEventListener('mouseenter', play);
+  pc.addEventListener('focus', play);
+  pc.addEventListener('mouseleave', stop);
+  pc.addEventListener('blur', stop);
+})();
 hotspot('spooklink', '『おばけのパッチ』の世界への入口！<br>大きな月の絵だよ！',
   () => tease('Patti the Spook'));
 
