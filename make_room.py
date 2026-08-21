@@ -475,9 +475,7 @@ R('furniture', 148, 98, 96, 1, 'q4')
 R('furniture', 149, 99, 94, 30, 'ink')
 R('furniture', 150, 100, 92, 28, 'n0')
 DI('furniture', 150, 124, 92, 4, 'n0', 'n1')
-TXT2('furniture', 169, 106, "COMPANY", 'b4')
-R('furniture', 169, 119, 54, 1, 'b1')
-PXL('furniture', 238, 102, 'b4'); PXL('furniture', 236, 104, 'b3')
+# 画面には何も出さない(スクリーンセーバーはWeb側のcanvasで動かす)
 R('furniture', 193, 130, 6, 7, 'q2'); R('furniture', 193, 130, 1, 7, 'q4')   # 中央の支柱
 R('furniture', 180, 137, 32, 1, 'mauve')                                     # 土台
 R('furniture', 180, 138, 32, 2, 'q4')
@@ -879,8 +877,7 @@ def apply_illum(layer):
 for lname in ['bg', 'window', 'furniture', 'props', 'mayu']:
     apply_illum(lname)
 
-# 発光体まわりの再ブースト(COMPANYの文字とPOSTの票をくっきり戻す)
-TXT2('furniture', 169, 106, "COMPANY", 'b4')
+# 発光体まわりの再ブースト(POSTの票をくっきり戻す)
 TXT('props', 329, 138, "POST", 'r0')
 
 # 影ゾーンにある派手なプロップを沈める(視線ドロボー対策)

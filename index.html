@@ -64,7 +64,7 @@
 
   /* ─── 重なり順をここで一元管理(レイヤー事故防止) ─── */
   #room { z-index: 1; }
-  #speopclip, #winbars, #garland, #globespin, #jukeglow, #jukehalo, #clockhands, #doorGlowL, #doorGlowR, #signGlowL, #signGlowR, #pcscreen, #pcmovie { z-index: 2; }
+  #speopclip, #winbars, #garland, #globespin, #jukeglow, #jukehalo, #clockhands, #doorGlowL, #doorGlowR, #signGlowL, #signGlowR, #pcidle, #pcmovie { z-index: 2; }
   .hs, #jukebox { z-index: 3; }
   #mshadow, #mayu, #pshadow, #patti { z-index: 4; }
   #navbar, #talkbox { z-index: 6; }
@@ -325,17 +325,20 @@
   /* 専用の演出を持つ場所(テレビ/絵本/ギャラリー/PC)は光を重ねない */
   .hs.nobg::after { content: none; }
   @media (prefers-reduced-motion: reduce) { .hs::after { transition: none; } }
-  /* COMPANYモニタ: ふだんはデスクトップ、カーソルを合わせると映像が流れる */
-  #pcscreen, #pcmovie {
+  /* COMPANYモニタ: ふだんはスクリーンセーバー、カーソルを合わせると映像が流れる */
+  #pcidle, #pcmovie {
     position: absolute; left: 150px; top: 100px;   /* 画面の内側そのもの */
     width: 92px; height: 28px;                     /* = 23:7 (約3.29:1) */
     image-rendering: pixelated; pointer-events: none;
     object-fit: fill;
   }
   #pcmovie { opacity: 0; transition: opacity .2s ease; }
+  #pcidle  { opacity: 1; transition: opacity .2s ease; }
   #companylink:hover ~ #pcmovie,
   #companylink:focus-visible ~ #pcmovie { opacity: 1; }
-  @media (prefers-reduced-motion: reduce) { #pcmovie { transition: none; } }
+  #companylink:hover ~ #pcidle,
+  #companylink:focus-visible ~ #pcidle { opacity: 0; }
+  @media (prefers-reduced-motion: reduce) { #pcidle, #pcmovie { transition: none; } }
   /* 月のおばけボンボン(窓の向こう) */
   #bonbon {
     position: absolute; left: 44px; top: 2px;
@@ -500,7 +503,7 @@
             aria-label="ギャラリー"></button>
     <button id="postlink" class="hs" style="left:318px;top:112px;width:34px;height:78px;--gw:148%;--gh:148%;--gi:.78"
             aria-label="お問い合わせ（ポスト）"></button>
-    <img id="pcscreen" src="pc_desktop.png" alt="" aria-hidden="true">
+    <canvas id="pcidle" width="92" height="28" aria-hidden="true"></canvas>
     <video id="pcmovie" src="pc_movie.mp4" muted loop playsinline preload="auto" aria-hidden="true"></video>
     <div id="navbar">
       <div class="brand"><img src="nav_logo.png" alt="STUDIO PATTI"></div>
@@ -1131,13 +1134,58 @@ hotspot('doorR', '編集室！アニメーションを創ってる部屋だよ�
   () => tease('CONTENTS CREATIVE'));
 hotspot('companylink', 'スタジオパッチの会社案内が見られる<br>パソコンだよ！クリックしてみて！',
   () => window.open(COMPANY_URL, '_blank', 'noopener'));
-// モニタの映像はカーソルが乗っているあいだだけ流す(ループ)
+// モニタ: ふだんはスクリーンセーバー(星が中心から流れる)、
+// カーソルが乗っているあいだだけ映像をループ再生する
 (() => {
   const pc = document.getElementById('companylink');
   const mv = document.getElementById('pcmovie');
-  if (!pc || !mv) return;
-  const play = () => { const r = mv.play(); if (r) r.catch(() => {}); };
-  const stop = () => mv.pause();
+  const cv = document.getElementById('pcidle');
+  if (!pc || !mv || !cv) return;
+  const g = cv.getContext('2d');
+  const SW = 92, SH = 28, CX = SW / 2, CY = SH / 2;
+  const TONE = ['#2f5dc4', '#5b8ae8', '#9cc7f7', '#d9ecff'];   // 遠い星ほど暗い
+  const stars = [];
+  const spawn = (st, first) => {
+    const a = Math.random() * Math.PI * 2;
+    const r = 0.3 + Math.random() * 0.7;
+    st.x = Math.cos(a) * r;
+    st.y = Math.sin(a) * r;
+    st.z = first ? 0.14 + Math.random() * 0.86 : 1;
+  };
+  for (let i = 0; i < 26; i++) { const st = {}; spawn(st, true); stars.push(st); }
+
+  const draw = (step) => {
+    g.clearRect(0, 0, SW, SH);
+    for (const st of stars) {
+      st.z -= step * 0.16;
+      if (st.z <= 0.07) spawn(st, false);
+      const px = Math.round(CX + (st.x / st.z) * CX * 0.5);
+      const py = Math.round(CY + (st.y / st.z) * CY * 0.5);
+      if (px < 0 || px >= SW || py < 0 || py >= SH) { spawn(st, false); continue; }
+      g.fillStyle = TONE[Math.max(0, Math.min(3, Math.floor((1 - st.z) * 4.2)))];
+      g.fillRect(px, py, 1, 1);
+    }
+  };
+
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (still) { draw(0); return; }             // 動きを減らす設定のときは止まった星空
+
+  let hovering = false, prev = 0, acc = 0;
+  const tick = (t) => {
+    requestAnimationFrame(tick);
+    if (!prev) prev = t;
+    const dt = Math.min(0.12, (t - prev) / 1000);
+    prev = t;
+    if (hovering || document.hidden) return;   // 映像が出ている間は止める
+    acc += dt;
+    if (acc < 1 / 12) return;                  // 12コマ/秒(ドット絵らしい間引き)
+    draw(acc);
+    acc = 0;
+  };
+  requestAnimationFrame(tick);
+
+  const play = () => { hovering = true; const r = mv.play(); if (r) r.catch(() => {}); };
+  const stop = () => { hovering = false; mv.pause(); };
   pc.addEventListener('mouseenter', play);
   pc.addEventListener('focus', play);
   pc.addEventListener('mouseleave', stop);
