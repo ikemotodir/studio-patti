@@ -299,14 +299,25 @@ R('furniture', 8, 58, 1, 157, 'q1')
 for k in range(4):
     R('furniture', 14 + k * 6, 62 - k, 1, 140 - k * 10, 'o2' if k % 2 else 'o1')
 
-# 左の看板: 横書きの電飾看板(文字はWeb側で光らせる)
+# 左の看板: 横書きの電飾看板(壁のパースに沿って奥へ傾く)
 obj('デザイン室の看板')
-O('furniture', 2, 17, 44, 16, 'brick', 'ink')
-R('furniture', 4, 19, 40, 12, 'q0')
-R('furniture', 3, 18, 42, 1, 'o1')
-R('furniture', 3, 31, 42, 1, 'o0')
-R('furniture', 2, 17, 1, 16, 'o0'); R('furniture', 45, 17, 1, 16, 'o0')
-PXL('furniture', 4, 19, 'o2'); PXL('furniture', 43, 30, 'o2')
+for xx in range(4, 45):
+    t = (xx - 4) / 40.0
+    ytopS = int(15 + 7 * t + 0.5)
+    ybotS = int(35 + 3 * t + 0.5)
+    for yy in range(ytopS, ybotS + 1):
+        if yy == ytopS or yy == ybotS:
+            c = 'ink'
+        elif yy == ytopS + 1:
+            c = 'o1'
+        elif yy == ybotS - 1:
+            c = 'o0'
+        else:
+            c = 'q0'
+        PXL('furniture', xx, yy, c)
+R('furniture', 3, 15, 1, 21, 'ink'); R('furniture', 45, 22, 1, 17, 'ink')
+R('furniture', 4, 16, 1, 19, 'o0'); R('furniture', 44, 23, 1, 15, 'o0')
+PXL('furniture', 5, 17, 'o2'); PXL('furniture', 43, 36, 'o2')
 
 # ─── 右の壁: 編集室の戸口(淡い紫の光がもれる) ───
 obj('編集室の入口')
@@ -337,14 +348,25 @@ R('furniture', 375, 58, 1, 157, 'q1')
 for k in range(4):
     R('furniture', 368 - k * 6, 62 - k, 1, 140 - k * 10, 'cool2' if k % 2 else 'cool1')
 
-# 右の看板: 縦書きの電飾看板(スケッチ通り縦)
+# 右の看板: 横書きの電飾看板(壁のパースに沿って奥へ傾く)
 obj('編集室の看板')
-O('furniture', 364, 17, 16, 40, 'q1', 'ink')
-R('furniture', 366, 19, 12, 36, 'q0')
-R('furniture', 365, 18, 14, 1, 'cool2')
-R('furniture', 365, 55, 14, 1, 'cool1')
-R('furniture', 364, 17, 1, 40, 'cool1'); R('furniture', 379, 17, 1, 40, 'cool1')
-PXL('furniture', 366, 19, 'b5'); PXL('furniture', 377, 54, 'b5')
+for xx in range(340, 381):
+    t = (380 - xx) / 40.0
+    ytopS = int(15 + 7 * t + 0.5)
+    ybotS = int(35 + 3 * t + 0.5)
+    for yy in range(ytopS, ybotS + 1):
+        if yy == ytopS or yy == ybotS:
+            c = 'ink'
+        elif yy == ytopS + 1:
+            c = 'cool2'
+        elif yy == ybotS - 1:
+            c = 'cool1'
+        else:
+            c = 'q0'
+        PXL('furniture', xx, yy, c)
+R('furniture', 381, 15, 1, 21, 'ink'); R('furniture', 339, 22, 1, 17, 'ink')
+R('furniture', 380, 16, 1, 19, 'cool1'); R('furniture', 340, 23, 1, 15, 'cool1')
+PXL('furniture', 379, 17, 'b5'); PXL('furniture', 341, 36, 'b5')
 
 # ─── 壁かけの棚(板+ブラケット)と本たち ───
 C_shade = {'m2':'m0','cor':'brick','g2':'g0','b3':'b0','m1':'m0','cream':'cor2','b2':'b0','m3':'m1','g1':'g0','r2':'r0'}
@@ -368,33 +390,31 @@ for py in (76, 108):
 obj('本たち')
 bookrow(76, [(4,15,'m2'),(5,13,'cor'),(4,16,'g2'),(5,14,'b3'),(4,12,'m1'),(5,15,'cream'),
              (4,13,'b2'),(5,16,'m3'),(4,11,'g1'),(5,14,'r2'),(4,15,'b3'),(5,12,'cor')], 52)
-bookrow(108, [(5,14,'b2'),(4,12,'m3'),(5,15,'g1'),(4,13,'cor'),(5,11,'m1'),(4,14,'b3'),(5,12,'r2')], 78)
-R('furniture', 114, 96, 2, 12, 'q4'); R('furniture', 114, 106, 5, 2, 'q4')   # ブックエンド
 # 2段目の左: 絵本『おばけのパッチ』の表紙を面出し(クリックで絵本ビューア)
 obj('おばけのパッチの絵本')
-O('furniture', 54, 84, 20, 24, 'cream', 'ink')
-R('furniture', 55, 85, 18, 3, 'b2')
-EL('furniture', 57, 89, 71, 103, out='b2')
-R('furniture', 61, 93, 7, 7, 'wht')
-R('furniture', 60, 94, 1, 5, 'wht'); R('furniture', 68, 94, 1, 5, 'wht')
-R('furniture', 62, 100, 2, 2, 'wht'); R('furniture', 65, 100, 2, 2, 'wht')
-PXL('furniture', 62, 93, 'ink'); PXL('furniture', 67, 93, 'ink')
-R('furniture', 56, 105, 16, 1, 'gray1')
+# 実際の装丁と同じ正方形の表紙(白地に大きな円、円の中にパッチの後ろ姿)
+O('furniture', 52, 84, 24, 24, 'wht', 'ink')
+R('furniture', 53, 85, 22, 1, 'ivory2')
+R('furniture', 53, 86, 22, 3, 'b2')                    # タイトル帯
+EL('furniture', 56, 91, 71, 104, out='b2')             # 大きな円
+EL('furniture', 60, 93, 67, 101, fill='wht', out='ink')# パッチの後ろ姿
+R('furniture', 61, 102, 2, 1, 'ink'); R('furniture', 65, 102, 2, 1, 'ink')
+R('furniture', 55, 105, 18, 1, 'gray1')
 
 # ─── 掛け時計(棚の右上。針はWeb側でリアルタイム描画) ───
 obj('掛け時計')
-EL('furniture', 108, 20, 140, 52, fill='ivory', out='ink')
-EL('furniture', 110, 22, 138, 50, out='q4')
+EL('furniture', 108, 24, 140, 56, fill='ivory', out='ink')
+EL('furniture', 110, 26, 138, 54, out='q4')
 for i in range(12):
     ang = i * math.pi / 6
     tx = int(round(124 + math.sin(ang) * 13))
-    ty = int(round(36 - math.cos(ang) * 13))
+    ty = int(round(40 - math.cos(ang) * 13))
     if i % 3 == 0:
         R('furniture', tx - 1, ty - 1, 2, 2, 'ink')
     else:
         PXL('furniture', tx, ty, 'gray1')
-R('furniture', 123, 35, 2, 2, 'ink')
-PXL('furniture', 114, 26, 'wht')
+R('furniture', 123, 39, 2, 2, 'ink')
+PXL('furniture', 114, 30, 'wht')
 
 # ─── 壁ぎわのカウンター(部屋の隅から隅まで) ───
 obj('カウンター')
@@ -410,17 +430,13 @@ R('furniture', 49, 166, 286, 2, 'q0')                  # 接地影
 
 # ─── カウンターの上: 地球儀・小物 ───
 obj('地球儀')
-EL('furniture', 108, 117, 126, 135, fill='b2', out='ink')
-for xx, yy, w2, h2 in [(111,121,6,4),(118,119,5,3),(114,127,7,4),(121,129,4,3)]:
+EL('furniture', 94, 117, 112, 135, fill='b2', out='ink')
+for xx, yy, w2, h2 in [(97,121,6,4),(104,119,5,3),(100,127,7,4),(107,129,4,3)]:
     R('furniture', xx, yy, w2, h2, 'g1'); PXL('furniture', xx, yy, 'g2')
-R('furniture', 124, 115, 2, 4, 'y0')
-R('furniture', 114, 135, 8, 3, 'q3')
-R('furniture', 116, 138, 4, 1, 'ink')
-PXL('furniture', 112, 120, 'b4'); PXL('furniture', 113, 121, 'b4')
-obj('ミニパッチ人形')
-EL('furniture', 97, 129, 103, 138, fill='wht', out='ink')
-PXL('furniture', 99, 132, 'ink'); PXL('furniture', 101, 132, 'ink')
-R('furniture', 99, 135, 3, 1, 'y1')
+R('furniture', 110, 115, 2, 4, 'y0')
+R('furniture', 100, 135, 8, 3, 'q3')
+R('furniture', 102, 138, 4, 1, 'ink')
+PXL('furniture', 98, 120, 'b4'); PXL('furniture', 99, 121, 'b4')
 obj('紙の束')
 R('furniture', 152, 134, 14, 5, 'cream'); R('furniture', 152, 134, 14, 1, 'gray1')
 R('furniture', 154, 136, 10, 1, 'gray1')
@@ -434,17 +450,18 @@ PXL('furniture', 323, 129, 'g0')
 
 # ─── COMPANYモニタ(横長の大型・この部屋の主役の光) ───
 obj('COMPANYモニタ')
-O('furniture', 146, 104, 100, 34, 'q1', 'ink')
-R('furniture', 148, 106, 96, 1, 'q4')
-R('furniture', 149, 107, 94, 30, 'ink')
-R('furniture', 150, 108, 92, 28, 'n0')
-DI('furniture', 150, 132, 92, 4, 'n0', 'n1')
-TXT2('furniture', 169, 114, "COMPANY", 'b4')
-R('furniture', 169, 127, 54, 1, 'b1')
-PXL('furniture', 238, 110, 'b4'); PXL('furniture', 236, 112, 'b3')
-R('furniture', 190, 138, 12, 2, 'q2')                  # スタンド
-R('furniture', 182, 139, 28, 2, 'q4')
-PXL('furniture', 243, 134, 'g2')                       # 電源LED
+O('furniture', 146, 96, 100, 34, 'q1', 'ink')
+R('furniture', 148, 98, 96, 1, 'q4')
+R('furniture', 149, 99, 94, 30, 'ink')
+R('furniture', 150, 100, 92, 28, 'n0')
+DI('furniture', 150, 124, 92, 4, 'n0', 'n1')
+TXT2('furniture', 169, 106, "COMPANY", 'b4')
+R('furniture', 169, 119, 54, 1, 'b1')
+PXL('furniture', 238, 102, 'b4'); PXL('furniture', 236, 104, 'b3')
+R('furniture', 166, 130, 4, 8, 'q2'); R('furniture', 166, 130, 1, 8, 'q4')   # 左脚
+R('furniture', 222, 130, 4, 8, 'q2'); R('furniture', 225, 130, 1, 8, 'q0')   # 右脚
+R('furniture', 163, 137, 10, 2, 'q4'); R('furniture', 219, 137, 10, 2, 'q4') # 足
+PXL('furniture', 243, 126, 'g2')                       # 電源LED
 obj('キーボード')
 R('furniture', 186, 139, 26, 3, 'q2')
 for kx in range(187, 210, 3): PXL('furniture', kx, 140, 'q4')
@@ -491,88 +508,96 @@ def frameM(x, y, w, h):
     R('props', x + 1, y + 1, w - 2, 1, 'q2')
     R('props', x + 2, y + 2, w - 4, h - 4, 'n1')
 # ─ 1段目(3枚) ─
-frameM(150, 40, 24, 16)                              # 丘と月
-R('props', 152, 50, 20, 4, 'gray0')
-EL('props', 164, 43, 169, 48, fill='wht')
-frameM(180, 38, 16, 20)                              # パッチの肖像
-R('props', 184, 44, 8, 9, 'wht')
-PXL('props', 186, 47, 'ink'); PXL('props', 189, 47, 'ink')
-R('props', 186, 51, 4, 1, 'gray2')
-frameM(202, 40, 26, 14)                              # 波
+frameM(150, 34, 24, 16)                              # 丘と月
+R('props', 152, 44, 20, 4, 'gray0')
+EL('props', 164, 37, 169, 42, fill='wht')
+frameM(180, 32, 16, 20)                              # パッチの肖像
+R('props', 184, 38, 8, 9, 'wht')
+PXL('props', 186, 41, 'ink'); PXL('props', 189, 41, 'ink')
+R('props', 186, 45, 4, 1, 'gray2')
+frameM(202, 34, 26, 14)                              # 波
 for wx in range(204, 226, 4):
-    PXL('props', wx, 46 + (wx // 4) % 2, 'gray2'); PXL('props', wx + 2, 48, 'gray1')
+    PXL('props', wx, 40 + (wx // 4) % 2, 'gray2'); PXL('props', wx + 2, 42, 'gray1')
 # ─ 2段目(4枚) ─
-frameM(146, 62, 18, 18)                              # 星空
-for sx, sy in [(151,66),(158,69),(154,73),(160,66)]:
+frameM(146, 56, 18, 18)                              # 星空
+for sx, sy in [(151,60),(158,63),(154,67),(160,60)]:
     PXL('props', sx, sy, 'wht')
-PXL('props', 155, 68, 'gray2')
-frameM(168, 60, 26, 20)                              # 渦巻き
-EL('props', 172, 64, 189, 75, out='gray2')
-EL('props', 176, 67, 185, 72, out='gray1')
-frameM(198, 62, 20, 16)                              # 山なみ
+PXL('props', 155, 62, 'gray2')
+frameM(168, 54, 26, 20)                              # 渦巻き
+EL('props', 172, 58, 189, 69, out='gray2')
+EL('props', 176, 61, 185, 66, out='gray1')
+frameM(198, 56, 20, 16)                              # 山なみ
 for k in range(7):
-    R('props', 201 + k, 72 - k, 1, k + 2, 'gray1')
-    R('props', 212 - k // 2, 73 - k, 1, k + 2, 'gray0')
-frameM(222, 60, 26, 18)                              # 夜の街
+    R('props', 201 + k, 66 - k, 1, k + 2, 'gray1')
+    R('props', 212 - k // 2, 67 - k, 1, k + 2, 'gray0')
+frameM(222, 54, 26, 18)                              # 夜の街
 for bx, bh in [(225,7),(229,10),(234,6),(238,9),(242,5)]:
-    R('props', bx, 75 - bh, 3, bh, 'gray0')
-    PXL('props', bx + 1, 75 - bh + 2, 'wht')
+    R('props', bx, 69 - bh, 3, bh, 'gray0')
+    PXL('props', bx + 1, 69 - bh + 2, 'wht')
 # ─ 3段目(4枚) ─
-frameM(150, 84, 20, 14)                              # りんご
-EL('props', 156, 88, 162, 94, fill='gray2')
-PXL('props', 159, 87, 'gray1')
-frameM(174, 82, 24, 16)                              # ボトルの静物
-R('props', 182, 86, 3, 9, 'gray2'); R('props', 183, 84, 1, 3, 'gray1')
-R('props', 189, 88, 3, 7, 'gray1')
-frameM(202, 84, 18, 14)                              # 市松の抽象
-DI('props', 205, 87, 12, 8, 'gray1', 'n1')
-frameM(224, 82, 24, 16)                              # 三日月と鳥
-EL('props', 236, 85, 244, 93, fill='wht')
-EL('props', 234, 84, 241, 91, fill='n1')
-PXL('props', 229, 88, 'gray2'); PXL('props', 231, 87, 'gray2')
+frameM(150, 78, 20, 14)                              # りんご
+EL('props', 156, 82, 162, 88, fill='gray2')
+PXL('props', 159, 81, 'gray1')
+frameM(174, 76, 24, 16)                              # ボトルの静物
+R('props', 182, 80, 3, 9, 'gray2'); R('props', 183, 78, 1, 3, 'gray1')
+R('props', 189, 82, 3, 7, 'gray1')
+frameM(202, 78, 18, 14)                              # 市松の抽象
+DI('props', 205, 81, 12, 8, 'gray1', 'n1')
+frameM(224, 76, 24, 16)                              # 三日月と鳥
+EL('props', 236, 79, 244, 87, fill='wht')
+EL('props', 234, 78, 241, 85, fill='n1')
+PXL('props', 229, 82, 'gray2'); PXL('props', 231, 81, 'gray2')
 
 # ─── Patti the Spook の大きな額(ここだけ色をもつ=世界観の入口) ───
 obj('Patti the Spookの額')
-O('props', 256, 84, 80, 52, 'q3', 'ink')
-R('props', 258, 86, 76, 1, 'q5'); R('props', 258, 133, 76, 1, 'q1')
-O('props', 260, 88, 72, 44, 'y0', 'q1')
-R('props', 262, 90, 68, 40, 'n0')
-EL('props', 310, 92, 326, 108, fill='b4')
-EL('props', 306, 89, 320, 103, fill='n0')
-for sx, sy in [(266,93),(274,98),(283,92),(297,95),(291,102),(268,106),(302,108)]:
+O('props', 256, 84, 64, 52, 'q3', 'ink')
+R('props', 258, 86, 60, 1, 'q5'); R('props', 258, 133, 60, 1, 'q1')
+O('props', 259, 87, 58, 46, 'y0', 'q1')
+R('props', 261, 89, 54, 42, 'n0')
+TXT('props', 262, 92, "PATTI", 'y2')                   # タイトルは上側
+TXT('props', 283, 92, "THE", 'y2')
+TXT('props', 296, 92, "SPOOK", 'y2')
+EL('props', 296, 100, 312, 116, fill='b4')             # 大きな月
+EL('props', 292, 97, 306, 111, fill='n0')              # 三日月に欠けさせる
+for sx, sy in [(265,101),(271,97),(279,94),(268,112),(287,116),(308,94),(265,120)]:
     PXL('props', sx, sy, 'b5')
-R('props', 262, 118, 68, 12, 'n1')
-R('props', 262, 118, 68, 1, 'cool1')
-R('props', 278, 99, 11, 11, 'wht')
-R('props', 277, 101, 1, 7, 'wht'); R('props', 289, 101, 1, 7, 'wht')
-R('props', 279, 98, 9, 1, 'wht')
-for ox9, oy9 in [(277,100),(276,103),(276,106),(290,100),(291,103),(291,106),(280,97),(286,97)]:
+R('props', 261, 122, 54, 9, 'n1')                      # 丘
+R('props', 261, 122, 54, 1, 'cool1')
+R('props', 268, 104, 11, 11, 'wht')                    # 飛ぶパッチ
+R('props', 267, 106, 1, 7, 'wht'); R('props', 279, 106, 1, 7, 'wht')
+R('props', 269, 103, 9, 1, 'wht')
+for ox9, oy9 in [(267,105),(266,108),(266,111),(280,105),(281,108),(281,111),(270,102),(276,102)]:
     PXL('props', ox9, oy9, 'n2')
-PXL('props', 281, 103, 'ink'); PXL('props', 285, 103, 'ink')
-R('props', 282, 106, 3, 1, 'ink')
-R('props', 281, 108, 5, 2, 'y1')
-PXL('props', 278, 110, 'wht'); PXL('props', 280, 111, 'wht')
-PXL('props', 283, 110, 'wht'); PXL('props', 286, 111, 'wht'); PXL('props', 288, 110, 'wht')
-TXT('props', 267, 123, "PATTI THE SPOOK", 'y2')
+PXL('props', 271, 108, 'ink'); PXL('props', 275, 108, 'ink')
+R('props', 272, 111, 3, 1, 'ink')
+R('props', 271, 113, 5, 2, 'y1')
+PXL('props', 268, 115, 'wht'); PXL('props', 270, 116, 'wht')
+PXL('props', 273, 115, 'wht'); PXL('props', 276, 116, 'wht'); PXL('props', 278, 115, 'wht')
 
-# ─── 赤いポスト(お問い合わせ) ───
+# ─── 赤いポスト(お問い合わせ・日本の円柱ポスト) ───
 obj('赤いポスト')
-EL('props', 322, 138, 347, 156, fill='r1', out='ink')
-R('props', 323, 148, 24, 30, 'r1')
-R('props', 323, 148, 1, 30, 'ink'); R('props', 346, 148, 1, 30, 'ink')
-R('props', 325, 149, 2, 26, 'r0')
-R('props', 342, 149, 2, 26, 'r2')
-R('props', 321, 144, 28, 3, 'r0')
-R('props', 321, 144, 28, 1, 'ink')
-R('props', 327, 152, 17, 7, 'cream')
-TXT('props', 329, 153, "POST", 'r0')
-R('props', 327, 162, 16, 4, 'ink')
-R('props', 327, 167, 16, 1, 'r0')
-R('props', 331, 170, 8, 1, 'cream')
+EL('props', 322, 116, 347, 132, fill='r1', out='ink')      # 丸屋根
+R('props', 320, 128, 29, 3, 'r0')                          # つば
+R('props', 320, 128, 29, 1, 'ink')
+R('props', 323, 131, 24, 47, 'r1')                         # 円柱の胴体
+R('props', 323, 131, 1, 47, 'ink'); R('props', 346, 131, 1, 47, 'ink')
+R('props', 325, 132, 2, 45, 'r0')                          # 左の陰
+R('props', 342, 132, 2, 45, 'r2')                          # 右の月光
+R('props', 327, 135, 17, 9, 'cream')                       # 白票
+R('props', 331, 136, 9, 1, 'r0')                           # 〒の赤(略式)
+TXT('props', 329, 138, "POST", 'r0')
+R('props', 326, 147, 18, 1, 'r0')                          # 胴のリング
+R('props', 327, 151, 16, 4, 'ink')                         # 投函口
+R('props', 327, 156, 16, 1, 'r0')
+R('props', 326, 160, 18, 9, 'r0')                          # 取出口の扉
+R('props', 327, 161, 16, 7, 'r1')
+PXL('props', 341, 164, 'y1')                               # 鍵穴
+R('props', 331, 171, 8, 1, 'cream')                        # 〒マーク
 R('props', 331, 173, 8, 1, 'cream')
 R('props', 334, 174, 2, 3, 'cream')
-O('props', 324, 178, 22, 6, 'q2', 'ink')
-R('props', 322, 184, 26, 2, 'q0')
+R('props', 324, 178, 22, 3, 'q2')                          # 首の台
+O('props', 322, 181, 26, 5, 'gray1', 'ink')                # コンクリの土台
+R('props', 320, 186, 30, 2, 'q0')                          # 接地影
 
 obj()
 # ホコリ(光のチリ)
@@ -580,14 +605,6 @@ for dx4, dy4, dc in [(263, 62, 'b4'), (275, 74, 'b4'), (319, 78, 'b4'),
                      (100, 30, 'o2'), (180, 27, 'o2'), (258, 29, 'o2'),
                      (132, 58, 'g2')]:
     PXL('props', dx4, dy4, dc)
-obj('床の紙きれ')
-R('props', 292, 220, 10, 6, 'cream')
-R('props', 294, 222, 6, 1, 'gray1'); R('props', 294, 224, 5, 1, 'gray1')
-obj('えんぴつ')
-R('props', 130, 226, 7, 2, 'y1'); PXL('props', 137, 226, 'ink')
-PXL('props', 129, 227, 'cor')
-obj('カセットテープ')
-R('props', 246, 228, 9, 6, 'q2'); R('props', 247, 229, 7, 2, 'm2')
 
 # ═══ ジュークボックス(バブラー型・カウンターの手前) 42x74 @ (50,110) ═══
 JX, JY = 50, 110
@@ -657,12 +674,12 @@ for bxg, byg in garland_positions():
     dpatch('bg', bxg - 2, byg + 15, 5, 3, 'wwarm', 2, 1)
 
 obj('COMPANYモニタ')
-R('furniture', 150, 108, 92, 1, 'b1')
-R('furniture', 150, 135, 92, 1, 'b0')
-R('furniture', 150, 108, 1, 28, 'b0'); R('furniture', 241, 108, 1, 28, 'b0')
-dpatch('bg', 136, 96, 10, 46, 'n4', 2)
-dpatch('bg', 246, 96, 10, 46, 'n4', 2, 1)
-dpatch('bg', 144, 98, 104, 8, 'n4', 2)
+R('furniture', 150, 100, 92, 1, 'b1')
+R('furniture', 150, 127, 92, 1, 'b0')
+R('furniture', 150, 100, 1, 28, 'b0'); R('furniture', 241, 100, 1, 28, 'b0')
+dpatch('bg', 136, 88, 10, 46, 'n4', 2)
+dpatch('bg', 246, 88, 10, 46, 'n4', 2, 1)
+dpatch('bg', 144, 90, 104, 8, 'n4', 2)
 dpatch('furniture', 150, 139, 92, 4, 'n4', 2)
 
 obj('楕円窓')
@@ -681,7 +698,7 @@ for yy in range(14, 60):
         elif 16 <= rr < 20 and (xx + yy) % 3 == 0:
             PXL('window', xx, yy, 'b2')
 dpatch('bg', 266, 76, 70, 8, 'n4', 2)
-dpatch('props', 258, 85, 76, 1, 'cool2', 2)
+dpatch('props', 258, 85, 60, 1, 'cool2', 2)
 
 obj('デザイン室の入口')
 for yy in range(170, 210):
@@ -705,7 +722,7 @@ obj()
 # カウンターの足元に床影
 dpatch('bg', 49, 166, 286, 6, 'q0', 2)
 # 月光の当たり(窓に近い上面へ青のディザ)
-dpatch('props', 321, 144, 28, 1, 'cool2', 2)
+dpatch('props', 320, 128, 29, 1, 'cool2', 2)
 
 # ═══════════════ light : (空レイヤー・自由記入用) ═══════════════
 
@@ -721,7 +738,7 @@ DARKER[P['wht']] = P['gray2']
 
 SOURCES = [
     {'pos': (290, 44),  'r': 150, 's': 1.46, 'e': 1.4, 'tint': P['b3'],  'occ': True},   # 窓/月
-    {'pos': (196, 121), 'r': 105, 's': 1.05, 'e': 1.4, 'tint': P['b4'],  'occ': True},   # COMPANYモニタ
+    {'pos': (196, 113), 'r': 105, 's': 1.05, 'e': 1.4, 'tint': P['b4'],  'occ': True},   # COMPANYモニタ
     {'pos': (24, 118),  'r': 78,  's': 0.85, 'e': 1.3, 'tint': P['o2'],  'occ': False},  # デザイン室の灯り
     {'pos': (360, 118), 'r': 78,  's': 0.80, 'e': 1.3, 'tint': P['cool2'], 'occ': False}, # 編集室の灯り
     {'pos': (192, 150), 'r': 185, 's': 0.34, 'e': 1.2, 'tint': P['q5'],  'occ': False},  # 室内バウンス
@@ -788,9 +805,9 @@ def apply_illum(layer):
                 if ex < 1:
                     continue
             if layer == 'furniture':
-                if 150 <= xx <= 242 and 108 <= yy <= 136:
+                if 150 <= xx <= 242 and 100 <= yy <= 128:
                     continue    # COMPANYの画面は自ら光る
-                if 54 <= xx <= 74 and 84 <= yy <= 108:
+                if 52 <= xx <= 76 and 84 <= yy <= 108:
                     continue    # 絵本の表紙はクリック対象なので目立たせる
                 if 48 <= xx <= 94 and 108 <= yy <= 186:
                     continue    # ジュークボックスは光る箱
@@ -798,7 +815,7 @@ def apply_illum(layer):
                     continue    # デザイン室の戸口の光
                 if 345 <= xx <= 375 and 49 <= yy <= 215:
                     continue    # 編集室の戸口の光
-                if (2 <= xx <= 46 and 17 <= yy <= 33) or (364 <= xx <= 380 and 17 <= yy <= 57):
+                if (3 <= xx <= 45 and 15 <= yy <= 38) or (339 <= xx <= 381 and 15 <= yy <= 38):
                     continue    # 電飾看板は読ませる
             rgb = c[:3]
             v = ILL[xx // GS][yy // GS] + (((xx * 7 + yy * 13) % 5) - 2) * 0.02
@@ -841,8 +858,8 @@ for lname in ['bg', 'window', 'furniture', 'props', 'mayu']:
     apply_illum(lname)
 
 # 発光体まわりの再ブースト(COMPANYの文字とPOSTの票をくっきり戻す)
-TXT2('furniture', 169, 114, "COMPANY", 'b4')
-TXT('props', 329, 153, "POST", 'r0')
+TXT2('furniture', 169, 106, "COMPANY", 'b4')
+TXT('props', 329, 138, "POST", 'r0')
 
 # 影ゾーンにある派手なプロップを沈める(視線ドロボー対策)
 for (zx, zy, zw, zh, layn) in []:   # いまは沈める対象なし
@@ -907,9 +924,9 @@ for py in (76, 108):
 obj('COMPANYモニタ')
 for k in range(10):
     if k % 2 == 0:
-        PXL('furniture', 238 - k, 109 + k, 'n2')
+        PXL('furniture', 238 - k, 101 + k, 'n2')
 obj('地球儀')
-for xx, yy in [(111,129),(112,131),(113,132),(115,133),(117,133),(110,127),(119,132)]:
+for xx, yy in [(97,129),(98,131),(99,132),(101,133),(103,133),(96,127),(105,132)]:
     PXL('furniture', xx, yy, 'b0')
 obj('カウンター')
 DI('furniture', 49, 144, 288, 2, 'q1', 'q0')
@@ -933,7 +950,7 @@ for chain in CHAINS:
         LIGHTER[P[a]] = P[b]
         DARKER[P[b]] = P[a]
 INK = P['ink']
-CRTC = (196, 121)    # COMPANYモニタの画面中心
+CRTC = (196, 113)    # COMPANYモニタの画面中心
 # 月光(窓側)のリムは同系の明色ではなく「青みがかった明色」へ色相シフト
 COOL = {}
 for k in ['n0','n1','n2','q0','q1','q2','m0','r0','r1','b0','g0']:

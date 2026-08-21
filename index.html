@@ -77,8 +77,8 @@
     font-family: 'DotGothic16', 'MS Gothic', monospace;
     padding: 0 4px; box-sizing: border-box;
   }
-  #navbar .brand { display: flex; align-items: center; gap: 3px; color: #ffffff; font-size: 7.5px; letter-spacing: 1px; text-shadow: .6px 0 0 currentColor; }
-  #navbar .brand img { height: 13px; width: auto; image-rendering: pixelated; }
+  #navbar .brand { display: flex; align-items: center; }
+  #navbar .brand img { height: 10px; width: auto; image-rendering: pixelated; }
   #navbar nav { display: flex; align-items: center; gap: 2px; }
   #navbar nav button {
     border: 0; background: transparent; color: #e8e4f4; cursor: pointer;
@@ -95,12 +95,14 @@
     overflow: hidden; white-space: nowrap;
   }
   #signL {
-    color: #ffe9a8; font-size: 6px; letter-spacing: 1px;
+    color: #ffe9a8; font-size: 6px; letter-spacing: .5px;
     text-shadow: 0 0 3px rgba(255, 190, 80, .95), 0 0 6px rgba(255, 170, 60, .55);
+    transform: skewY(9.7deg); transform-origin: 0 50%;
   }
   #signR {
-    writing-mode: vertical-rl; color: #e6ddff; font-size: 6px; letter-spacing: 3px;
+    color: #e6ddff; font-size: 6px; letter-spacing: 1.5px;
     text-shadow: 0 0 3px rgba(178, 156, 255, .95), 0 0 6px rgba(150, 130, 240, .55);
+    transform: skewY(-9.7deg); transform-origin: 100% 50%;
   }
   /* 戸口からもれる光(淡いグローが呼吸する) */
   #doorGlowL, #doorGlowR {
@@ -132,7 +134,7 @@
 
   /* 地球儀はずっと回っている */
   #globespin {
-    position: absolute; left: 106px; top: 113px;
+    position: absolute; left: 92px; top: 113px;
     width: 24px; height: 28px;
     background-image: url(globe_spin.png);
     background-size: 144px 28px;
@@ -142,7 +144,7 @@
   @keyframes globespinanim { from { background-position: 0 0; } to { background-position: -144px 0; } }
   /* 掛け時計の針(リアルタイム・JSが1px線で描く) */
   #clockhands {
-    position: absolute; left: 105px; top: 17px;
+    position: absolute; left: 105px; top: 21px;
     width: 38px; height: 38px; pointer-events: none;
     image-rendering: pixelated;
   }
@@ -463,8 +465,8 @@
     <div id="garland" aria-hidden="true"></div>
     <div id="doorGlowL" aria-hidden="true"></div>
     <div id="doorGlowR" aria-hidden="true"></div>
-    <div class="doorsign" id="signL" aria-hidden="true" style="left:4px;top:19px;width:40px;height:13px">デザイン室</div>
-    <div class="doorsign" id="signR" aria-hidden="true" style="left:365px;top:19px;width:14px;height:36px">編集室</div>
+    <div class="doorsign" id="signL" aria-hidden="true" style="left:5px;top:16px;width:39px;height:19px">デザイン室</div>
+    <div class="doorsign" id="signR" aria-hidden="true" style="left:340px;top:16px;width:39px;height:19px">編集室</div>
     <div id="mshadow" aria-hidden="true"></div>
     <div id="mayu" role="img" aria-label="絵本を読むマユちゃん"></div>
     <div id="pshadow" aria-hidden="true"></div>
@@ -475,16 +477,16 @@
             aria-label="編集室（CONTENTS CREATIVE・準備中）"></button>
     <button id="companylink" class="hs" style="left:144px;top:100px;width:104px;height:42px;--gw:114%;--gh:126%"
             aria-label="COMPANY（会社概要・準備中）"></button>
-    <button id="spooklink" class="hs" style="left:254px;top:82px;width:84px;height:56px;--gw:112%;--gh:124%;--gi:.7"
+    <button id="spooklink" class="hs" style="left:254px;top:82px;width:68px;height:56px;--gw:114%;--gh:126%;--gi:.7"
             aria-label="Patti the Spook（準備中）"></button>
-    <button id="booklink" class="hs" style="left:52px;top:82px;width:24px;height:28px;--gw:150%;--gh:150%"
+    <button id="booklink" class="hs" style="left:50px;top:82px;width:28px;height:28px;--gw:160%;--gh:160%"
             aria-label="絵本『おばけのパッチ』を読む"></button>
     <button id="gallink" class="hs" style="left:144px;top:36px;width:106px;height:68px;--gw:106%;--gh:112%;--gi:.6"
             aria-label="ギャラリー"></button>
-    <button id="postlink" class="hs" style="left:318px;top:114px;width:34px;height:74px;--gw:148%;--gh:148%;--gi:.78"
+    <button id="postlink" class="hs" style="left:318px;top:112px;width:34px;height:78px;--gw:148%;--gh:148%;--gi:.78"
             aria-label="お問い合わせ（ポスト）"></button>
     <div id="navbar">
-      <div class="brand"><img src="nav_logo.png" alt=""><span>STUDIO PATTI</span></div>
+      <div class="brand"><img src="nav_logo.png" alt="STUDIO PATTI"></div>
       <nav>
         <button data-k="company">COMPANY</button>
         <button data-k="chdesign">CHARACTER<br>DESIGN</button>
@@ -1100,11 +1102,11 @@ function tease(name) {
   window._tz = setTimeout(() => setTalk(TALK_DEFAULT), 3200);
 }
 hotspot('booklink', 'それは絵本『おばけのパッチ』！<br>ボクが主役の絵本、ここで読めるよ！',
-  () => zoomOpen('book', 52, 82, 24, 28));
+  () => zoomOpen('book', 50, 82, 28, 28));
 hotspot('gallink', 'ギャラリーのかべ！<br>ボクの絵がいっぱいあるよ！',
   () => zoomOpen('gallery', 144, 36, 106, 68));
 hotspot('postlink', '赤いポスト！<br>お手紙（お問い合わせ）はここからどうぞ！',
-  () => zoomOpen('post', 318, 114, 34, 74));
+  () => zoomOpen('post', 318, 112, 34, 78));
 hotspot('doorL', 'デザイン室！キャラクターが生まれる部屋だよ！<br>（いま準備中…もうすぐ開くよ！）',
   () => tease('CHARACTER DESIGN'));
 hotspot('doorR', '編集室！アニメーションを創ってる部屋だよ！<br>（いま準備中…もうすぐ開くよ！）',
@@ -1120,7 +1122,7 @@ const NAV_ACT = {
   chdesign: { talk: 'キャラクターデザインのページだよ！（いま準備中）', act: () => tease('CHARACTER DESIGN') },
   contents: { talk: 'アニメーションなど制作のページだよ！（いま準備中）', act: () => tease('CONTENTS CREATIVE') },
   spook:    { talk: '『おばけのパッチ』の世界のページだよ！（いま準備中）', act: () => tease('Patti the Spook') },
-  contact:  { talk: 'お問い合わせフォームをひらくよ！', act: () => zoomOpen('post', 318, 114, 34, 74) },
+  contact:  { talk: 'お問い合わせフォームをひらくよ！', act: () => zoomOpen('post', 318, 112, 34, 78) },
 };
 document.querySelectorAll('#navbar nav button').forEach(b => {
   const a = NAV_ACT[b.dataset.k];
