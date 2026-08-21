@@ -64,7 +64,7 @@
 
   /* ─── 重なり順をここで一元管理(レイヤー事故防止) ─── */
   #room { z-index: 1; }
-  #speopclip, #winbars, #garland, #globespin, #jukeglow, #jukehalo, #clockhands, #doorGlowL, #doorGlowR { z-index: 2; }
+  #speopclip, #winbars, #garland, #globespin, #jukeglow, #jukehalo, #clockhands, #doorGlowL, #doorGlowR, #signGlowL, #signGlowR { z-index: 2; }
   .hs, #jukebox { z-index: 3; }
   #mshadow, #mayu, #pshadow, #patti { z-index: 4; }
   #navbar, #talkbox { z-index: 6; }
@@ -79,10 +79,15 @@
   }
   #navbar .brand { display: flex; align-items: center; }
   #navbar .brand img { height: 10px; width: auto; image-rendering: auto; }
-  #navbar nav { display: flex; align-items: center; gap: 2px; }
+  #navbar nav { display: flex; align-items: center; gap: 0; }
   #navbar nav button {
     border: 0; background: transparent; color: #ffffff; cursor: pointer;
-    font-family: inherit; font-size: 6.5px; line-height: 1.1; padding: 1px 3px; text-align: center;
+    font-family: inherit; font-size: 6.5px; line-height: 1.1; padding: 1px 7px; text-align: center;
+  }
+  /* 隣どうしの境目: 暗線+明線の溝彫り(ピクセル1px) */
+  #navbar nav button + button {
+    border-left: 1px solid #05041c;
+    box-shadow: inset 1px 0 0 rgba(118, 110, 200, .3);
   }
   #navbar nav button:hover, #navbar nav button:focus-visible { color: #fcc800; background: rgba(252, 200, 0, .12); outline: none; }
 
@@ -101,18 +106,34 @@
   #doorGlowR {
     left: 284px; animation-delay: 2.3s;
     background: radial-gradient(closest-side at 68% 55%,
-      rgba(206, 188, 255, .5) 0%, rgba(152, 138, 230, .24) 45%, rgba(152, 138, 230, 0) 78%);
+      rgba(255, 188, 222, .5) 0%, rgba(232, 140, 186, .24) 45%, rgba(232, 140, 186, 0) 78%);
   }
   @keyframes doorbreath { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { #doorGlowL, #doorGlowR { animation: none; } }
+  /* 吊り看板のうしろの淡い光(電飾の呼吸) */
+  #signGlowL, #signGlowR {
+    position: absolute; top: 22px; height: 34px;
+    pointer-events: none; mix-blend-mode: screen;
+    animation: doorbreath 4.6s ease-in-out infinite;
+  }
+  #signGlowL {
+    left: -10px; width: 106px; animation-delay: 1.2s;
+    background: radial-gradient(closest-side at 50% 50%,
+      rgba(255, 214, 130, .34) 0%, rgba(255, 186, 80, .16) 55%, rgba(255, 186, 80, 0) 80%);
+  }
+  #signGlowR {
+    left: 320px; width: 76px; animation-delay: 3.4s;
+    background: radial-gradient(closest-side at 50% 50%,
+      rgba(255, 178, 216, .36) 0%, rgba(236, 148, 190, .17) 55%, rgba(236, 148, 190, 0) 80%);
+  }
+  @media (prefers-reduced-motion: reduce) { #doorGlowL, #doorGlowR, #signGlowL, #signGlowR { animation: none; } }
 
   /* ─── 戸口: 斜めの壁に沿ったクリック形状と光 ─── */
   #doorL { clip-path: polygon(6% 6%, 94% 1%, 94% 72%, 6% 99%); }
   #doorR { clip-path: polygon(9% 1%, 94% 6%, 94% 99%, 9% 72%); }
   #doorR::after {
     background: radial-gradient(closest-side,
-      rgba(216, 208, 255, .58) 0%, rgba(150, 140, 214, .34) 40%,
-      rgba(96, 86, 168, .12) 70%, rgba(96, 86, 168, 0) 100%);
+      rgba(255, 218, 236, .58) 0%, rgba(236, 148, 190, .34) 40%,
+      rgba(186, 88, 140, .12) 70%, rgba(186, 88, 140, 0) 100%);
   }
 
   /* 地球儀はずっと回っている */
@@ -127,7 +148,7 @@
   @keyframes globespinanim { from { background-position: 0 0; } to { background-position: -144px 0; } }
   /* 掛け時計の針(リアルタイム・JSが1px線で描く) */
   #clockhands {
-    position: absolute; left: 105px; top: 31px;
+    position: absolute; left: 105px; top: 29px;
     width: 38px; height: 38px; pointer-events: none;
     image-rendering: pixelated;
   }
@@ -448,6 +469,8 @@
     <div id="garland" aria-hidden="true"></div>
     <div id="doorGlowL" aria-hidden="true"></div>
     <div id="doorGlowR" aria-hidden="true"></div>
+    <div id="signGlowL" aria-hidden="true"></div>
+    <div id="signGlowR" aria-hidden="true"></div>
     <div id="mshadow" aria-hidden="true"></div>
     <div id="mayu" role="img" aria-label="絵本を読むマユちゃん"></div>
     <div id="pshadow" aria-hidden="true"></div>
