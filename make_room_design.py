@@ -38,9 +38,10 @@ P = {
  'wwht': (58, 56, 92),
  'cyn0': (16, 84, 104), 'cyn1': (44, 164, 186), 'cyn2': (126, 224, 235), 'cync': (214, 250, 252),
  # ── デザイン室で足した色 ──
- 'bd0': (12, 26, 24), 'bd1': (22, 40, 36), 'bd2': (34, 56, 50), 'bd3': (52, 78, 70),   # 黒板
+ 'bd0': (12, 26, 24), 'bd1': (22, 40, 36), 'bd2': (34, 56, 50), 'bd3': (52, 78, 70),
+ 'bd4': (78, 106, 96),                                                                 # 黒板
  'chk2': (146, 176, 164), 'chk': (226, 240, 230),                                       # チョーク
- 'wd0': (70, 42, 26), 'wd1': (112, 70, 42), 'wd2': (156, 106, 64),                      # 木枠
+ 'wd0': (70, 42, 26), 'wd1': (112, 70, 42), 'wd2': (156, 106, 64), 'wd3': (200, 150, 98),  # 木枠
  'pap_r0': (150, 32, 40), 'pap_r': (214, 58, 62),                                       # 赤い紙
  'bulbc': (255, 246, 200),                                                              # 電球のあかり
 }
@@ -105,6 +106,76 @@ def dpatch(l, x, y, w, h, c, den=2, ph=0):
             if (xx + yy + ph) % den == 0:
                 PXL(l, xx, yy, c)
 
+# ═══════════════ 作り込み用の描画キット ═══════════════
+# 方針: 一律の黒枠で囲まない / 面を分けて立体を作る / ディザは階調でなく素材を表す
+
+def DITH(l, x, y, w, h, cA, cB, kind='check', ph=0):
+    """素材別のディザ。cA=地、cB=混ぜる色。"""
+    for yy in range(y, y + h):
+        for xx in range(x, x + w):
+            u, v = xx + ph, yy
+            if kind == 'check':    m = (u + v) % 2 == 0
+            elif kind == 'sparse': m = (u * 2 + v) % 4 == 0
+            elif kind == 'dense':  m = (u + v) % 4 != 0
+            elif kind == 'grain':  m = (u * 7 + v * 13 + (u * v) % 5) % 9 < 2   # 紙・コンクリのざらつき
+            elif kind == 'weave':  m = (u % 3 == 0) != (v % 3 == 0)             # 布・メッシュ
+            elif kind == 'brush':  m = (u + v * 3) % 7 == 0                     # 刷毛目・拭き跡
+            elif kind == 'hline':  m = v % 2 == 0
+            elif kind == 'vline':  m = u % 2 == 0
+            else:                  m = False
+            if m:
+                PXL(l, xx, yy, cB)
+            elif cA is not None:
+                PXL(l, xx, yy, cA)
+
+def BEVEL(l, x, y, w, h, base, hi, sh):
+    """面取りした箱。上と左に1pxの明、下と右に1pxの暗。黒枠で囲まない。"""
+    R(l, x, y, w, h, base)
+    R(l, x, y, w, 1, hi); R(l, x, y, 1, h, hi)
+    R(l, x + w - 1, y, 1, h, sh); R(l, x, y + h - 1, w, 1, sh)
+
+def INSET(l, x, y, w, h, base, hi, sh):
+    """へこんだ面(スリット・くぼみ)。明暗がBEVELと逆。"""
+    R(l, x, y, w, h, base)
+    R(l, x, y, w, 1, sh); R(l, x, y, 1, h, sh)
+    R(l, x + w - 1, y, 1, h, hi); R(l, x, y + h - 1, w, 1, hi)
+
+def CYL(l, x, y, w, h, ramp, lit=0.30):
+    """円柱。ハイライト→コアシャドウ→端に反射光。rampは暗い順のリスト。"""
+    n = len(ramp)
+    for i in range(w):
+        t = i / float(w - 1) if w > 1 else 0.0
+        k = int(abs(t - lit) * (n - 1) * 1.55)
+        if t > 0.88:
+            k = max(0, k - 1)                       # 反射光
+        R(l, x + i, y, 1, h, ramp[min(n - 1, k)])
+
+def SCREW(l, x, y, body, slot):
+    R(l, x, y, 2, 2, body)
+    PXL(l, x, y + 1, slot); PXL(l, x + 1, y, slot)
+
+def KNOB(l, cx, cy, r, skirt, cap, hi, sh, ang=-1.2):
+    """ロータリーノブ。スカート+キャップ+指標+ハイライト。"""
+    EL(l, cx - r, cy - r, cx + r, cy + r, fill=skirt, out=sh)
+    EL(l, cx - r + 1, cy - r + 1, cx + r - 1, cy + r - 2, fill=cap)
+    PXL(l, cx - r + 2, cy - r + 2, hi)
+    PXL(l, cx + int(round(math.cos(ang) * (r - 1))),
+           cy + int(round(math.sin(ang) * (r - 1))), hi)
+
+def FADER(l, x, y, h, pos, slot, cap, hi, sh):
+    """フェーダー。溝(へこみ)+つまみ(面取り)。posは0(下)〜1(上)。"""
+    INSET(l, x + 1, y, 2, h, slot, sh, slot)
+    ky = y + int((1 - pos) * (h - 5))
+    BEVEL(l, x, ky, 4, 4, cap, hi, sh)
+    R(l, x, ky + 2, 4, 1, sh)
+
+def CAST(l, x, y, w, h, c, soft=True):
+    """落ち影。物の右下へ、外へ行くほど薄く。"""
+    for yy in range(y, y + h):
+        for xx in range(x, x + w):
+            if not soft or (xx + yy) % 2 == 0:
+                PXL(l, xx, yy, c)
+
 # 数字(5x5) - 数字ボタン用
 NFONT = {
  '1': "010 110 010 010 111", '2': "110 001 010 100 111",
@@ -118,7 +189,7 @@ def NTXT(l, x, y, ch, c):
 
 # ═══════════════ 主要座標(ここだけ見れば配置が分かる) ═══════════════
 FRAME  = (47, 14, 290, 124)     # 黒板の木枠 x47..336 / y14..137
-BOARD  = (50, 17, 284, 118)     # 黒板の面   x50..333 / y17..134
+BOARD  = (51, 18, 282, 116)     # 黒板の面   x51..332 / y18..133
 RAIL_Y = 138                    # チョーク受け(黒板の下)
 GAR_SPANS = [(50, 192, 16, 6, 8), (192, 334, 16, 6, 8)]   # 電球ガーランド(2連・16球)
 DOORX0, DOORX1 = 345, 373       # スタジオへ戻る戸口(右の壁)
@@ -130,7 +201,7 @@ PAP_SPOOKS = (78, 70, 53, 21)   # Spooks Gs
 PAP_WORLD  = (106, 98, 49, 19)  # 桃: 世界観
 PAP_TALE   = (182, 74, 33, 19)  # 赤: 物語
 DATA_TITLE = (244, 36, 87, 13)  # キャラクターに関するデータ(見出し)
-DATA_PANEL = (244, 52, 87, 82)  # 模造紙
+DATA_PANEL = (244, 52, 87, 78)  # 模造紙
 
 # ═══════════════ bg : 天井・奥壁・床 ═══════════════
 obj()
@@ -206,27 +277,51 @@ side_wall(False)
 # ═══════════════ 黒板(壁いっぱい) ═══════════════
 obj('黒板')
 fx, fy, fw, fh = FRAME
-R('bg', fx, fy, fw, fh, 'wd1')                      # 木枠
-R('bg', fx, fy, fw, 1, 'wd2'); R('bg', fx, fy, 1, fh, 'wd2')
-R('bg', fx, fy + fh - 1, fw, 1, 'wd0'); R('bg', fx + fw - 1, fy, 1, fh, 'wd0')
-for gx in range(fx + 2, fx + fw - 2, 7):            # 木目
-    PXL('bg', gx, fy + 1, 'wd0'); PXL('bg', gx + 3, fy + fh - 2, 'wd2')
 bx, by, bw, bh = BOARD
-R('bg', bx, by, bw, bh, 'bd1')
-R('bg', bx, by, bw, 1, 'bd0'); R('bg', bx, by, 1, bh, 'bd0')
-R('bg', bx + bw - 1, by, 1, bh, 'bd2'); R('bg', bx, by + bh - 1, bw, 1, 'bd2')
-# 消し跡(チョークの粉が円を描いて残っている)
-for cx6, cy6, rx6, ry6 in [(96, 108, 34, 13), (188, 118, 40, 11), (272, 30, 30, 9),
-                           (150, 60, 26, 9), (300, 118, 26, 10)]:
-    for yy in range(cy6 - ry6, cy6 + ry6 + 1):
-        for xx in range(cx6 - rx6, cx6 + rx6 + 1):
-            if not (bx < xx < bx + bw - 1 and by < yy < by + bh - 1):
-                continue
-            e = ((xx - cx6) / float(rx6)) ** 2 + ((yy - cy6) / float(ry6)) ** 2
-            if e < 1 and (xx * 3 + yy * 5) % 7 == 0:
-                PXL('bg', xx, yy, 'bd2')
-            elif e < 1 and (xx + yy * 2) % 11 == 0:
-                PXL('bg', xx, yy, 'bd3')
+
+# ── 木枠(4px厚): 上面は光を受け、下面は影。四隅は留め(トメ)。──
+R('bg', fx, fy, fw, fh, 'wd1')
+DITH('bg', fx, fy, fw, 4, 'wd1', 'wd2', 'hline')          # 上の桟(木目は横)
+R('bg', fx, fy, fw, 1, 'wd2')
+R('bg', fx, fy + 3, fw, 1, 'wd0')                          # 板に落ちる枠の影
+DITH('bg', fx, fy + fh - 4, fw, 4, 'wd0', 'wd1', 'hline')  # 下の桟
+R('bg', fx, fy + fh - 1, fw, 1, 'ink')
+DITH('bg', fx, fy, 4, fh, 'wd1', 'wd2', 'vline')           # 左の桟(木目は縦)
+R('bg', fx, fy, 1, fh, 'wd2')
+R('bg', fx + 3, fy, 1, fh, 'wd0')
+DITH('bg', fx + fw - 4, fy, 4, fh, 'wd0', 'wd1', 'vline')  # 右の桟
+R('bg', fx + fw - 1, fy, 1, fh, 'ink')
+for k in range(4):                                          # 留めの継ぎ目(45度)
+    PXL('bg', fx + k, fy + k, 'wd0')
+    PXL('bg', fx + fw - 1 - k, fy + k, 'wd0')
+    PXL('bg', fx + k, fy + fh - 1 - k, 'wd0')
+    PXL('bg', fx + fw - 1 - k, fy + fh - 1 - k, 'wd0')
+for kx, ky in [(104, fy + 1), (226, fy + 2), (168, fy + fh - 3), (292, fy + fh - 2)]:
+    PXL('bg', kx, ky, 'wd0'); PXL('bg', kx + 1, ky, 'wd0')  # 節(ふし)
+
+# ── スレート面: 上ほど明るい。拭き跡の弧と、下に溜まるチョークの粉。──
+for yy in range(by, by + bh):
+    t = (yy - by) / float(bh - 1)
+    R('bg', bx, yy, bw, 1, 'bd2' if t < 0.14 else ('bd1' if t < 0.70 else 'bd0'))
+DITH('bg', bx, by, bw, 26, None, 'bd2', 'sparse')          # 天面の照り返し
+for ax, ay, arx, ary in [(112, 62, 48, 23), (206, 96, 56, 21), (274, 46, 36, 16),
+                         (78, 106, 32, 13), (170, 40, 40, 15)]:
+    for yy in range(max(by, ay - ary), min(by + bh, ay + ary + 1)):
+        for xx in range(max(bx, ax - arx), min(bx + bw, ax + arx + 1)):
+            e = ((xx - ax) / float(arx)) ** 2 + ((yy - ay) / float(ary)) ** 2
+            if 0.58 < e < 1.0 and (xx * 3 + yy * 5) % 4 == 0:
+                PXL('bg', xx, yy, 'bd2')                    # 消しゴムの弧のふち
+            elif e <= 0.58 and (xx + yy * 2) % 9 == 0:
+                PXL('bg', xx, yy, 'bd2')                    # 弧の内側は薄く
+for yy in range(by + bh - 15, by + bh):                     # 下に溜まった粉
+    d = (yy - (by + bh - 15)) / 14.0
+    step = max(2, int(15 - d * 12))
+    for xx in range(bx, bx + bw):
+        if (xx * 7 + yy * 11) % step == 0:
+            PXL('bg', xx, yy, 'bd3')
+for sx, sy, sl in [(88, 44, 9), (152, 78, 6), (240, 112, 11), (300, 64, 7), (66, 94, 5)]:
+    for k in range(sl):                                     # 細かい傷
+        PXL('bg', sx + k, sy - k // 3, 'bd3')
 
 # ─── チョークの線(かすれた点線)と矢印 ───
 _cn = [0]
@@ -257,39 +352,94 @@ chalk_line([(157, 102), (168, 96), (176, 88)])
 chalk_head(179, 85, 1, -1)
 
 # ═══════════════ furniture : 貼り紙・模造紙・戸口・ガーランド ═══════════════
-def paper(x, y, w, h, base, hi, shade, curl=True):
-    """黒板に貼られた紙。落ち影+ふちの陰影+めくれた角。"""
-    for yy in range(y + 2, y + h + 2):                    # 黒板に落ちる影
-        for xx in range(x + 2, x + w + 2):
-            if (xx + yy) % 2 == 0 and BOARD[0] < xx < BOARD[0] + BOARD[2] - 1 \
-               and BOARD[1] < yy < BOARD[1] + BOARD[3] - 1:
+def paper(x, y, w, h, base, hi, shade, curl=5, rule=0, grid=False, torn=0):
+    """黒板に貼った紙。上が明るいグラデ・ごく薄い紙目・罫線・めくれた角まで描く。
+    質感は「気配」程度に抑える(上に6pxの文字が乗るため)。"""
+    B0, B1, B2, B3 = BOARD
+    def onboard(xx, yy):
+        return B0 <= xx < B0 + B2 and B1 <= yy < B1 + B3
+    # ── 落ち影: 右と下へ。近いほど濃く ──
+    for d, dens in ((1, 1), (2, 2), (3, 3)):
+        for xx in range(x + d, x + w + d):
+            yy = y + h - 1 + d
+            if onboard(xx, yy) and (xx + yy) % dens == 0:
                 PXL('bg', xx, yy, 'bd0')
+        for yy in range(y + d, y + h + d):
+            xx = x + w - 1 + d
+            if onboard(xx, yy) and (xx + yy) % dens == 0:
+                PXL('bg', xx, yy, 'bd0')
+    # ── 面: 上が明るく下が落ちる ──
     R('furniture', x, y, w, h, base)
-    R('furniture', x, y, w, 1, hi)
-    R('furniture', x, y, 1, h, hi)
-    R('furniture', x + w - 1, y, 1, h, shade)
-    R('furniture', x, y + h - 1, w, 1, shade)
-    if curl:                                              # 右下の角がめくれている
-        for k in range(4):
-            R('furniture', x + w - 1 - k, y + h - 1 - (3 - k), 1, 1, 'ink')
-            if k < 3:
-                R('furniture', x + w - 1 - k, y + h - 2 - (3 - k), 1, 1, hi)
+    band = max(2, h // 4)
+    DITH('furniture', x, y + 1, w, band, None, hi, 'sparse')
+    DITH('furniture', x, y + h - band, w, band, None, shade, 'sparse')
+    for yy in range(y + 1, y + h - 1):                        # 紙目(4%だけ)
+        for xx in range(x + 1, x + w - 1):
+            if (xx * 13 + yy * 7) % 23 == 0:
+                PXL('furniture', xx, yy, hi)
+    R('furniture', x, y, w, 1, hi); R('furniture', x, y, 1, h, hi)
+    R('furniture', x + w - 1, y, 1, h, shade); R('furniture', x, y + h - 1, w, 1, shade)
+    # ── 罫線・方眼(破線にして薄く) ──
+    for k in range(rule):
+        yy = y + 9 + k * 5
+        for xx in range(x + 4, x + w - 5):
+            if xx % 2 == 0:
+                PXL('furniture', xx, yy, shade)
+    if grid:
+        for gx in range(x + 5, x + w - 4, 6):
+            for gy in range(y + 4, y + h - 4):
+                if gy % 2 == 0: PXL('furniture', gx, gy, shade)
+        for gy in range(y + 5, y + h - 4, 6):
+            for gx in range(x + 4, x + w - 4):
+                if gx % 2 == 0: PXL('furniture', gx, gy, shade)
+    # ── ちぎれたふち(上端) ──
+    for k in range(torn):
+        tx = x + 3 + k * 4
+        if tx < x + w - 3:
+            PXL('furniture', tx, y, 'bd1'); PXL('furniture', tx + 1, y, 'bd1')
+            PXL('furniture', tx, y + 1, hi)
+    # ── めくれた角(右下): 裏面が見える + 折り目 + 下にできる濃い影 ──
+    if curl:
+        n = curl
+        for i in range(n):                                    # まず角を黒板に戻す(紙が浮いている)
+            yy = y + h - 1 - i
+            for j in range(n - 1 - i):
+                PXL('furniture', x + w - 1 - j, yy, 'bd1' if onboard(x + w - 1 - j, yy) else base)
+        for i in range(n):                                    # 折り返した裏面(手前ほど明るい)
+            yy = y + h - 1 - i
+            for j in range(n - i):
+                xx = x + w - n + i + (n - i - 1 - j)
+                if j == 0:
+                    PXL('furniture', xx, yy, shade)           # 折り目
+                else:
+                    PXL('furniture', xx, yy, 'wht' if j > 1 else hi)
+        for i in range(n - 2):                                # めくれの影
+            yy, xx = y + h - i, x + w - 1 - i
+            if onboard(xx, yy):
+                PXL('bg', xx, yy, 'bd0')
 
-def pin(x, y, c):
-    EL('props', x - 1, y - 1, x + 1, y + 1, fill=c, out='ink')
+def pin(x, y, c, c2):
+    """画鋲。頭のドーム+ハイライト+紙に落ちる1pxの影。"""
+    PXL('furniture', x + 2, y + 2, 'bd1')
+    EL('props', x - 1, y - 1, x + 1, y + 1, fill=c, out=c2)
     PXL('props', x - 1, y - 1, 'wht')
 
 def tape(x, y, w):
-    R('props', x, y, w, 3, 'ivory2', 150)
-    R('props', x, y, w, 1, 'ivory', 170)
+    """マスキングテープ。半透明で下が透け、両端がちぎれている。"""
+    R('props', x, y, w, 3, 'ivory2', 120)
+    R('props', x, y, w, 1, 'ivory', 150)
+    for k in range(3):
+        if k % 2 == 0:
+            PXL('props', x, y + k, 'ivory', 80)
+            PXL('props', x + w - 1, y + k, 'ivory', 80)
 
 obj('キャラクターデザインと設計の紙')
-paper(*PAP_DESIGN, base='y2', hi='ivory', shade='y1')
-pin(PAP_DESIGN[0] + PAP_DESIGN[2] // 2, PAP_DESIGN[1] + 2, 'm2')
+paper(*PAP_DESIGN, base='y2', hi='ivory', shade='y1', curl=6)
+pin(PAP_DESIGN[0] + PAP_DESIGN[2] // 2, PAP_DESIGN[1] + 2, 'm2', 'm0')
 
 obj('おばけのラフ絵')
 px7, py7, pw7, ph7 = PAP_SKETCH
-paper(px7, py7, pw7, ph7, base='ivory', hi='wht', shade='ivory2', curl=False)
+paper(px7, py7, pw7, ph7, base='ivory', hi='wht', shade='ivory2', curl=0)
 # 一つ目のおばけ(鉛筆のラフ線。#=線 / O=目)
 GHOST = [
     "....#####....",
@@ -321,22 +471,22 @@ R('furniture', px7 + 4, py7 + 19, 13, 1, 'gray1')         # 下に一本メモ�
 tape(px7 + pw7 // 2 - 3, py7 - 1, 7)
 
 obj('Story is Kingの紙')
-paper(*PAP_STORY, base='ivory', hi='wht', shade='ivory2')
+paper(*PAP_STORY, base='ivory', hi='wht', shade='ivory2', curl=4, torn=6)
 tape(PAP_STORY[0] - 2, PAP_STORY[1] - 1, 8)
 tape(PAP_STORY[0] + PAP_STORY[2] - 6, PAP_STORY[1] - 1, 8)
 
 obj('Spooks Gsの紙')
-paper(*PAP_SPOOKS, base='ivory2', hi='ivory', shade='gray0')
-pin(PAP_SPOOKS[0] + 4, PAP_SPOOKS[1] + 2, 'b3')
-pin(PAP_SPOOKS[0] + PAP_SPOOKS[2] - 5, PAP_SPOOKS[1] + 2, 'b3')
+paper(*PAP_SPOOKS, base='ivory2', hi='ivory', shade='gray0', curl=4)
+pin(PAP_SPOOKS[0] + 4, PAP_SPOOKS[1] + 2, 'b3', 'b0')
+pin(PAP_SPOOKS[0] + PAP_SPOOKS[2] - 5, PAP_SPOOKS[1] + 2, 'b3', 'b0')
 
 obj('世界観の紙')
-paper(*PAP_WORLD, base='m4', hi='pnkc', shade='m2')
-pin(PAP_WORLD[0] + PAP_WORLD[2] // 2, PAP_WORLD[1] + 2, 'y1')
+paper(*PAP_WORLD, base='m4', hi='pnkc', shade='m2', curl=4)
+pin(PAP_WORLD[0] + PAP_WORLD[2] // 2, PAP_WORLD[1] + 2, 'y1', 'y0')
 
 obj('物語の紙')
-paper(*PAP_TALE, base='pap_r', hi='cor', shade='pap_r0')
-pin(PAP_TALE[0] + PAP_TALE[2] // 2, PAP_TALE[1] + 2, 'y1')
+paper(*PAP_TALE, base='pap_r', hi='cor', shade='pap_r0', curl=4)
+pin(PAP_TALE[0] + PAP_TALE[2] // 2, PAP_TALE[1] + 2, 'y1', 'y0')
 
 # ─── 模造紙(キャラクターに関するデータ) ───
 obj('キャラクターに関するデータ')
@@ -349,37 +499,54 @@ for k in range(th8):
     PXL('bg', tx8, ty8 + k, 'chk' if k % 4 else 'chk2')
     PXL('bg', tx8 + tw8 - 1, ty8 + k, 'chk' if (k + 1) % 4 else 'chk2')
 dx8, dy8, dw8, dh8 = DATA_PANEL
-paper(dx8, dy8, dw8, dh8, base='ivory', hi='wht', shade='ivory2', curl=False)
+paper(dx8, dy8, dw8, dh8, base='ivory', hi='wht', shade='ivory2', curl=0)
 for k in range(4):                                        # 四隅のテープ
     tape(dx8 + (0 if k % 2 == 0 else dw8 - 8), dy8 + (0 if k < 2 else dh8 - 3), 8)
 # 貼ってある写真・付箋・手書き(内容は読めなくてOK)
-def photo(x, y, w, h, tone):
-    R('furniture', x, y, w, h, 'wht')
-    R('furniture', x + 1, y + 1, w - 2, h - 2, tone)
-    for yy in range(y + 1, y + h - 1):                    # 中身は抽象的な陰影だけ
-        for xx in range(x + 1, x + w - 1):
+def photo(x, y, w, h, tone, tilt=0):
+    """ポラロイド。白フチ+下の余白+わずかな影。中身は読めなくてよい。"""
+    for k in range(2):                                        # 落ち影
+        for xx in range(x + 1 + k, x + w + 1 + k):
+            PXL('furniture', xx, y + h + k, 'ivory2')
+    R('furniture', x, y, w, h, 'wht')                         # 白フチ
+    R('furniture', x + w - 1, y, 1, h, 'ivory2')
+    R('furniture', x, y + h - 1, w, 1, 'ivory2')
+    INSET('furniture', x + 2, y + 2, w - 4, h - 8, tone, 'gray0', 'ink')   # 画面(凹み)
+    for yy in range(y + 3, y + h - 7):                        # 中身は抽象的な陰影
+        for xx in range(x + 3, x + w - 3):
             if (xx * 5 + yy * 3) % 9 == 0:
                 PXL('furniture', xx, yy, 'gray0')
-    R('furniture', x, y + h - 1, w, 1, 'ivory2')
+    R('furniture', x + 3, y + h - 5, w - 8, 1, 'gray1')       # 下の余白に手書き
+    R('furniture', x + 3, y + h - 3, w - 12, 1, 'gray1')
 
-photo(249, 57, 32, 23, 'b0')
-EL('furniture', 258, 62, 270, 75, fill='b2', out='b1')     # 写真の中のおばけらしき影
+def sticky(x, y, w, h, base, hi, sh):
+    """付箋。下端がめくれ上がり、その下に影ができる。"""
+    R('furniture', x, y, w, h, base)
+    R('furniture', x, y, w, 1, hi)
+    R('furniture', x + w - 1, y, 1, h, sh)
+    for k in range(3):                                        # めくれた下端
+        R('furniture', x + k, y + h - 1 - k, w - k * 2, 1, hi if k else sh)
+    for k in range(3):
+        R('furniture', x + 2, y + 3 + k * 3, w - 5 - k, 1, sh)
+
+photo(249, 57, 32, 25, 'b0')
+EL('furniture', 258, 62, 270, 73, fill='b2', out='b1')        # 写真の中のおばけらしき影
 PXL('furniture', 262, 66, 'b5'); PXL('furniture', 266, 66, 'b5')
-photo(287, 57, 26, 20, 'q1')
-EL('furniture', 294, 61, 305, 73, fill='q4', out='q2')
-photo(293, 84, 27, 23, 'r0')
-EL('furniture', 300, 89, 312, 102, fill='r1', out='r2')
-R('furniture', 249, 86, 17, 14, 'y2'); R('furniture', 249, 86, 17, 1, 'ivory')   # 付箋
-for k in range(3):
-    R('furniture', 251, 89 + k * 3, 12 - k * 2, 1, 'y0')
-R('furniture', 270, 88, 15, 12, 'm4'); R('furniture', 270, 88, 15, 1, 'pnkc')
-for k in range(3):
-    R('furniture', 272, 91 + k * 3, 10 - k, 1, 'm2')
-for k in range(6):                                         # 手書きの行
-    R('furniture', 249, 111 + k * 3, 36 - (k % 3) * 7, 1, 'gray1')
-for k in range(5):                                         # 小さなグラフ
-    R('furniture', 292 + k * 5, 128 - (k * 3 + 4) % 13, 3, (k * 3 + 4) % 13, 'b3')
-R('furniture', 291, 129, 27, 1, 'gray0')
+photo(287, 57, 26, 22, 'q1')
+EL('furniture', 294, 61, 305, 71, fill='q4', out='q2')
+photo(293, 86, 27, 24, 'r0')
+EL('furniture', 300, 90, 312, 101, fill='r1', out='r2')
+sticky(249, 88, 18, 15, 'y2', 'ivory', 'y0')
+sticky(271, 90, 16, 13, 'm4', 'pnkc', 'm2')
+for k in range(6):                                             # 手書きの行
+    R('furniture', 249, 112 + k * 3, 36 - (k % 3) * 7, 1, 'gray1')
+for k in range(5):                                             # 小さなグラフ
+    hgt = (k * 3 + 4) % 13
+    R('furniture', 292 + k * 5, 127 - hgt, 3, hgt, 'b3')
+    R('furniture', 292 + k * 5, 127 - hgt, 3, 1, 'b4')
+R('furniture', 291, 128, 27, 1, 'gray0')
+R('furniture', 246, 55, 4, 6, 'gray2')                         # ゼムクリップ
+R('furniture', 246, 55, 4, 1, 'wht'); PXL('furniture', 247, 60, 'gray0')
 
 # ─── 右の壁: スタジオ(TOPの部屋)へ戻る戸口。白色の光がもれる ───
 obj('スタジオへの戸口')
@@ -471,15 +638,26 @@ for xx in range(GAR_SPANS[0][0], GAR_SPANS[-1][1] + 1):
         PXL('furniture', xx, wy + 1, 'q1')
 GAR_BULBS = garland_positions()
 for (gbx, gby) in GAR_BULBS:
-    R('furniture', gbx, gby + 1, 1, 2, 'gray0')                     # 吊り線
-    EL('furniture', gbx - 1, gby + 3, gbx + 1, gby + 5, fill='o2', out='y0')
-    PXL('furniture', gbx - 1, gby + 3, 'bulbc')
+    R('furniture', gbx, gby + 1, 1, 1, 'gray0')                     # 吊り線
+    R('furniture', gbx - 1, gby + 2, 3, 1, 'gray1')                 # ソケット(口金)
+    PXL('furniture', gbx - 1, gby + 2, 'gray2')
+    EL('furniture', gbx - 2, gby + 3, gbx + 2, gby + 7, fill='o2', out='y0')  # ガラス球
+    PXL('furniture', gbx, gby + 5, 'bulbc')                         # フィラメント
+    PXL('furniture', gbx - 1, gby + 4, 'bulbc')
+    PXL('furniture', gbx + 2, gby + 6, 'o1')                        # 球の縁の陰り
+    PXL('furniture', gbx - 2, gby + 6, 'o1')
 
 # ─── チョーク受け(黒板の下のふち)とチョーク ───
 obj('チョーク受け')
-R('furniture', FRAME[0], RAIL_Y, FRAME[2], 4, 'wd1')
-R('furniture', FRAME[0], RAIL_Y, FRAME[2], 1, 'wd2')
-R('furniture', FRAME[0], RAIL_Y + 3, FRAME[2], 1, 'wd0')
+# 受け: 天板(光を受ける)+リップ+前面+下の落ち影。粉が天板に溜まる。
+R('furniture', FRAME[0] - 1, RAIL_Y, FRAME[2] + 2, 1, 'wd3')      # 天板のふち(明)
+DITH('furniture', FRAME[0] - 1, RAIL_Y + 1, FRAME[2] + 2, 2, 'wd2', 'wd1', 'hline')
+R('furniture', FRAME[0] - 1, RAIL_Y + 3, FRAME[2] + 2, 1, 'wd0')  # 前面の下
+R('furniture', FRAME[0] - 1, RAIL_Y + 4, FRAME[2] + 2, 1, 'ink')  # 下端
+DITH('bg', FRAME[0], RAIL_Y + 5, FRAME[2], 2, None, 'q0', 'check') # 壁への落ち影
+for kx in range(FRAME[0] + 2, FRAME[0] + FRAME[2], 3):            # 天板のチョーク粉
+    if (kx * 5) % 7 < 3:
+        PXL('furniture', kx, RAIL_Y, 'ivory2')
 obj('チョーク')
 # マユ(x92..114)とパッチ(x266..290)の立ち位置を避けて置く
 R('props', 148, RAIL_Y - 1, 9, 2, 'wht'); PXL('props', 148, RAIL_Y - 1, 'gray2')
@@ -509,8 +687,8 @@ CHAINS = [
  ['b0','b1','b2','b3','b4','b5'],
  ['gray0','gray1','gray2'],
  ['cyn0','cyn1','cyn2','cync'],
- ['bd0','bd1','bd2','bd3'],
- ['wd0','wd1','wd2'],
+ ['bd0','bd1','bd2','bd3','bd4'],
+ ['wd0','wd1','wd2','wd3'],
  ['pap_r0','pap_r'],
  ['chk2','chk'],
  ['o2','bulbc'],

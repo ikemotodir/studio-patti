@@ -39,8 +39,12 @@
     "file": "objects/bg__021_キャラクターに関するデータ.png"
    },
    {
+    "name": "チョーク受け",
+    "file": "objects/bg__028_チョーク受け.png"
+   },
+   {
     "name": "戸口のあかり",
-    "file": "objects/bg__029_戸口のあかり.png"
+    "file": "objects/bg__030_戸口のあかり.png"
    },
    {
     "name": "その他",
@@ -130,7 +134,7 @@
    },
    {
     "name": "チョーク",
-    "file": "objects/props__028_チョーク.png"
+    "file": "objects/props__029_チョーク.png"
    }
   ]
  },

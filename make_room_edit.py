@@ -98,6 +98,76 @@ def dpatch(l, x, y, w, h, c, den=2, ph=0):
             if (xx + yy + ph) % den == 0:
                 PXL(l, xx, yy, c)
 
+# ═══════════════ 作り込み用の描画キット ═══════════════
+# 方針: 一律の黒枠で囲まない / 面を分けて立体を作る / ディザは階調でなく素材を表す
+
+def DITH(l, x, y, w, h, cA, cB, kind='check', ph=0):
+    """素材別のディザ。cA=地、cB=混ぜる色。"""
+    for yy in range(y, y + h):
+        for xx in range(x, x + w):
+            u, v = xx + ph, yy
+            if kind == 'check':    m = (u + v) % 2 == 0
+            elif kind == 'sparse': m = (u * 2 + v) % 4 == 0
+            elif kind == 'dense':  m = (u + v) % 4 != 0
+            elif kind == 'grain':  m = (u * 7 + v * 13 + (u * v) % 5) % 9 < 2   # 紙・コンクリのざらつき
+            elif kind == 'weave':  m = (u % 3 == 0) != (v % 3 == 0)             # 布・メッシュ
+            elif kind == 'brush':  m = (u + v * 3) % 7 == 0                     # 刷毛目・拭き跡
+            elif kind == 'hline':  m = v % 2 == 0
+            elif kind == 'vline':  m = u % 2 == 0
+            else:                  m = False
+            if m:
+                PXL(l, xx, yy, cB)
+            elif cA is not None:
+                PXL(l, xx, yy, cA)
+
+def BEVEL(l, x, y, w, h, base, hi, sh):
+    """面取りした箱。上と左に1pxの明、下と右に1pxの暗。黒枠で囲まない。"""
+    R(l, x, y, w, h, base)
+    R(l, x, y, w, 1, hi); R(l, x, y, 1, h, hi)
+    R(l, x + w - 1, y, 1, h, sh); R(l, x, y + h - 1, w, 1, sh)
+
+def INSET(l, x, y, w, h, base, hi, sh):
+    """へこんだ面(スリット・くぼみ)。明暗がBEVELと逆。"""
+    R(l, x, y, w, h, base)
+    R(l, x, y, w, 1, sh); R(l, x, y, 1, h, sh)
+    R(l, x + w - 1, y, 1, h, hi); R(l, x, y + h - 1, w, 1, hi)
+
+def CYL(l, x, y, w, h, ramp, lit=0.30):
+    """円柱。ハイライト→コアシャドウ→端に反射光。rampは暗い順のリスト。"""
+    n = len(ramp)
+    for i in range(w):
+        t = i / float(w - 1) if w > 1 else 0.0
+        k = int(abs(t - lit) * (n - 1) * 1.55)
+        if t > 0.88:
+            k = max(0, k - 1)                       # 反射光
+        R(l, x + i, y, 1, h, ramp[min(n - 1, k)])
+
+def SCREW(l, x, y, body, slot):
+    R(l, x, y, 2, 2, body)
+    PXL(l, x, y + 1, slot); PXL(l, x + 1, y, slot)
+
+def KNOB(l, cx, cy, r, skirt, cap, hi, sh, ang=-1.2):
+    """ロータリーノブ。スカート+キャップ+指標+ハイライト。"""
+    EL(l, cx - r, cy - r, cx + r, cy + r, fill=skirt, out=sh)
+    EL(l, cx - r + 1, cy - r + 1, cx + r - 1, cy + r - 2, fill=cap)
+    PXL(l, cx - r + 2, cy - r + 2, hi)
+    PXL(l, cx + int(round(math.cos(ang) * (r - 1))),
+           cy + int(round(math.sin(ang) * (r - 1))), hi)
+
+def FADER(l, x, y, h, pos, slot, cap, hi, sh):
+    """フェーダー。溝(へこみ)+つまみ(面取り)。posは0(下)〜1(上)。"""
+    INSET(l, x + 1, y, 2, h, slot, sh, slot)
+    ky = y + int((1 - pos) * (h - 5))
+    BEVEL(l, x, ky, 4, 4, cap, hi, sh)
+    R(l, x, ky + 2, 4, 1, sh)
+
+def CAST(l, x, y, w, h, c, soft=True):
+    """落ち影。物の右下へ、外へ行くほど薄く。"""
+    for yy in range(y, y + h):
+        for xx in range(x, x + w):
+            if not soft or (xx + yy) % 2 == 0:
+                PXL(l, xx, yy, c)
+
 # 数字(5x5) - 数字ボタン用
 NFONT = {
  '1': "010 110 010 010 111", '2': "110 001 010 100 111",
@@ -116,8 +186,8 @@ MARQ = (281, 18, 56, 36)        # 電飾マーキー(コンテンツクリエイ
 BTNP = (281, 58, 56, 52)        # 数字ボタンパネル
 BTNC = [(296, 71), (321, 71), (296, 95), (321, 95)]   # 丸ボタン中心(19px)
 DESK_Y = 138                    # 編集卓の天板
-CHAIR = (185, 116)              # ゲーミングチェア左上(センター205)
-EDITC = (150, 120, 110)         # 編集機 x,y,幅 (センター205)
+CHAIR = (185, 120)              # ゲーミングチェア左上(センター205)
+EDITC = (132, 110, 141)         # 編集機 x,幅の基準 (センター205)
 
 # ═══════════════ bg : TOPの部屋と同じ壁・床・天井 ═══════════════
 obj()
@@ -292,30 +362,43 @@ bake_sign_img('sign_studio_s.png', 4, 40, signS_top, signS_bot, 'wht')
 # ─── 奥壁: 大スクリーン(壁掛け・16:9) ───
 obj('大スクリーン')
 sx, sy, sw, sh = SCR
-O('furniture', sx - 4, sy - 4, sw + 8, sh + 8, 'q1', 'ink')
-R('furniture', sx - 2, sy - 2, sw + 4, 1, 'q4')          # ベゼル上ハイライト
-R('furniture', sx - 2, sy - 1, sw + 4, sh + 2, 'ink')
-R('furniture', sx, sy, sw, sh, 'n0')                     # 消灯した画面
-DI('furniture', sx, sy + sh - 4, sw, 4, 'n0', 'n1')      # 画面下のわずかな反射
-PXL('furniture', sx + sw - 5, sy + 3, 'n2'); PXL('furniture', sx + sw - 7, sy + 5, 'n1')
-PXL('furniture', sx + sw + 2, sy + sh + 2, 'g2')         # 電源LED
-# スクリーン背面のシアンLED(アンビエントライト)。ベゼルの外周に点線の光
-for xx in range(sx - 5, sx + sw + 5, 2):
-    PXL('furniture', xx, sy - 5, 'cyn1')
-    PXL('furniture', xx + 1, sy + sh + 4, 'cyn0')
-for yy in range(sy - 3, sy + sh + 3, 2):
-    PXL('furniture', sx - 5, yy, 'cyn1')
-    PXL('furniture', sx + sw + 4, yy, 'cyn0')
-PXL('furniture', sx - 5, sy - 5, 'cyn2'); PXL('furniture', sx + sw + 4, sy - 5, 'cyn2')
+# ベゼル: 外枠→面取り→内枠の3層。上面が受光し、下面は影。
+R('furniture', sx - 5, sy - 5, sw + 10, sh + 10, 'q2')          # 外枠の面
+R('furniture', sx - 5, sy - 5, sw + 10, 1, 'q4')                # 天面の稜線
+R('furniture', sx - 5, sy - 5, 1, sh + 10, 'q3')
+R('furniture', sx + sw + 4, sy - 5, 1, sh + 10, 'q0')
+R('furniture', sx - 5, sy + sh + 4, sw + 10, 1, 'q0')
+R('furniture', sx - 4, sy - 4, sw + 8, 1, 'q1')                 # 面取りの谷
+R('furniture', sx - 3, sy - 3, sw + 6, sh + 6, 'q1')            # 内枠
+R('furniture', sx - 3, sy - 3, sw + 6, 1, 'q0')                 # 内枠の上は暗い(奥まる)
+R('furniture', sx - 1, sy - 1, sw + 2, sh + 2, 'ink')           # 画面の縁
+R('furniture', sx, sy, sw, sh, 'n0')                            # 消灯した画面
+for k in range(4):                                               # ベゼルのネジ
+    SCREW('furniture', sx - 4 + (sw + 6) * (k % 2), sy - 4 + (sh + 6) * (k // 2), 'q3', 'q0')
+R('furniture', sx + sw // 2 - 8, sy + sh + 1, 16, 2, 'q0')      # ブランドプレート
+R('furniture', sx + sw // 2 - 8, sy + sh + 1, 16, 1, 'q3')
+for k in range(5):
+    PXL('furniture', sx + sw // 2 - 5 + k * 3, sy + sh + 2, 'q4')
+for k in range(10):                                              # 通気スリット(凹み)
+    R('furniture', sx - 2 + k * 15, sy - 4, 8, 1, 'q0')
+PXL('furniture', sx + sw + 2, sy + sh + 2, 'g2')                # 電源LED
+PXL('furniture', sx + sw + 2, sy + sh + 3, 'g1')
+# 背面のシアンLED(アンビエントライト)は壁に光をこぼす
+for xx in range(sx - 7, sx + sw + 7, 2):
+    PXL('furniture', xx, sy - 7, 'cyn1')
+    PXL('furniture', xx + 1, sy + sh + 6, 'cyn0')
+for yy in range(sy - 5, sy + sh + 5, 2):
+    PXL('furniture', sx - 7, yy, 'cyn1')
+    PXL('furniture', sx + sw + 6, yy, 'cyn0')
+PXL('furniture', sx - 7, sy - 7, 'cyn2'); PXL('furniture', sx + sw + 6, sy - 7, 'cyn2')
+DITH('bg', sx - 12, sy - 12, sw + 24, 6, None, 'n4', 'sparse')  # 壁への光のこぼれ
 
 # ─── 奥壁: 電飾マーキー(この部屋の看板。小さな電球がぐるりと並ぶ) ───
 obj('電飾マーキー')
 cx, cy, cw, ch = MARQ
-O('furniture', cx, cy, cw, ch, 'q1', 'ink')              # 枠(電球の台座)
-R('furniture', cx + 1, cy + 1, cw - 2, 1, 'q3')          # 上面のハイライト
-R('furniture', cx + 1, cy + ch - 2, cw - 2, 1, 'q0')
-O('furniture', cx + 4, cy + 4, cw - 8, ch - 8, 'n0', 'ink')   # 文字が入る暗い面
-R('furniture', cx + 5, cy + 5, cw - 10, 1, 'q0')
+BEVEL('furniture', cx, cy, cw, ch, 'q2', 'q4', 'q0')     # 枠(電球の台座)
+INSET('furniture', cx + 4, cy + 4, cw - 8, ch - 8, 'n0', 'q1', 'ink')   # 文字が入る凹み
+DITH('bg', cx + 2, cy + ch, cw - 2, 2, None, 'q0', 'check')             # 壁への落ち影
 
 # 電球: 枠のふちを2px内側でぐるりと1周し、4pxおきに並べる
 _bl, _bt = cx + 2, cy + 2
@@ -331,130 +414,262 @@ for (bxb, byb) in MARQ_BULBS:
 # ─── 奥壁: 数字ボタンパネル(右) ───
 obj('数字ボタンパネル')
 bx, by, bw, bh = BTNP
-O('furniture', bx, by, bw, bh, 'q1', 'ink')
-R('furniture', bx + 1, by + 1, bw - 2, 1, 'q4')
-R('furniture', bx + 1, by + bh - 2, bw - 2, 1, 'q0')
+BEVEL('furniture', bx, by, bw, bh, 'q2', 'q4', 'q0')
+DITH('furniture', bx + 2, by + 2, bw - 4, bh - 4, 'q1', 'q2', 'sparse')  # パネル面
+DITH('bg', bx + 2, by + bh, bw - 2, 2, None, 'q0', 'check')              # 壁への落ち影
 for i, (bcx, bcy) in enumerate(BTNC):
-    EL('furniture', bcx - 9, bcy - 9, bcx + 9, bcy + 9, fill='pnk1', out='ink')
+    EL('furniture', bcx - 9, bcy - 8, bcx + 9, bcy + 10, fill='q0', out='q0')  # 座ぐりの影
+    EL('furniture', bcx - 9, bcy - 9, bcx + 9, bcy + 9, fill='pnk1', out='pnk0')
     EL('furniture', bcx - 7, bcy - 7, bcx + 7, bcy + 7, fill='pnk2')
-    EL('furniture', bcx - 5, bcy - 6, bcx - 2, bcy - 3, fill='pnkc')
+    EL('furniture', bcx - 5, bcy - 6, bcx - 1, bcy - 2, fill='pnkc')           # 樹脂ドームの映り込み
+    PXL('furniture', bcx + 5, bcy + 4, 'pnkc')                                 # 反対側の反射光
     NTXT('furniture', bcx - 1, bcy - 2, str(i + 1), 'ink')   # 字形3x5なので中心-1,-2 が真ん中
 
-# ─── 編集卓(壁ぎわのカウンター=ミキサー卓。ボタンいっぱい) ───
+# ─── 編集卓(壁ぎわのカウンター。天板の小口→膝板→接地影の3層) ───
 obj('編集卓')
-R('furniture', 47, DESK_Y, 290, 1, 'mauve')
-R('furniture', 47, DESK_Y + 1, 290, 3, 'q4')
-R('furniture', 47, DESK_Y + 4, 290, 2, 'q2')
-R('furniture', 47, DESK_Y + 6, 290, 20, 'q1')            # 前板
-for lx in (47, 104, 162, 220, 278, 336):
-    R('furniture', lx, DESK_Y + 6, 1, 20, 'q0')
-R('furniture', 47, DESK_Y + 24, 290, 2, 'q0')
-R('furniture', 47, DESK_Y + 26, 290, 2, 'ink')
-R('furniture', 47, DESK_Y + 7, 290, 1, 'pnk0', 255)      # 前板のほのかな席明かりライン
-R('furniture', 49, DESK_Y + 28, 286, 2, 'q0')            # 接地影
+R('furniture', 47, DESK_Y - 1, 290, 1, 'q5')             # 天板前縁の稜線(全通し)
+R('furniture', 47, DESK_Y, 290, 3, 'q3')                 # 天板の小口(厚み)
+R('furniture', 47, DESK_Y + 3, 290, 1, 'q1')
+R('furniture', 47, DESK_Y + 4, 290, 22, 'q1')            # 膝板
+DITH('furniture', 47, DESK_Y + 13, 290, 13, None, 'q0', 'sparse')
+for lx in (104, 162, 220, 278):                          # 板の継ぎ目(途中で切る)
+    R('furniture', lx, DESK_Y + 5, 1, 16, 'q0')
+    R('furniture', lx + 1, DESK_Y + 5, 1, 12, 'q2')
+R('furniture', 47, DESK_Y + 26, 290, 2, 'q0')
+R('furniture', 49, DESK_Y + 28, 286, 1, 'ink')           # 接地影(最深部)
+DITH('bg', 47, DESK_Y + 29, 290, 2, None, 'q0', 'check')
 
-# ─── 編集機(デスクの上・チェアの奥のミキサー卓。少し立体) ───
+# ─── 編集機(ミキシングコンソール) ───
 obj('編集機')
-EX, EB, EW = EDITC
-ET = EB + 6                                # 操作面の上端
-MCOLS = ['g1', 'y1', 'cyn1', 'm2', 'b3', 'pnk2']
+CX0, CX1 = 132, 272
+BR0, BR1 = 110, 117                                      # メーターブリッジ面
+TP0, TP1 = 119, 131                                      # 操作天板
+ARM = 133                                                # アームレスト
 LEDS = []
-# 背面の低いメーターブリッジ
-R('furniture', EX + 4, EB, EW - 8, 6, 'q1')
-R('furniture', EX + 4, EB, EW - 8, 1, 'q3')
-R('furniture', EX + 4, EB + 5, EW - 8, 1, 'q0')
-R('furniture', EX + 3, EB, 1, 6, 'ink'); R('furniture', EX + EW - 4, EB, 1, 6, 'ink')
-for k, lx in enumerate(range(EX + 8, EX + EW - 8, 7)):   # メーターLED列(キラキラ)
-    c = MCOLS[k % len(MCOLS)]
-    PXL('furniture', lx, EB + 2, c)
-    LEDS.append((lx, EB + 2, c, 1))
-# 傾斜した操作面(手前へ少し広がる台形=立体感)
-for yy in range(ET, ET + 10):
-    t = (yy - ET) / 9.0
-    x0e = int(EX + 2 - 2 * t + 0.5)
-    x1e = int(EX + EW - 3 + 2 * t + 0.5)
-    for xx in range(x0e, x1e + 1):
-        if xx == x0e or xx == x1e:
-            c = 'ink'
-        elif yy == ET:
-            c = 'q4'
-        elif xx <= x0e + 1:
-            c = 'q3'
-        else:
-            c = 'q2'
-        PXL('furniture', xx, yy, c)
-# 前面の厚み
-R('furniture', EX - 1, ET + 10, EW + 2, 3, 'q0')
-R('furniture', EX - 1, ET + 13, EW + 2, 1, 'ink')
-# 左翼(チェアに隠れない): フェーダー4本
-for i in range(4):
-    lx = EX + 6 + i * 7
-    R('furniture', lx, ET + 2, 1, 6, 'q0')
-    R('furniture', lx - 1, ET + 3 + (i * 2) % 4, 3, 2, 'gray2')
-# 右翼: ジョグダイヤル大小 + ボタン
-EL('furniture', EX + EW - 22, ET + 1, EX + EW - 12, ET + 9, fill='q3', out='ink')
-EL('furniture', EX + EW - 20, ET + 3, EX + EW - 16, ET + 6, fill='q4')
-PXL('furniture', EX + EW - 15, ET + 3, 'gray2')
-EL('furniture', EX + EW - 34, ET + 3, EX + EW - 28, ET + 8, fill='q3', out='ink')
-PXL('furniture', EX + EW - 31, ET + 4, 'gray1')
-for i in range(2):
-    lx = EX + EW - 10 + i * 4
-    c = MCOLS[(i + 3) % len(MCOLS)]
-    R('furniture', lx, ET + 7, 2, 2, c)
-    LEDS.append((lx, ET + 7, c, 2))
+
+# ── 3面: 面ごとに基準値を変える ──
+R('furniture', CX0, BR0, CX1 - CX0 + 1, BR1 - BR0 + 1, 'q1')    # ブリッジ面(中・ディザ禁止)
+R('furniture', CX0, BR0, CX1 - CX0 + 1, 1, 'q3')                # 上の稜線
+R('furniture', CX0, BR1 + 1, CX1 - CX0 + 1, 1, 'q0')            # ブリッジ下のAO
+R('furniture', CX0 - 1, TP0, CX1 - CX0 + 3, TP1 - TP0 + 1, 'q2')# 天板(最も光を拾う)
+R('furniture', CX0 - 1, TP0, CX1 - CX0 + 3, 1, 'q4')
+R('furniture', CX0 - 1, TP1 + 1, CX1 - CX0 + 3, 1, 'q1')        # 前縁ベベル
+BEVEL('furniture', CX0 - 2, ARM, CX1 - CX0 + 5, 3, 'q3', 'q5', 'q0')
+R('furniture', CX0 - 2, ARM, CX1 - CX0 + 5, 1, 'mauve')         # 唯一の全通しハイライト
+R('furniture', CX0 - 2, ARM + 3, CX1 - CX0 + 5, 1, 'q0')        # アームレスト下のコアシャドウ
+
+# ── サイドチーク(木口。くさび断面の厚みを見せる唯一の部品) ──
+for sxc, inw in ((CX0 - 3, 1), (CX1 + 1, -1)):
+    for k in range(3):
+        R('furniture', sxc + k * inw, BR0 + 1 + k, 1, ARM + 3 - BR0 - k, 'q4' if k else 'q5')
+    PXL('furniture', sxc, ARM + 3, 'q0')
+
+# ── パッチベイ(ブリッジ左。凹み+2段のジャック列) ──
+INSET('furniture', CX0 + 3, BR0 + 2, 26, 5, 'q0', 'q2', 'ink')
+for jy in (BR0 + 3, BR0 + 5):
+    for k in range(12):
+        PXL('furniture', CX0 + 5 + k * 2, jy, 'ink')
+        PXL('furniture', CX0 + 5 + k * 2, jy - 1, 'q3')
+for cxp, cyp in ((CX0 + 9, BR0 + 3), (CX0 + 17, BR0 + 5)):   # 挿さったコード
+    for k in range(4):
+        PXL('furniture', cxp + k // 2, cyp + 2 + k, 'm0')
+
+# ── メーター(点灯/消灯が同時に見える。最明色はここだけ) ──
+METER_LV = [4, 5, 3, 5, 2, 4, 6, 3, 5, 4, 2, 5, 3]
+for i in range(13):
+    mxm = CX0 + 34 + i * 4
+    if mxm > CX1 - 24:
+        break
+    for pair in (0, 2):
+        lit = max(1, METER_LV[(i * 3 + pair) % len(METER_LV)] - (pair and 1))
+        for k in range(6):
+            yy = BR1 - 1 - k
+            if k < lit:
+                c = 'cync' if k == lit - 1 else 'cyn2'
+                PXL('furniture', mxm + pair, yy, c)
+            else:
+                PXL('furniture', mxm + pair, yy, 'q2')       # 消灯も物として描く
+        LEDS.append((mxm + pair, BR1 - lit, 'cyn1', 1))
+DITH('furniture', CX0 + 34, BR1 + 2, 52, 2, None, 'q3', 'sparse')   # メーターの照り返し
+
+# ── チャンネルストリップ(ピッチ4px・8本ごとにモジュールの継ぎ目) ──
+FADER_LV = [1, 0, 2, 1, 3, 2, 0, 1, 2, 3, 1, 2]
+NSTRIP = 30
+for i in range(NSTRIP):
+    sxs = CX0 + 4 + i * 4
+    if sxs > CX1 - 26:
+        break
+    for r in range(2):                                        # ノブ2段
+        ky = TP0 + 1 + r * 3
+        R('furniture', sxs, ky, 2, 2, 'q4')
+        PXL('furniture', sxs + (i % 3 == 0), ky, 'q5')        # 指標の向きを列ごとに振る
+        PXL('furniture', sxs + 2, ky + 1, 'q1')               # 1pxの接地影
+    R('furniture', sxs + 1, TP0 + 8, 1, 5, 'q0')              # フェーダー溝
+    PXL('furniture', sxs + 2, TP0 + 8, 'q3')                  # 凹みの受光側
+    cy = TP0 + 8 + FADER_LV[(i // 3) % len(FADER_LV)]
+    R('furniture', sxs, cy, 3, 2, 'gray1')                    # キャップ
+    R('furniture', sxs, cy, 3, 1, 'gray2')
+    PXL('furniture', sxs + 3, cy + 1, 'q0')                   # キャップの落ち影
+for m in range(1, 4):                                          # モジュールの継ぎ目
+    mx2 = CX0 + 4 + m * 8 * 4 - 2
+    if mx2 < CX1 - 26:
+        R('furniture', mx2, TP0 + 1, 1, 10, 'q0')
+        R('furniture', mx2 + 1, TP0 + 1, 1, 7, 'q3')
+
+# ── スクリブルストリップ(暗い卓で唯一の水平の明るい線) ──
+R('furniture', CX0 + 3, TP0 + 6, CX1 - CX0 - 28, 1, 'q1')     # 差し込み溝
+R('furniture', CX0 + 3, TP0 + 7, CX1 - CX0 - 28, 1, 'ivory2')
+for i in range(NSTRIP):
+    sxs = CX0 + 4 + i * 4
+    if sxs > CX1 - 28:
+        break
+    if (i * 7) % 5 < 3:                                        # 空きチャンネルは無地
+        R('furniture', sxs, TP0 + 7, 2 + (i % 2), 1, 'gray0')
+
+# ── マスター/モニター区画(右寄り。対称を壊す) ──
+MSX = CX1 - 24
+R('furniture', MSX - 2, TP0 + 1, 1, 10, 'q0')                 # 区画の継ぎ目
+KNOB('furniture', MSX + 4, TP0 + 4, 3, 'q3', 'q4', 'q5', 'q0')# 大きなモニターノブ
+PXL('furniture', MSX + 7, TP0 + 7, 'q0')
+for r in range(2):
+    for k in range(5):
+        bx2, by2 = MSX + 10 + k * 2, TP0 + 2 + r * 2
+        on = (k + r) % 4 == 1
+        PXL('furniture', bx2, by2, 'm3' if on else 'q1')
+        if on:
+            LEDS.append((bx2, by2, 'm2', 1))
+R('furniture', MSX + 11, TP0 + 8, 1, 4, 'q0')                 # マスターフェーダー(短い)
+R('furniture', MSX + 10, TP0 + 9, 3, 2, 'gray1')
+R('furniture', MSX + 10, TP0 + 9, 3, 1, 'gray2')
+
+# ── ジョグ/シャトルホイール(卓上で唯一の円。4層) ──
+JX, JY = CX1 - 8, TP0 + 6
+EL('furniture', JX - 6, JY - 5, JX + 6, JY + 5, fill='q3', out='q0')
+for k in range(-5, 6, 2):
+    PXL('furniture', JX + k, JY - 5, 'q4')                    # ローレット(刻み)
+EL('furniture', JX - 4, JY - 3, JX + 4, JY + 3, fill='q1')    # ディッシュ(皿は上が暗い)
+R('furniture', JX - 3, JY - 3, 7, 1, 'q0')
+R('furniture', JX - 3, JY + 2, 7, 1, 'q2')                    # 皿の底が受光
+R('furniture', JX - 1, JY - 1, 2, 2, 'q4')                    # ハブ
+PXL('furniture', JX - 1, JY - 1, 'q5')
+PXL('furniture', JX + 2, JY, 'q0')                            # 指かけの窪み
+PXL('furniture', JX + 3, JY, 'q3')
+for k in range(9):                                            # 弧を描く落ち影
+    PXL('furniture', JX - 4 + k, JY + 6 + (0 if 2 < k < 6 else 1), 'q0')
 
 # ─── メニューパネル(デスクに立つ大きなプログラムボード) ───
 obj('メニューパネル')
 mx, my, mw, mh = MENU
-O('furniture', mx, my, mw, mh, 'n0', 'ink')
-R('furniture', mx + 1, my + 1, mw - 2, 1, 'pnk2')        # ネオンの上縁
-R('furniture', mx + 2, my + 2, mw - 4, 1, 'pnk0')
-R('furniture', mx + 1, my + mh - 2, mw - 2, 1, 'pnk0')
-R('furniture', mx + 1, my + 2, 1, mh - 4, 'q2')
-R('furniture', mx + mw - 2, my + 2, 1, mh - 4, 'q0')
-for i in range(1, 5):                                     # 項目の仕切り
-    yy = my + 2 + i * 22
-    R('furniture', mx + 4, yy, mw - 8, 1, 'q1')
-PXL('furniture', mx + 3, my + 3, 'pnkc')
-PXL('furniture', mx + mw - 4, my + 3, 'pnkc')
-R('furniture', mx + 6, my + mh, 3, 2, 'ink')              # デスクへの接地脚
-R('furniture', mx + mw - 9, my + mh, 3, 2, 'ink')
+# 枠: 外→面取り→内の3層。上面が受光し、下面は影(角丸矩形にしない)
+R('furniture', mx, my, mw, mh, 'q2')
+R('furniture', mx, my, mw, 1, 'q4')                       # 天面の稜線
+R('furniture', mx, my, 1, mh, 'q3')
+R('furniture', mx + mw - 1, my, 1, mh, 'q0')
+R('furniture', mx, my + mh - 1, mw, 1, 'q0')
+INSET('furniture', mx + 3, my + 3, mw - 6, mh - 6, 'n0', 'q1', 'ink')   # カードが入る凹み
+R('furniture', mx + 4, my + 4, mw - 8, 1, 'pnk0')         # 内側のネオン(上辺)
+for i in range(5):                                         # 差し込みカード5枚
+    cy2 = my + 6 + i * 22
+    R('furniture', mx + 5, cy2, mw - 10, 19, 'q1')        # カードの面
+    R('furniture', mx + 5, cy2, mw - 10, 1, 'q3')         # カードの上辺(受光)
+    R('furniture', mx + 5, cy2 + 18, mw - 10, 1, 'q0')    # 下辺の影
+    R('furniture', mx + 5, cy2 + 19, mw - 10, 1, 'n0')    # レールの隙間
+    R('furniture', mx + mw - 8, cy2 + 2, 2, 15, 'q0')     # 差し込みレール(右)
+    PXL('furniture', mx + mw - 9, cy2 + 2, 'q2')
+    R('furniture', mx + 6, cy2 + 2, 1, 15, 'q2')          # レール(左)
+for k in range(2):                                         # 上部のクリップ
+    R('furniture', mx + 8 + k * (mw - 22), my + 1, 6, 3, 'gray0')
+    R('furniture', mx + 8 + k * (mw - 22), my + 1, 6, 1, 'gray2')
+SCREW('furniture', mx + 2, my + mh - 4, 'q3', 'q0')
+SCREW('furniture', mx + mw - 4, my + mh - 4, 'q3', 'q0')
+R('furniture', mx + 6, my + mh, 3, 3, 'q0')               # デスクへの接地脚
+R('furniture', mx + mw - 9, my + mh, 3, 3, 'q0')
+DITH('furniture', mx + 4, my + mh + 3, mw - 8, 2, None, 'q0', 'check')   # 接地影
 
-# ─── ゲーミングチェア(編集卓の手前・後ろ姿) ───
+# ─── ゲーミングチェア(編集卓の手前・後ろ姿。背後の大スクリーンで逆光) ───
 obj('ゲーミングチェア')
 gx, gy = CHAIR
-BR_W, BR_H, RAD = 40, 46, 9
-for yy in range(gy, gy + BR_H):
-    dy = yy - gy
-    if dy < RAD:
-        inset = RAD - int(round(math.sqrt(RAD * RAD - (RAD - dy) * (RAD - dy))))
-    else:
-        inset = 0
-    x0c, x1c = gx + inset, gx + BR_W - 1 - inset
-    for xx in range(x0c, x1c + 1):
-        if xx == x0c or xx == x1c or dy == 0 or (dy < 3 and (xx <= x0c + 1 or xx >= x1c - 1)):
-            c = 'ink'
-        elif xx <= x0c + 3:
-            c = 'q2'
-        elif xx >= x1c - 3:
+CXC = gx + 20                                   # 中心線
+BK0 = gy + 9                                    # 背もたれ上端
+BK_H = 35
+
+def _half(dy):
+    """背もたれの半幅(砂時計)。"""
+    if dy < 12:  return 14                      # 肩: ウイングが張る
+    if dy < 22:  return 14 - (dy - 12) * 2 // 5 # 絞り
+    if dy < 30:  return 10                      # 腰
+    return 10 + (dy - 30) // 2                  # 根元でわずかに広がる
+
+# ── ヘッドレスト(別部品。背もたれより手前に浮く) ──
+for dy in range(8):
+    hw = 8 if 1 <= dy <= 6 else 7
+    for xx in range(CXC - hw, CXC + hw + 1):
+        d = min(xx - (CXC - hw), (CXC + hw) - xx)
+        if dy == 0:
+            c = 'mauve'                          # 天面は逆光を最も受ける
+        elif d == 0:
+            c = 'pnk1'
+        elif dy >= 6:
             c = 'q0'
         else:
-            c = 'q1'
+            c = 'q1' if d < 3 else 'q2'
+        PXL('furniture', xx, gy + dy, c)
+R('furniture', CXC - 7, gy + 8, 15, 1, 'ink')    # 枕と背もたれの隙間の影(別部品の証拠)
+for sxh in (CXC - 6, CXC + 5):                   # ストラップを通すスリット
+    R('furniture', sxh, gy + 2, 1, 3, 'q0')
+R('furniture', CXC - 6, gy + 3, 12, 1, 'q0')     # 背面を横切るストラップ
+R('furniture', CXC - 6, gy + 3, 12, 1, 'q2')
+
+# ── 背もたれ: 樹脂シェル(中央・フラット)+張り地(外周・階調) ──
+for dy in range(BK_H):
+    yy = BK0 + dy
+    hw = _half(dy)
+    x0c, x1c = CXC - hw, CXC + hw
+    for xx in range(x0c, x1c + 1):
+        d = min(xx - x0c, x1c - xx)
+        if d == 0:
+            c = 'pnk1' if dy < 24 else 'q2'      # 逆光を受けるふち
+        elif d == 1:
+            c = 'q2' if dy < 24 else 'q1'
+        elif d < 5:
+            c = 'q1'                              # 張り地のウイング
+        else:
+            c = 'q1' if dy < 3 else 'q0'          # 樹脂シェル(ディザを入れずフラットに保つ)
         PXL('furniture', xx, yy, c)
-R('furniture', gx + 7, gy + RAD, 2, BR_H - RAD - 6, 'pnk1')    # ゲーミングの差し色(左)
-R('furniture', gx + BR_W - 9, gy + RAD, 2, BR_H - RAD - 6, 'pnk0')  # 右(影側)
-R('furniture', gx + 14, gy + 6, 12, 1, 'q0')                   # ヘッドレストの境界
-R('furniture', gx + 14, gy + 7, 12, 1, 'ink')
-R('furniture', gx + 8, gy + BR_H, 24, 3, 'ink')                # 座面(のぞく部分)
-R('furniture', gx + 9, gy + BR_H, 22, 1, 'q2')
-R('furniture', gx + 18, gy + BR_H + 3, 4, 10, 'q3')            # 支柱
-R('furniture', gx + 18, gy + BR_H + 3, 1, 10, 'q4')
-R('furniture', gx + 19, gy + BR_H + 13, 2, 3, 'gray0')         # ガスシリンダー
-for ddx, ddy in [(-14, 6), (0, 8), (14, 6)]:                   # 五本脚(見えるのは3本)
-    x2, y2 = gx + 20 + ddx, gy + BR_H + 16 + ddy
-    D['furniture'].line([gx + 20, gy + BR_H + 16, x2, y2], fill=C('ink'), width=2)
-    OD['furniture'].line([gx + 20, gy + BR_H + 16, x2, y2], fill=_oid('furniture'), width=2)
-    EL('furniture', x2 - 2, y2 - 1, x2 + 2, y2 + 3, fill='q2', out='ink')
+R('furniture', CXC - 9, BK0, 19, 1, 'q2')         # 上端の張り地の縁(パイピング)
+for dy in range(2, BK_H - 4):                     # パネルの継ぎ目(溝)。光源側だけ明るく
+    yy = BK0 + dy
+    off = 6 - (dy > 22)
+    for sgn in (-1, 1):
+        PXL('furniture', CXC + sgn * off, yy, 'q0')
+        PXL('furniture', CXC + sgn * off - 1, yy, 'q1')
+for dy in range(3, 20, 3):                        # ステッチ(光の当たる上半分だけ)
+    PXL('furniture', CXC - 7, BK0 + dy, 'mauve')
+    PXL('furniture', CXC + 7, BK0 + dy, 'mauve')
+R('furniture', CXC - 8, BK0 + 27, 17, 1, 'q0')    # ランバーのストラップ
+R('furniture', CXC - 8, BK0 + 27, 17, 1, 'q2')
+PXL('furniture', CXC - 9, BK0 + 27, 'q1'); PXL('furniture', CXC + 9, BK0 + 27, 'q1')
+for kx in (CXC - 5, CXC + 4):                     # 締め付けによる引きつれ
+    PXL('furniture', kx, BK0 + 26, 'q2'); PXL('furniture', kx + 1, BK0 + 28, 'q0')
+
+# ── 座面・ガスシリンダー・5本脚 ──
+SY = BK0 + BK_H
+R('furniture', CXC - 13, SY, 27, 3, 'q1')         # 座面の後ろ側がのぞく
+R('furniture', CXC - 13, SY, 27, 1, 'q3')
+R('furniture', CXC - 13, SY + 3, 27, 1, 'ink')
+R('furniture', CXC - 2, SY + 4, 4, 6, 'q2')       # 支柱
+R('furniture', CXC - 2, SY + 4, 1, 6, 'q4')
+R('furniture', CXC + 1, SY + 4, 1, 6, 'q0')
+R('furniture', CXC - 3, SY + 10, 6, 3, 'gray0')   # ガスシリンダーのカバー
+R('furniture', CXC - 3, SY + 10, 6, 1, 'gray1')
+for ddx, ddy, wlen in ((-15, 7, 2), (-8, 9, 2), (8, 9, 2), (15, 7, 2)):
+    x2, y2 = CXC + ddx, SY + 13 + ddy
+    D['furniture'].line([CXC, SY + 13, x2, y2], fill=C('q1'), width=wlen)
+    OD['furniture'].line([CXC, SY + 13, x2, y2], fill=_oid('furniture'), width=wlen)
+    D['furniture'].line([CXC, SY + 12, x2, y2 - 1], fill=C('q3'), width=1)
+    EL('furniture', x2 - 2, y2 - 1, x2 + 2, y2 + 3, fill='q2', out='q0')   # キャスター
+    PXL('furniture', x2 - 1, y2, 'q4')
+DITH('bg', CXC - 20, SY + 22, 40, 3, None, 'q0', 'check')                  # 床の接地影
 
 # ─── 戸口の光の床へのこぼれ(白) ───
 obj('スタジオへの戸口')
@@ -641,10 +856,10 @@ SOURCES = [
     {'pos': (309, 84),  'r': 52,  's': 0.50, 'e': 1.4, 'tint': P['pnk2'], 'occ': False},  # 数字ボタン
     {'pos': (309, 36),  'r': 62,  's': 0.62, 'e': 1.3, 'tint': P['ivory'], 'occ': False},  # 電飾マーキー
     {'pos': (86, 82),   'r': 46,  's': 0.34, 'e': 1.4, 'tint': P['pnk2'], 'occ': False},  # メニューパネル
-    {'pos': (205, 128), 'r': 80,  's': 0.42, 'e': 1.3, 'tint': P['m3'],   'occ': False},  # 編集機のLED
-    {'pos': (192, 150), 'r': 185, 's': 0.32, 'e': 1.2, 'tint': P['q5'],   'occ': False},  # 室内バウンス
+    {'pos': (205, 120), 'r': 96,  's': 0.62, 'e': 1.3, 'tint': P['cyn1'], 'occ': False},  # 編集機のメーター
+    {'pos': (192, 150), 'r': 200, 's': 0.46, 'e': 1.2, 'tint': P['q5'],   'occ': False},  # 室内バウンス
 ]
-AMB = 0.40
+AMB = 0.52
 
 GS = 4
 gw, gh = W // GS + 1, H // GS + 1

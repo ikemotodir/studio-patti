@@ -3,8 +3,28 @@
   "layer": "bg",
   "children": [
    {
+    "name": "大スクリーン",
+    "file": "objects/bg__004_大スクリーン.png"
+   },
+   {
+    "name": "電飾マーキー",
+    "file": "objects/bg__006_電飾マーキー.png"
+   },
+   {
+    "name": "数字ボタンパネル",
+    "file": "objects/bg__008_数字ボタンパネル.png"
+   },
+   {
+    "name": "編集卓",
+    "file": "objects/bg__010_編集卓.png"
+   },
+   {
+    "name": "ゲーミングチェア",
+    "file": "objects/bg__014_ゲーミングチェア.png"
+   },
+   {
     "name": "スタジオへの戸口",
-    "file": "objects/bg__010_スタジオへの戸口.png"
+    "file": "objects/bg__015_スタジオへの戸口.png"
    },
    {
     "name": "その他",
@@ -29,27 +49,31 @@
    },
    {
     "name": "電飾マーキー",
-    "file": "objects/furniture__004_電飾マーキー.png"
+    "file": "objects/furniture__005_電飾マーキー.png"
    },
    {
     "name": "数字ボタンパネル",
-    "file": "objects/furniture__005_数字ボタンパネル.png"
+    "file": "objects/furniture__007_数字ボタンパネル.png"
    },
    {
     "name": "編集卓",
-    "file": "objects/furniture__006_編集卓.png"
+    "file": "objects/furniture__009_編集卓.png"
    },
    {
     "name": "編集機",
-    "file": "objects/furniture__007_編集機.png"
+    "file": "objects/furniture__011_編集機.png"
    },
    {
     "name": "メニューパネル",
-    "file": "objects/furniture__008_メニューパネル.png"
+    "file": "objects/furniture__012_メニューパネル.png"
    },
    {
     "name": "ゲーミングチェア",
-    "file": "objects/furniture__009_ゲーミングチェア.png"
+    "file": "objects/furniture__013_ゲーミングチェア.png"
+   },
+   {
+    "name": "その他",
+    "file": "objects/furniture__999_その他.png"
    }
   ]
  },
