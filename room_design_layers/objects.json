@@ -1,0 +1,141 @@
+[
+ {
+  "layer": "bg",
+  "children": [
+   {
+    "name": "黒板",
+    "file": "objects/bg__001_黒板.png"
+   },
+   {
+    "name": "チョークの矢印",
+    "file": "objects/bg__002_チョークの矢印.png"
+   },
+   {
+    "name": "キャラクターデザインと設計の紙",
+    "file": "objects/bg__003_キャラクターデザインと設計の紙.png"
+   },
+   {
+    "name": "おばけのラフ絵",
+    "file": "objects/bg__006_おばけのラフ絵.png"
+   },
+   {
+    "name": "Story is Kingの紙",
+    "file": "objects/bg__009_Story is Kingの紙.png"
+   },
+   {
+    "name": "Spooks Gsの紙",
+    "file": "objects/bg__012_Spooks Gsの紙.png"
+   },
+   {
+    "name": "世界観の紙",
+    "file": "objects/bg__015_世界観の紙.png"
+   },
+   {
+    "name": "物語の紙",
+    "file": "objects/bg__018_物語の紙.png"
+   },
+   {
+    "name": "キャラクターに関するデータ",
+    "file": "objects/bg__021_キャラクターに関するデータ.png"
+   },
+   {
+    "name": "戸口のあかり",
+    "file": "objects/bg__029_戸口のあかり.png"
+   },
+   {
+    "name": "その他",
+    "file": "objects/bg__999_その他.png"
+   }
+  ]
+ },
+ {
+  "layer": "furniture",
+  "children": [
+   {
+    "name": "キャラクターデザインと設計の紙",
+    "file": "objects/furniture__004_キャラクターデザインと設計の紙.png"
+   },
+   {
+    "name": "おばけのラフ絵",
+    "file": "objects/furniture__007_おばけのラフ絵.png"
+   },
+   {
+    "name": "Story is Kingの紙",
+    "file": "objects/furniture__010_Story is Kingの紙.png"
+   },
+   {
+    "name": "Spooks Gsの紙",
+    "file": "objects/furniture__013_Spooks Gsの紙.png"
+   },
+   {
+    "name": "世界観の紙",
+    "file": "objects/furniture__016_世界観の紙.png"
+   },
+   {
+    "name": "物語の紙",
+    "file": "objects/furniture__019_物語の紙.png"
+   },
+   {
+    "name": "キャラクターに関するデータ",
+    "file": "objects/furniture__022_キャラクターに関するデータ.png"
+   },
+   {
+    "name": "スタジオへの戸口",
+    "file": "objects/furniture__024_スタジオへの戸口.png"
+   },
+   {
+    "name": "スタジオの看板",
+    "file": "objects/furniture__025_スタジオの看板.png"
+   },
+   {
+    "name": "ガーランド",
+    "file": "objects/furniture__026_ガーランド.png"
+   },
+   {
+    "name": "チョーク受け",
+    "file": "objects/furniture__027_チョーク受け.png"
+   }
+  ]
+ },
+ {
+  "layer": "props",
+  "children": [
+   {
+    "name": "キャラクターデザインと設計の紙",
+    "file": "objects/props__005_キャラクターデザインと設計の紙.png"
+   },
+   {
+    "name": "おばけのラフ絵",
+    "file": "objects/props__008_おばけのラフ絵.png"
+   },
+   {
+    "name": "Story is Kingの紙",
+    "file": "objects/props__011_Story is Kingの紙.png"
+   },
+   {
+    "name": "Spooks Gsの紙",
+    "file": "objects/props__014_Spooks Gsの紙.png"
+   },
+   {
+    "name": "世界観の紙",
+    "file": "objects/props__017_世界観の紙.png"
+   },
+   {
+    "name": "物語の紙",
+    "file": "objects/props__020_物語の紙.png"
+   },
+   {
+    "name": "キャラクターに関するデータ",
+    "file": "objects/props__023_キャラクターに関するデータ.png"
+   },
+   {
+    "name": "チョーク",
+    "file": "objects/props__028_チョーク.png"
+   }
+  ]
+ },
+ {
+  "layer": "light",
+  "children": []
+ }
+]

@@ -642,7 +642,7 @@ doorStudio.addEventListener('click', () => { location.href = 'index.html'; });
 const COMPANY_URL = 'https://canva.link/5xu274fv1b00091';
 const NAV_ACT = {
   company:  { talk: '会社概要だよ！', act: () => window.open(COMPANY_URL, '_blank', 'noopener') },
-  chdesign: { talk: 'キャラクターデザインのページだよ！（いま準備中）', act: () => tease('CHARACTER DESIGN') },
+  chdesign: { talk: 'キャラクターデザインのページだよ！', act: () => { location.href = 'design.html'; } },
   contents: { talk: 'いまいるのが、この編集室のページだよ！', act: () => {} },
   spook:    { talk: '『おばけのパッチ』の世界のページだよ！（いま準備中）', act: () => tease('Patti the Spook') },
   contact:  { talk: 'お問い合わせフォームをひらくよ！', act: () => { location.href = 'index.html#post'; } },

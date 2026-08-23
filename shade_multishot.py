@@ -82,3 +82,8 @@ def cut(ms_png, ms_json, tag, out_png):
 
 cut("mayu_ms.png", "mayu_ms.json", "Mayu_back", "mayu_back_shaded.png")
 cut("patti_ms.png", "patti_ms.json", "shomen", "patti_front_shaded.png")
+# デザイン室: 二人は黒板をはさんで向かい合う(スケッチ準拠)
+cut("mayu_ms.png", "mayu_ms.json", "Mayu_right", "mayu_right_shaded.png")
+# パッチの左向き: 原本の left タグは顔の線が8px canvas 外へ出て切れているため使わない。
+# 体は左右対称のドームなので Right を切り出し、CSSの scaleX(-1) で左を向かせる。
+cut("patti_ms.png", "patti_ms.json", "Right", "patti_right_shaded.png")

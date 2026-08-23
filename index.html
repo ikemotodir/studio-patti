@@ -490,7 +490,7 @@
     <div id="pshadow" aria-hidden="true"></div>
     <div id="patti" role="img" aria-label="パッチくん"></div>
     <button id="doorL" class="hs" style="left:8px;top:48px;width:33px;height:168px;--gi:.4"
-            aria-label="デザイン室（CHARACTER DESIGN・準備中）"></button>
+            aria-label="デザイン室（CHARACTER DESIGN）へ"></button>
     <button id="doorR" class="hs" style="left:343px;top:48px;width:33px;height:168px;--gi:.4"
             aria-label="編集室（CONTENTS CREATIVE）へ"></button>
     <button id="companylink" class="hs nobg" style="left:144px;top:100px;width:104px;height:42px"
@@ -1128,8 +1128,8 @@ hotspot('gallink', 'ギャラリーのかべ！<br>ボクの絵がいっぱい�
   () => zoomOpen('gallery', 144, 36, 106, 68));
 hotspot('postlink', '赤いポスト！<br>お手紙（お問い合わせ）はここからどうぞ！',
   () => zoomOpen('post', 318, 112, 34, 78));
-hotspot('doorL', 'デザイン室！キャラクターが生まれる部屋だよ！<br>（いま準備中…もうすぐ開くよ！）',
-  () => tease('CHARACTER DESIGN'));
+hotspot('doorL', 'デザイン室！キャラクターが生まれる部屋だよ！<br>入ってみる？',
+  () => { location.href = 'design.html'; });
 hotspot('doorR', '編集室！アニメーションを創ってる部屋だよ！<br>入ってみて！',
   () => { location.href = 'contents.html'; });
 hotspot('companylink', 'スタジオパッチの会社案内が見られる<br>パソコンだよ！クリックしてみて！',
@@ -1198,7 +1198,7 @@ hotspot('spooklink', '『おばけのパッチ』の世界への入口！<br>大
 const NAV_ACT = {
   company:  { talk: '会社概要だよ！パソコンの画面と同じところへ行くよ！',
               act: () => window.open(COMPANY_URL, '_blank', 'noopener') },
-  chdesign: { talk: 'キャラクターデザインのページだよ！（いま準備中）', act: () => tease('CHARACTER DESIGN') },
+  chdesign: { talk: 'キャラクターデザインのページだよ！', act: () => { location.href = 'design.html'; } },
   contents: { talk: 'アニメーションなど制作のページ、編集室だよ！', act: () => { location.href = 'contents.html'; } },
   spook:    { talk: '『おばけのパッチ』の世界のページだよ！（いま準備中）', act: () => tease('Patti the Spook') },
   contact:  { talk: 'お問い合わせフォームをひらくよ！', act: () => zoomOpen('post', 318, 112, 34, 78) },
