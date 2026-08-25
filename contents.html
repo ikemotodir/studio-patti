@@ -37,10 +37,10 @@
 
   /* ─── 重なり順をここで一元管理(レイヤー事故防止) ─── */
   #room { z-index: 1; }
-  #doorGlowStudio, #editblink, #marqblink, #screenglow { z-index: 2; }
+  #doorGlowStudio, #editblink, #marqblink, #screenglow, #motes { z-index: 2; }
   #screenbox { z-index: 3; }
   .hs, .mi, .nb, #catname { z-index: 4; }
-  #mshadow, #mayu, #pshadow, #patti { z-index: 5; }
+  #mshadow, #mayu, #pshadow, #pattifloat { z-index: 5; }
   #navbar, #talkbox { z-index: 6; }
 
   /* ─── 上部ナビゲーション(TOPと同じ) ─── */
@@ -137,12 +137,12 @@
 
   /* ─── 大スクリーン(中身はここに載る) ─── */
   #screenbox {
-    position: absolute; left: 134px; top: 26px;
-    width: 142px; height: 80px; overflow: hidden;
+    position: absolute; left: 137px; top: 26px;
+    width: 136px; height: 77px; overflow: hidden;
     background: transparent;
   }
   #screenglow {
-    position: absolute; left: 120px; top: 14px; width: 170px; height: 104px;
+    position: absolute; left: 123px; top: 14px; width: 164px; height: 101px;
     pointer-events: none; mix-blend-mode: screen; display: none;
     background: radial-gradient(closest-side, rgba(126, 224, 235, .20), rgba(126, 224, 235, 0) 80%);
   }
@@ -193,14 +193,20 @@
 
   /* ─── 左のメニューパネル(5項目・▶で選ぶ) ─── */
   .mi {
-    position: absolute; left: 49px; width: 76px; height: 22px;
-    border: 0; background: transparent; cursor: pointer; padding: 0 0 0 2px;
+    position: absolute; left: 50px; width: 78px; height: 22px;
+    border: 0; background: transparent; cursor: pointer; padding: 0 2px 0 5px;
     box-sizing: border-box; text-align: left; white-space: nowrap;
     display: flex; align-items: center;
     font-family: 'DotGothic16', 'MS Gothic', monospace;
     color: #b9b4d8; font-size: 6px; line-height: 1;
   }
-  .mi .cur { position: absolute; left: -7px; color: #f79db8; visibility: hidden; }
+  /* ▶はカード内に収めたいので、6pxの文字ではなく3pxのCSS三角にする */
+  .mi .cur {
+    position: absolute; left: 1px; top: 50%; margin-top: -2px;
+    width: 0; height: 0; visibility: hidden;
+    border-left: 3px solid #f79db8;
+    border-top: 2px solid transparent; border-bottom: 2px solid transparent;
+  }
   .mi.sel { color: #ffffff; }
   .mi.sel .cur { visibility: visible; }
   .mi:hover, .mi:focus-visible { color: #ffffff; background: rgba(236, 148, 190, .12); outline: none; }
@@ -236,8 +242,15 @@
   }
 
   /* ─── キャラクター ─── */
+  /* おばけなので、ふわりと浮き沈みする */
+  #pattifloat {
+    position: absolute; left: 254px; top: 136px; width: 32px; height: 48px;
+    animation: pattifloat 3.1s ease-in-out infinite;
+  }
+  @keyframes pattifloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+  @media (prefers-reduced-motion: reduce) { #pattifloat { animation: none; } }
   #patti {
-    position: absolute; left: 254px; top: 136px;
+    position: absolute; left: 0; top: 0;
     width: 32px; height: 48px;
     background-image: url(patti_front_shaded.png);
     background-repeat: no-repeat;
@@ -351,6 +364,12 @@
     #rotate .phone, #rotate .patti { animation: none; }
     #rotate .phone { background-position: -1296px 0; }
   }
+
+  /* ─── 光の中を舞うチリ(空気感) ─── */
+  #motes {
+    position: absolute; left: 0; top: 0; width: 384px; height: 240px;
+    pointer-events: none; image-rendering: pixelated;
+  }
 </style>
 </head>
 <body>
@@ -395,6 +414,7 @@
 
     <div id="catname">コンテンツ<br>クリエイティブ</div>
 
+    <canvas id="motes" width="384" height="240" aria-hidden="true"></canvas>
     <div id="talkbox">
       <span class="name">パッチ</span>
       <span id="talktext"></span>
@@ -404,7 +424,7 @@
     <div id="mshadow" aria-hidden="true"></div>
     <div id="mayu" role="img" aria-label="スクリーンを見ているマユちゃん"></div>
     <div id="pshadow" aria-hidden="true"></div>
-    <div id="patti" role="img" aria-label="パッチくん"></div>
+    <div id="pattifloat" aria-hidden="true"><div id="patti" role="img" aria-label="パッチくん"></div></div>
 
     <div id="navbar">
       <div class="brand" id="brandhome" role="link" tabindex="0" aria-label="トップページへ"><img src="nav_logo.png" alt="STUDIO PATTI"></div>
@@ -500,7 +520,7 @@ CATS.forEach((c, i) => {
   const b = document.createElement('button');
   b.className = 'mi';
   b.style.top = (MENU_TOP + i * MENU_H) + 'px';
-  b.innerHTML = '<span class="cur">▶</span>' + c.name;   // メニューは1行(dispはカテゴリ表示板用)
+  b.innerHTML = '<span class="cur"></span>' + c.name;   // メニューは1行(dispはカテゴリ表示板用)
   b.setAttribute('aria-label', c.name);
   b.addEventListener('click', () => selectCat(i));
   hoverTalk(b, '「' + c.name + '」だよ！<br>右のパネルのすうじで作品がえらべるよ！');
@@ -719,6 +739,61 @@ document.querySelector('#rotate .anyway')
   };
   requestAnimationFrame(tick);
 })();
+const MOTE_LIGHTS = [[205, 66, 96], [24, 118, 70], [205, 120, 60]];
+const MOTE_BOT = 150;
+const MOTE_COL = a => `rgba(190,232,244,${a * 0.85})`;
+
+// ─────────────────────────────────────────────
+// 光の中を舞うチリ。光源に近いほど明るく見える(空気感)
+// ─────────────────────────────────────────────
+(() => {
+  const cv = document.getElementById('motes');
+  if (!cv) return;
+  const g = cv.getContext('2d');
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const N = 34;
+  const ms = [];
+  for (let i = 0; i < N; i++) {
+    ms.push({
+      x: Math.random() * 384, y: 16 + Math.random() * (MOTE_BOT - 16),
+      vx: (Math.random() - 0.5) * 3.2, vy: -1.6 - Math.random() * 2.4,
+      ph: Math.random() * Math.PI * 2, sp: 0.5 + Math.random() * 1.1,
+    });
+  }
+  const draw = (dt, t) => {
+    g.clearRect(0, 0, 384, 240);
+    for (const m of ms) {
+      m.x += m.vx * dt; m.y += m.vy * dt;
+      if (m.y < 14) { m.y = MOTE_BOT; m.x = Math.random() * 384; }
+      if (m.x < -2) m.x = 386; else if (m.x > 386) m.x = -2;
+      // 光源からの距離で明るさを決める(近いほど見える)
+      let best = 0;
+      for (const [lx, ly, lr] of MOTE_LIGHTS) {
+        const d = Math.hypot(m.x - lx, m.y - ly);
+        if (d < lr) best = Math.max(best, 1 - d / lr);
+      }
+      if (best < 0.06) continue;
+      const tw = 0.55 + 0.45 * Math.sin(t * m.sp + m.ph);
+      const a = best * tw;
+      if (a < 0.12) continue;
+      g.fillStyle = MOTE_COL(a);
+      g.fillRect(Math.round(m.x), Math.round(m.y), 1, 1);
+    }
+  };
+  if (still) { draw(0, 0); return; }
+  let prev = 0, acc = 0;
+  const tick = (ts) => {
+    requestAnimationFrame(tick);
+    if (!prev) prev = ts;
+    const dt = Math.min(0.1, (ts - prev) / 1000); prev = ts;
+    if (document.hidden) return;
+    acc += dt;
+    if (acc < 1 / 14) return;          // 14コマ/秒(ドット絵らしい間引き)
+    draw(acc, ts / 1000); acc = 0;
+  };
+  requestAnimationFrame(tick);
+})();
+
 </script>
 </body>
 </html>

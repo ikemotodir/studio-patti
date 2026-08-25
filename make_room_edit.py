@@ -180,8 +180,8 @@ def NTXT(l, x, y, ch, c):
             if bit == '1': PXL(l, x + rx, y + ry, c)
 
 # ═══════════════ 主要座標(ここだけ見れば配置が分かる) ═══════════════
-MENU = (47, 24, 79, 114)        # メニューパネル外形 x,y,w,h (デスクに立つボード)
-SCR  = (134, 26, 142, 80)       # スクリーン画面(16:9, センター205=チェアと同心)
+MENU = (47, 24, 84, 114)        # メニューパネル外形(最長ラベル72pxが枠内に収まる幅)
+SCR  = (137, 26, 136, 77)       # スクリーン画面(16:9, センター205=チェアと同心)
 MARQ = (281, 18, 56, 36)        # 電飾マーキー(コンテンツクリエイティブの掲示板)
 BTNP = (281, 58, 56, 52)        # 数字ボタンパネル
 BTNC = [(296, 71), (321, 71), (296, 95), (321, 95)]   # 丸ボタン中心(19px)
@@ -566,17 +566,16 @@ R('furniture', mx, my, mw, 1, 'q4')                       # 天面の稜線
 R('furniture', mx, my, 1, mh, 'q3')
 R('furniture', mx + mw - 1, my, 1, mh, 'q0')
 R('furniture', mx, my + mh - 1, mw, 1, 'q0')
-INSET('furniture', mx + 3, my + 3, mw - 6, mh - 6, 'n0', 'q1', 'ink')   # カードが入る凹み
+INSET('furniture', mx + 2, my + 2, mw - 4, mh - 4, 'n0', 'q1', 'ink')   # カードが入る凹み
 R('furniture', mx + 4, my + 4, mw - 8, 1, 'pnk0')         # 内側のネオン(上辺)
 for i in range(5):                                         # 差し込みカード5枚
     cy2 = my + 6 + i * 22
-    R('furniture', mx + 5, cy2, mw - 10, 19, 'q1')        # カードの面
-    R('furniture', mx + 5, cy2, mw - 10, 1, 'q3')         # カードの上辺(受光)
-    R('furniture', mx + 5, cy2 + 18, mw - 10, 1, 'q0')    # 下辺の影
-    R('furniture', mx + 5, cy2 + 19, mw - 10, 1, 'n0')    # レールの隙間
-    R('furniture', mx + mw - 8, cy2 + 2, 2, 15, 'q0')     # 差し込みレール(右)
-    PXL('furniture', mx + mw - 9, cy2 + 2, 'q2')
-    R('furniture', mx + 6, cy2 + 2, 1, 15, 'q2')          # レール(左)
+    R('furniture', mx + 3, cy2, mw - 6, 19, 'q1')         # カードの面
+    R('furniture', mx + 3, cy2, mw - 6, 1, 'q3')          # カードの上辺(受光)
+    R('furniture', mx + 3, cy2 + 18, mw - 6, 1, 'q0')     # 下辺の影
+    R('furniture', mx + 3, cy2 + 19, mw - 6, 1, 'n0')     # レールの隙間
+    R('furniture', mx + mw - 4, cy2 + 2, 1, 15, 'q0')     # 差し込みレール(右)
+    R('furniture', mx + 3, cy2 + 2, 1, 15, 'q2')          # レール(左)
 for k in range(2):                                         # 上部のクリップ
     R('furniture', mx + 8 + k * (mw - 22), my + 1, 6, 3, 'gray0')
     R('furniture', mx + 8 + k * (mw - 22), my + 1, 6, 1, 'gray2')
@@ -962,6 +961,30 @@ def apply_illum(layer):
 
 for lname in ['bg', 'furniture', 'props']:
     apply_illum(lname)
+
+# ═══════ 空気感: ふちを落として視線を中央へ集める(ビネット) ═══════
+# 部屋ごとに VIG_C(中心) と VIG_S(強さ) を変えられる
+try:
+    VIG_C
+except NameError:
+    VIG_C, VIG_S = (W * 0.5, H * 0.46), 1.0
+for _ln in ('bg', 'furniture', 'props'):
+    _px = L[_ln].load()
+    for yy in range(H):
+        _dy = abs(yy - VIG_C[1]) / (H * 0.5)
+        for xx in range(W):
+            _dx = abs(xx - VIG_C[0]) / (W * 0.5)
+            _d = (_dx ** 2.3 + _dy ** 2.3) ** 0.5 * VIG_S
+            if _d < 0.80:
+                continue
+            c = _px[xx, yy]
+            if c[3] == 0 or c[:3] == INK:
+                continue
+            n = 2 if _d > 1.06 else (1 if _d > 0.93 else (1 if (xx + yy) % 2 == 0 else 0))
+            out = c[:3]
+            for _ in range(n):
+                out = DARKER.get(out, out)
+            _px[xx, yy] = tuple(out) + (255,)
 
 # ═══════ 書き出し ═══════
 flat = Image.new("RGBA", (W, H), (0, 0, 0, 255))
