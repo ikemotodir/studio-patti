@@ -180,14 +180,14 @@ def NTXT(l, x, y, ch, c):
             if bit == '1': PXL(l, x + rx, y + ry, c)
 
 # ═══════════════ 主要座標(ここだけ見れば配置が分かる) ═══════════════
-MENU = (47, 24, 84, 114)        # メニューパネル外形(最長ラベル72pxが枠内に収まる幅)
-SCR  = (137, 26, 136, 77)       # スクリーン画面(16:9, センター205=チェアと同心)
-MARQ = (281, 18, 56, 36)        # 電飾マーキー(コンテンツクリエイティブの掲示板)
-BTNP = (281, 58, 56, 52)        # 数字ボタンパネル
-BTNC = [(296, 71), (321, 71), (296, 95), (321, 95)]   # 丸ボタン中心(19px)
+MENU = (40, 24, 86, 114)        # メニューパネル外形(最長ラベル72pxが枠内に収まる幅)
+SCR  = (133, 21, 154, 87)       # スクリーン画面(16:9・面積1.32倍。センター209=チェアと同心)
+MARQ = (293, 18, 50, 36)        # 電飾マーキー(コンテンツクリエイティブの掲示板)
+BTNP = (293, 58, 50, 52)        # 数字ボタンパネル
+BTNC = [(306, 71), (330, 71), (306, 95), (330, 95)]   # 丸ボタン中心(19px)
 DESK_Y = 138                    # 編集卓の天板
-CHAIR = (185, 120)              # ゲーミングチェア左上(センター205)
-EDITC = (132, 110, 141)         # 編集機 x,幅の基準 (センター205)
+CHAIR = (189, 120)              # ゲーミングチェア左上(センター209)
+EDITC = (136, 112, 145)         # 編集機 x,幅の基準 (センター209)
 
 # ═══════════════ bg : TOPの部屋と同じ壁・床・天井 ═══════════════
 obj()
@@ -263,9 +263,9 @@ for yy in range(150, 236):
 
 # ─── 側壁(TOPと同じ台形) ───
 def side_wall(left):
-    for i in range(47):
+    for i in range(40):          # 側壁を浅くして奥壁を広げ、その分をスクリーンに回す
         xx = i if left else W - 1 - i
-        t = i / 46.0
+        t = i / 39.0
         ytop = int(2 + 12 * t + 0.5)
         ybot = int(234 - 66 * t + 0.5)
         for yy in range(ytop, ybot + 1):
@@ -283,7 +283,7 @@ def side_wall(left):
                 base = 'n1' if t > 0.55 else 'n2'
                 c = 'n0' if (xx * 13 + yy * 7) % 37 == 0 else base
             PXL('bg', xx, yy, c)
-    cx0 = 46 if left else W - 47
+    cx0 = 39 if left else W - 40
     R('bg', cx0, 13, 1, 156, 'ink')
     R('bg', cx0 + (1 if left else -1), 14, 1, 154, 'n3')
 side_wall(True)
@@ -293,13 +293,13 @@ side_wall(False)
 
 # ─── 左の壁: スタジオ(TOPの部屋)へ戻る戸口。白色の光がもれる ───
 obj('スタジオへの戸口')
-for xx in range(10, 39):
-    t = (xx - 10) / 28.0
+for xx in range(8, 37):
+    t = (xx - 8) / 28.0
     ytopD = int(58 - 8 * t + 0.5)
     ybotD = int(214 - 46 * t + 0.5)
     for yy in range(ytopD, ybotD):
         rel = (yy - ytopD) / float(ybotD - ytopD)
-        if xx <= 11 or xx >= 37:
+        if xx <= 9 or xx >= 35:
             c = 'q3'
         elif rel < 0.10:
             c = 'gray0' if (xx + yy) % 2 else 'q4'
@@ -314,11 +314,11 @@ for xx in range(10, 39):
         PXL('furniture', xx, yy, c)
     PXL('furniture', xx, ytopD, 'ink')
     PXL('furniture', xx, ybotD, 'ink')
-R('furniture', 9, 58, 1, 157, 'ink')
-R('furniture', 39, 50, 1, 119, 'ink')
-R('furniture', 8, 58, 1, 157, 'q1')
+R('furniture', 7, 58, 1, 157, 'ink')
+R('furniture', 37, 50, 1, 119, 'ink')
+R('furniture', 6, 58, 1, 157, 'q1')
 for k in range(4):
-    R('furniture', 14 + k * 6, 62 - k, 1, 140 - k * 10, 'gray2' if k % 2 else 'gray1')
+    R('furniture', 12 + k * 6, 62 - k, 1, 140 - k * 10, 'gray2' if k % 2 else 'gray1')
 
 # ─── 左の看板: スタジオ(白の電飾・TOPの看板と同じ台形様式) ───
 def bake_sign_img(img_name, x0, x1, ytop_fn, ybot_fn, core):
@@ -339,10 +339,10 @@ def bake_sign_img(img_name, x0, x1, ytop_fn, ybot_fn, core):
 
 obj('スタジオの看板')
 def signS_top(xx):
-    return int(21 + 8 * (xx - 4) / 36.0 + 0.5)
+    return int(21 + 8 * (xx - 2) / 36.0 + 0.5)
 def signS_bot(xx):
-    return int(45 + 1 * (xx - 4) / 36.0 + 0.5)
-for xx in range(4, 41):
+    return int(45 + 1 * (xx - 2) / 36.0 + 0.5)
+for xx in range(2, 39):
     ytopS = signS_top(xx)
     ybotS = signS_bot(xx)
     for yy in range(ytopS, ybotS + 1):
@@ -355,9 +355,9 @@ for xx in range(4, 41):
         else:
             c = 'q0'
         PXL('furniture', xx, yy, c)
-R('furniture', 3, 21, 1, 25, 'ink'); R('furniture', 41, 29, 1, 18, 'ink')
-PXL('furniture', 5, 23, 'wht'); PXL('furniture', 39, 44, 'wht')
-bake_sign_img('sign_studio_s.png', 4, 40, signS_top, signS_bot, 'wht')
+R('furniture', 1, 21, 1, 25, 'ink'); R('furniture', 39, 29, 1, 18, 'ink')
+PXL('furniture', 3, 23, 'wht'); PXL('furniture', 37, 44, 'wht')
+bake_sign_img('sign_studio_s.png', 2, 38, signS_top, signS_bot, 'wht')
 
 # ─── 奥壁: 大スクリーン(壁掛け・16:9) ───
 obj('大スクリーン')
@@ -427,23 +427,23 @@ for i, (bcx, bcy) in enumerate(BTNC):
 
 # ─── 編集卓(壁ぎわのカウンター。天板の小口→膝板→接地影の3層) ───
 obj('編集卓')
-R('furniture', 47, DESK_Y - 1, 290, 1, 'q5')             # 天板前縁の稜線(全通し)
-R('furniture', 47, DESK_Y, 290, 3, 'q3')                 # 天板の小口(厚み)
-R('furniture', 47, DESK_Y + 3, 290, 1, 'q1')
-R('furniture', 47, DESK_Y + 4, 290, 22, 'q1')            # 膝板
-DITH('furniture', 47, DESK_Y + 13, 290, 13, None, 'q0', 'sparse')
+R('furniture', 40, DESK_Y - 1, 304, 1, 'q5')             # 天板前縁の稜線(全通し)
+R('furniture', 40, DESK_Y, 304, 3, 'q3')                 # 天板の小口(厚み)
+R('furniture', 40, DESK_Y + 3, 304, 1, 'q1')
+R('furniture', 40, DESK_Y + 4, 304, 22, 'q1')            # 膝板
+DITH('furniture', 40, DESK_Y + 13, 304, 13, None, 'q0', 'sparse')
 for lx in (104, 162, 220, 278):                          # 板の継ぎ目(途中で切る)
     R('furniture', lx, DESK_Y + 5, 1, 16, 'q0')
     R('furniture', lx + 1, DESK_Y + 5, 1, 12, 'q2')
-R('furniture', 47, DESK_Y + 26, 290, 2, 'q0')
-R('furniture', 49, DESK_Y + 28, 286, 1, 'ink')           # 接地影(最深部)
-DITH('bg', 47, DESK_Y + 29, 290, 2, None, 'q0', 'check')
+R('furniture', 40, DESK_Y + 26, 304, 2, 'q0')
+R('furniture', 42, DESK_Y + 28, 300, 1, 'ink')           # 接地影(最深部)
+DITH('bg', 40, DESK_Y + 29, 304, 2, None, 'q0', 'check')
 
 # ─── 編集機(ミキシングコンソール) ───
 obj('編集機')
-CX0, CX1 = 132, 272
-BR0, BR1 = 110, 117                                      # メーターブリッジ面
-TP0, TP1 = 119, 131                                      # 操作天板
+CX0, CX1 = 136, 280
+BR0, BR1 = 112, 118                                      # メーターブリッジ面
+TP0, TP1 = 120, 131                                      # 操作天板
 ARM = 133                                                # アームレスト
 LEDS = []
 
@@ -476,6 +476,7 @@ for cxp, cyp in ((CX0 + 9, BR0 + 3), (CX0 + 17, BR0 + 5)):   # 挿さったコ�
 
 # ── メーター(点灯/消灯が同時に見える。最明色はここだけ) ──
 METER_LV = [4, 5, 3, 5, 2, 4, 6, 3, 5, 4, 2, 5, 3]
+METERS = []       # (x, 一番下のy, 段数) 書き出しでコマごとに高さを変える
 for i in range(13):
     mxm = CX0 + 34 + i * 4
     if mxm > CX1 - 24:
@@ -489,7 +490,7 @@ for i in range(13):
                 PXL('furniture', mxm + pair, yy, c)
             else:
                 PXL('furniture', mxm + pair, yy, 'q2')       # 消灯も物として描く
-        LEDS.append((mxm + pair, BR1 - lit, 'cyn1', 1))
+        METERS.append((mxm + pair, BR1 - 1, 6))
 DITH('furniture', CX0 + 34, BR1 + 2, 52, 2, None, 'q3', 'sparse')   # メーターの照り返し
 
 # ── チャンネルストリップ(ピッチ4px・8本ごとにモジュールの継ぎ目) ──
@@ -674,7 +675,7 @@ DITH('bg', CXC - 20, SY + 22, 40, 3, None, 'q0', 'check')                  # 床
 obj('スタジオへの戸口')
 for yy in range(170, 210):
     reach = 30 + int((yy - 170) * 0.9)
-    for xx in range(4, 4 + reach):
+    for xx in range(3, 3 + reach):
         if (xx * 2 + yy) % 5 == 0:
             PXL('bg', xx, yy, 'wwht')
         if (xx * 2 + yy) % 9 == 0 and xx < 4 + reach // 2:
@@ -1036,7 +1037,7 @@ json.dump(manifest, io.open(os.path.join(LAY, "objects.json"), "w", encoding="ut
 print("プロップ切り分け:", sum(len(m["children"]) for m in manifest), "枚")
 
 # ── 編集機のキラキラ点滅(3コマ・LEDの明滅) ──
-BY0, BBH = 118, 24
+BY0, BBH = 106, 34
 blink = Image.new("RGBA", (W * 3, BBH), (0, 0, 0, 0))
 bd = ImageDraw.Draw(blink)
 BRIGHT = {'y1': 'y2', 'g1': 'g2', 'b3': 'b4', 'm2': 'm3', 'cyn1': 'cyn2', 'pnk2': 'pnkc'}
@@ -1051,6 +1052,18 @@ for f in range(3):
                 bd.rectangle([f * W + lx, ly - BY0, f * W + lx + 1, ly - BY0 + 1], fill=bc)
             else:
                 bd.point((f * W + lx, ly - BY0), fill=bc)
+# メーターは「レベルが踊る」。コマごとに点灯段数を変え、消灯部も必ず描く
+_mtr = [t for t in METERS if _own[t[0], t[1]] == _mc_oid]
+for f in range(3):
+    for i, (lx, lyb, seg) in enumerate(_mtr):
+        lv = 2 + int(abs(math.sin(i * 1.7 + f * 2.1)) * (seg - 2) + 0.5)
+        for k in range(seg):
+            yy = lyb - k
+            if k < lv:
+                col = 'cync' if k == lv - 1 else 'cyn2'
+            else:
+                col = 'q2'
+            bd.point((f * W + lx, yy - BY0), fill=C(col))
 blink.save(os.path.join(WEB, "edit_blink.png"))
 print("edit_blink.png", blink.size, "band y", BY0, "h", BBH)
 

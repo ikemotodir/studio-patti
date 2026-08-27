@@ -188,20 +188,20 @@ def NTXT(l, x, y, ch, c):
             if bit == '1': PXL(l, x + rx, y + ry, c)
 
 # ═══════════════ 主要座標(ここだけ見れば配置が分かる) ═══════════════
-BOARD  = (47, 12, 290, 128)     # 壁一面が黒板 x47..336 / y12..139
+BOARD  = (47, 12, 290, 134)     # 壁一面が黒板(床まで) x47..336 / y12..145
 
-RAIL_Y = 140                    # チョーク受け(黒板の下端)
+RAIL_Y = 141                    # チョーク受け(黒板の下端・床のすぐ上)
 GAR_SPANS = [(50, 192, 16, 6, 8), (192, 334, 16, 6, 8)]   # 電球ガーランド(2連・16球)
 DOORX0, DOORX1 = 345, 373       # スタジオへ戻る戸口(右の壁)
 # 黒板に貼ってある紙 (x, y, w, h)
-PAP_DESIGN = (58, 32, 59, 35)   # 黄: キャラクターデザイン＆設計
-PAP_SKETCH = (128, 42, 21, 23)  # おばけのラフ絵
-PAP_STORY  = (160, 30, 53, 27)  # 白: Story is King
-PAP_SPOOKS = (78, 70, 53, 21)   # Spooks Gs
-PAP_WORLD  = (106, 98, 49, 19)  # 桃: 世界観
-PAP_TALE   = (182, 74, 33, 19)  # 赤: 物語
-DATA_TITLE = (244, 36, 87, 13)  # キャラクターに関するデータ(見出し)
-DATA_PANEL = (244, 52, 87, 78)  # 模造紙
+PAP_DESIGN = (56, 40, 66, 38)   # 黄: キャラクターデザイン＆設計
+PAP_SKETCH = (132, 44, 24, 26)  # おばけのラフ絵
+PAP_STORY  = (128, 18, 128, 15) # 白: Story is King(黒板上部センター・横細長)
+PAP_SPOOKS = (56, 88, 66, 24)   # Spooks Gs
+PAP_WORLD  = (132, 92, 52, 22)  # 桃: 世界観
+PAP_TALE   = (196, 60, 44, 22)  # 赤: 物語
+DATA_TITLE = (248, 42, 84, 13)  # キャラクターに関するデータ(見出し)
+DATA_PANEL = (248, 58, 84, 76)  # 模造紙
 
 # ═══════════════ bg : 天井・奥壁・床 ═══════════════
 obj()
@@ -286,8 +286,8 @@ DITH('bg', bx, by, bw, 22, None, 'bd2', 'sparse')            # 天井からの�
 R('bg', bx, by, bw, 1, 'bd3')                                # 天井との見切り
 R('bg', bx, by + 1, bw, 1, 'bd2')
 # 拭き跡の弧(消しゴムの往復)
-for ax, ay, arx, ary in [(112, 60, 50, 24), (208, 96, 58, 22), (276, 42, 38, 17),
-                         (76, 108, 34, 14), (170, 36, 42, 16), (300, 112, 30, 14)]:
+for ax, ay, arx, ary in [(112, 60, 50, 24), (208, 100, 58, 22), (276, 40, 38, 17),
+                         (76, 118, 34, 14), (172, 34, 42, 16), (300, 120, 30, 14)]:
     for yy in range(max(by, ay - ary), min(by + bh, ay + ary + 1)):
         for xx in range(max(bx, ax - arx), min(bx + bw, ax + arx + 1)):
             e = ((xx - ax) / float(arx)) ** 2 + ((yy - ay) / float(ary)) ** 2
@@ -351,34 +351,34 @@ def chalk_write(x9, y9, rows, wmax):
 
 obj('チョークの矢印')
 # 設計の紙 → 世界観 (下へ回り込む)
-chalk_line([(66, 70), (62, 82), (66, 95), (80, 103), (100, 106)])
-chalk_head(103, 106, 1, 0)
+chalk_line([(62, 80), (50, 90), (52, 100), (60, 104)])
+chalk_head(60, 104, 0, 1)
 # 世界観 → 物語 (右上へ)
-chalk_line([(157, 102), (168, 96), (176, 88)])
-chalk_head(179, 85, 1, -1)
+chalk_line([(186, 96), (196, 88), (202, 84)])
+chalk_head(204, 82, 1, -1)
 
 obj('チョークの書き込み')
 # キャラのあたり(円+十字)。デザイン室らしい痕跡
-chalk_circle(196, 116, 13); chalk_circle(196, 116, 9, 4)
+chalk_circle(206, 122, 12); chalk_circle(206, 122, 8, 4)
+for k in range(-9, 10):
+    if k % 3: PXL('bg', 206 + k, 122, 'chk2')
 for k in range(-10, 11):
-    if k % 3: PXL('bg', 196 + k, 116, 'chk2')
-for k in range(-11, 12):
-    if k % 3: PXL('bg', 196, 116 + k, 'chk2')
-chalk_circle(222, 112, 8)
-for k in range(-6, 7):
-    if k % 3: PXL('bg', 222 + k, 112, 'chk2')
+    if k % 3: PXL('bg', 206, 122 + k, 'chk2')
+chalk_circle(232, 118, 7)
+for k in range(-5, 6):
+    if k % 3: PXL('bg', 232 + k, 118, 'chk2')
 # 身長比較のあたり線(縦の目盛り)
-for yy in range(58, 122, 2):
-    PXL('bg', 232, yy, 'chk2')
-for k, yy in enumerate((60, 74, 90, 108, 120)):
+for yy in range(56, 110, 2):
+    PXL('bg', 244, yy, 'chk2')
+for k, yy in enumerate((58, 72, 88, 104)):
     for dx9 in range(4):
-        PXL('bg', 232 + dx9, yy, 'chk' if k == 1 else 'chk2')
+        PXL('bg', 244 + dx9, yy, 'chk' if k == 1 else 'chk2')
 # 走り書き
-chalk_write(56, 116, 4, 42)
-chalk_write(160, 122, 3, 46)
-chalk_write(300, 92, 3, 26)
+chalk_write(56, 124, 3, 40)
+chalk_write(140, 126, 3, 44)
+chalk_write(258, 138, 2, 60)
 # 小さなおばけの落書き
-for k, (gx9, gy9) in enumerate(((286, 118), (318, 60))):
+for k, (gx9, gy9) in enumerate(((132, 122), (322, 30))):
     r9 = 5
     for a9 in range(180, 361, 12):
         PXL('bg', int(gx9 + math.cos(math.radians(a9)) * r9),
@@ -388,7 +388,7 @@ for k, (gx9, gy9) in enumerate(((286, 118), (318, 60))):
             PXL('bg', gx9 + dx9, gy9 + r9 - abs(dx9) % 2, 'chk2')
     PXL('bg', gx9 - 2, gy9 - 1, 'chk'); PXL('bg', gx9 + 2, gy9 - 1, 'chk')
 # きらめき(★)
-for sx9, sy9 in ((140, 118), (262, 44), (96, 26)):
+for sx9, sy9 in ((172, 118), (240, 34), (86, 26)):
     PXL('bg', sx9, sy9 - 2, 'chk'); PXL('bg', sx9, sy9 + 2, 'chk')
     PXL('bg', sx9 - 2, sy9, 'chk'); PXL('bg', sx9 + 2, sy9, 'chk')
     PXL('bg', sx9, sy9, 'chk')

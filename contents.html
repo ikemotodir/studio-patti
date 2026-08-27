@@ -106,10 +106,10 @@
 
   /* ─── 編集卓のボタンのキラキラ(3コマ・LEDの明滅) ─── */
   #editblink {
-    position: absolute; left: 0; top: 118px;
-    width: 384px; height: 24px; pointer-events: none;
+    position: absolute; left: 0; top: 106px;
+    width: 384px; height: 34px; pointer-events: none;
     background-image: url(edit_blink.png);
-    background-size: 1152px 24px;
+    background-size: 1152px 34px;
     animation: editblink 1.15s steps(1) infinite;
   }
   @keyframes editblink {
@@ -137,12 +137,12 @@
 
   /* ─── 大スクリーン(中身はここに載る) ─── */
   #screenbox {
-    position: absolute; left: 137px; top: 26px;
-    width: 136px; height: 77px; overflow: hidden;
+    position: absolute; left: 133px; top: 21px;
+    width: 154px; height: 87px; overflow: hidden;
     background: transparent;
   }
   #screenglow {
-    position: absolute; left: 123px; top: 14px; width: 164px; height: 101px;
+    position: absolute; left: 119px; top: 10px; width: 183px; height: 112px;
     pointer-events: none; mix-blend-mode: screen; display: none;
     background: radial-gradient(closest-side, rgba(126, 224, 235, .20), rgba(126, 224, 235, 0) 80%);
   }
@@ -193,8 +193,8 @@
 
   /* ─── 左のメニューパネル(5項目・▶で選ぶ) ─── */
   .mi {
-    position: absolute; left: 50px; width: 78px; height: 22px;
-    border: 0; background: transparent; cursor: pointer; padding: 0 2px 0 5px;
+    position: absolute; left: 43px; width: 80px; height: 22px;
+    border: 0; background: transparent; cursor: pointer; padding: 0 1px 0 6px;
     box-sizing: border-box; text-align: left; white-space: nowrap;
     display: flex; align-items: center;
     font-family: 'DotGothic16', 'MS Gothic', monospace;
@@ -202,10 +202,10 @@
   }
   /* ▶はカード内に収めたいので、6pxの文字ではなく3pxのCSS三角にする */
   .mi .cur {
-    position: absolute; left: 1px; top: 50%; margin-top: -2px;
+    position: absolute; left: 1px; top: 50%; margin-top: -3px;
     width: 0; height: 0; visibility: hidden;
-    border-left: 3px solid #f79db8;
-    border-top: 2px solid transparent; border-bottom: 2px solid transparent;
+    border-left: 4px solid #f79db8;
+    border-top: 3px solid transparent; border-bottom: 3px solid transparent;
   }
   .mi.sel { color: #ffffff; }
   .mi.sel .cur { visibility: visible; }
@@ -213,7 +213,7 @@
 
   /* ─── 右のカテゴリ表示と数字ボタン ─── */
   #catname {
-    position: absolute; left: 286px; top: 23px; width: 46px; height: 26px;
+    position: absolute; left: 297px; top: 23px; width: 42px; height: 26px;
     display: flex; align-items: center; justify-content: center;
     font-family: 'DotGothic16', 'MS Gothic', monospace;
     color: #fff6e0; font-size: 6px; line-height: 1.6; text-align: center;
@@ -409,10 +409,10 @@
       <button id="scrsnd" type="button" aria-label="音を出す">♪ おとを出す</button>
     </div>
 
-    <button id="doorStudio" class="hs" style="left:8px;top:48px;width:33px;height:168px;--gi:.4"
+    <button id="doorStudio" class="hs" style="left:6px;top:48px;width:33px;height:168px;--gi:.4"
             aria-label="スタジオ(トップページ)にもどる"></button>
 
-    <div id="catname">コンテンツ<br>クリエイティブ</div>
+    <div id="catname" aria-live="polite">コンテンツ<br>クリエイティブ</div>
 
     <canvas id="motes" width="384" height="240" aria-hidden="true"></canvas>
     <div id="talkbox">
@@ -502,13 +502,14 @@ const CATS = [
     items: [Y('lcd2cR3ceaI'), Y('PJ-stpaVk5I'), Y('VtyGpJFycNc')] },
 ];
 
-const MENU_TOP = 26, MENU_H = 22;
-const BTN_POS = [[287, 62], [312, 62], [287, 86], [312, 86]];   // 丸ボタン(19x19)の左上
+const MENU_TOP = 28, MENU_H = 22;   // カード(y30+22i,高19)の中心とボタンの中心を合わせる
+const BTN_POS = [[297, 62], [321, 62], [297, 86], [321, 86]];   // 丸ボタン(19x19)の左上
 
 const scrwait = document.getElementById('scrwait');
 const scrframe = document.getElementById('scrframe');
 const bookbox = document.getElementById('bookbox');
 const screenglow = document.getElementById('screenglow');
+const catname = document.getElementById('catname');
 
 let cat = 0, num = -1;
 let BOOK = null, bkpage = 0;
@@ -585,6 +586,7 @@ function stopScreen() {
 function selectCat(i) {
   cat = i;
   miEls.forEach((b, k) => b.classList.toggle('sel', k === i));
+  catname.innerHTML = CATS[i].disp;          // 電球の枠に選んだ項目名を出す
   nbEls.forEach((b, j) => b.classList.toggle('off', !CATS[i].items[j]));
   stopScreen();
   if (CATS[i].items.length === 0) {
