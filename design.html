@@ -294,6 +294,22 @@
     position: absolute; left: 0; top: 0; width: 384px; height: 240px;
     pointer-events: none; image-rendering: pixelated;
   }
+
+  /* ─── 貼り紙の拡大表示 ─── */
+  #lightbox {
+    position: fixed; inset: 0; z-index: 120; display: none;
+    align-items: center; justify-content: center;
+    background: rgba(6, 4, 20, .93); padding: 3vw; cursor: zoom-out;
+  }
+  #lightbox.on { display: flex; }
+  #lightbox img {
+    max-width: 96%; max-height: 88%; image-rendering: auto;
+    border: 2px solid #e8e4f4; background: #fff;
+  }
+  #lightbox .cap {
+    position: absolute; left: 0; right: 0; bottom: 3vh; text-align: center;
+    font-family: 'DotGothic16', 'MS Gothic', monospace; color: #f2eefc; font-size: 13px;
+  }
 </style>
 </head>
 <body>
@@ -311,9 +327,9 @@
             aria-label="キャラクターデザインと設計"><span>キャラクター<br>デザイン＆設計</span></button>
     <button class="pp" id="ppsketch" style="left:132px;top:44px;width:24px;height:26px"
             aria-label="おばけのラフスケッチ"></button>
-    <button class="pp" id="ppspooks" style="left:56px;top:88px;width:66px;height:24px"
-            aria-label="Spooks Gs"><span>Spooks Gs</span></button>
-    <button class="pp" id="ppworld" style="left:132px;top:92px;width:52px;height:22px"
+    <button class="pp" id="ppspooks" style="left:56px;top:82px;width:121px;height:43px"
+            aria-label="Spooks GS（おばけたちの一覧）"></button>
+    <button class="pp" id="ppworld" style="left:190px;top:96px;width:52px;height:22px"
             aria-label="世界観"><span>世界観</span></button>
     <button class="pp" id="pptale" style="left:196px;top:60px;width:44px;height:22px"
             aria-label="物語"><span>物語</span></button>
@@ -356,6 +372,10 @@
   <button class="anyway" type="button">このまま見る</button>
 </div>
 <div id="toast"></div>
+<div id="lightbox" role="dialog" aria-label="拡大表示">
+  <img id="lbimg" src="" alt="">
+  <div class="cap">クリックでとじる</div>
+</div>
 
 <script>
 const COMPANY_URL = 'https://canva.link/5xu274fv1b00091';
@@ -394,8 +414,8 @@ const PAPERS = [
   { id: 'ppsketch',    name: 'ラフスケッチ',
     talk: 'かべに貼ってあるラフスケッチ！<br>ぐりぐり描いてるところだね！' },
 
-  { id: 'ppspooks',    name: 'Spooks Gs',
-    talk: 'おばけたちのことが書いてあるみたい！' },
+  { id: 'ppspooks',    name: 'Spooks GS',
+    talk: 'おばけたちの一覧「Spooks GS」！<br>さわると大きく見られるよ！' },
   { id: 'ppworld',     name: '世界観',
     talk: 'おばけのパッチの世界観だよ！' },
   { id: 'pptale',      name: '物語',
@@ -405,12 +425,27 @@ const PAPERS = [
   { id: 'ppdata',      name: 'キャラクターに関するデータ',
     talk: 'キャラクターに関するデータ！<br>いろんな資料がはってあるよ！' },
 ];
+const lightbox = document.getElementById('lightbox');
+const lbimg = document.getElementById('lbimg');
+function openLightbox(src) {
+  lbimg.src = src;
+  lightbox.classList.add('on');
+}
+lightbox.addEventListener('click', () => { lightbox.classList.remove('on'); lbimg.src = ''; });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { lightbox.classList.remove('on'); lbimg.src = ''; }
+});
+
 PAPERS.forEach(p => {
   const el = document.getElementById(p.id);
   if (!el) return;
   el.classList.add('tap');                    // 「押せる」ことを見た目で伝える
   hoverTalk(el, p.talk);
-  el.addEventListener('click', () => tease(p.name));
+  if (p.id === 'ppspooks') {
+    el.addEventListener('click', () => openLightbox('spooks_gs_full.jpg'));
+  } else {
+    el.addEventListener('click', () => tease(p.name));
+  }
 });
 // Story is King は標語なので押せない。カーソルを合わせるとパッチが読み上げる
 hoverTalk(document.getElementById('ppstory'),

@@ -197,8 +197,8 @@ DOORX0, DOORX1 = 345, 373       # スタジオへ戻る戸口(右の壁)
 PAP_DESIGN = (56, 40, 66, 38)   # 黄: キャラクターデザイン＆設計
 PAP_SKETCH = (132, 44, 24, 26)  # おばけのラフ絵
 PAP_STORY  = (128, 18, 128, 15) # 白: Story is King(黒板上部センター・横細長)
-PAP_SPOOKS = (56, 88, 66, 24)   # Spooks Gs
-PAP_WORLD  = (132, 92, 52, 22)  # 桃: 世界観
+PAP_SPOOKS = (56, 82, 121, 43)  # Spooks GS(画像の比2.81に合わせた枠)
+PAP_WORLD  = (190, 96, 52, 22)  # 桃: 世界観
 PAP_TALE   = (196, 60, 44, 22)  # 赤: 物語
 DATA_TITLE = (248, 42, 84, 13)  # キャラクターに関するデータ(見出し)
 DATA_PANEL = (248, 58, 84, 76)  # 模造紙
@@ -354,8 +354,8 @@ obj('チョークの矢印')
 chalk_line([(62, 80), (50, 90), (52, 100), (60, 104)])
 chalk_head(60, 104, 0, 1)
 # 世界観 → 物語 (右上へ)
-chalk_line([(186, 96), (196, 88), (202, 84)])
-chalk_head(204, 82, 1, -1)
+chalk_line([(244, 100), (254, 92), (260, 88)])
+chalk_head(262, 86, 1, -1)
 
 obj('チョークの書き込み')
 # キャラのあたり(円+十字)。デザイン室らしい痕跡
@@ -517,8 +517,24 @@ paper(*PAP_STORY, base='ivory', hi='wht', shade='ivory2', curl=4, torn=6)
 tape(PAP_STORY[0] - 2, PAP_STORY[1] - 1, 8)
 tape(PAP_STORY[0] + PAP_STORY[2] - 6, PAP_STORY[1] - 1, 8)
 
-obj('Spooks Gsの紙')
+obj('Spooks GSの紙')
 paper(*PAP_SPOOKS, base='ivory2', hi='ivory', shade='gray0', curl=4)
+# 池本の「Spooks GS」(おばけ一覧)を紙の内側に焼き込む
+_sg = Image.open(os.path.join(WEB, 'spooks_gs.png')).convert('RGB')
+_sw2, _sh2 = PAP_SPOOKS[2] - 6, PAP_SPOOKS[3] - 8
+_sg = _sg.resize((_sw2, _sh2), Image.LANCZOS)
+_sp2 = _sg.load()
+for _y in range(_sh2):
+    for _x in range(_sw2):
+        _r, _g, _b = _sp2[_x, _y]
+        _v = (_r * 299 + _g * 587 + _b * 114) // 1000
+        # 線画なので、暗い所だけインクとして拾う(紙の地は残す)
+        if _v < 132:
+            PXL('furniture', PAP_SPOOKS[0] + 3 + _x, PAP_SPOOKS[1] + 5 + _y, 'ink')
+        elif _v < 186:
+            PXL('furniture', PAP_SPOOKS[0] + 3 + _x, PAP_SPOOKS[1] + 5 + _y, 'gray0')
+        elif _v < 222:
+            PXL('furniture', PAP_SPOOKS[0] + 3 + _x, PAP_SPOOKS[1] + 5 + _y, 'gray1')
 pin(PAP_SPOOKS[0] + 4, PAP_SPOOKS[1] + 2, 'b3', 'b0')
 pin(PAP_SPOOKS[0] + PAP_SPOOKS[2] - 5, PAP_SPOOKS[1] + 2, 'b3', 'b0')
 

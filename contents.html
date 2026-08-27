@@ -244,7 +244,7 @@
   /* ─── キャラクター ─── */
   /* おばけなので、ふわりと浮き沈みする */
   #pattifloat {
-    position: absolute; left: 254px; top: 136px; width: 32px; height: 48px;
+    position: absolute; left: 316px; top: 136px; width: 32px; height: 48px;
     animation: pattifloat 3.1s ease-in-out infinite;
   }
   @keyframes pattifloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
@@ -260,12 +260,12 @@
   }
   @keyframes pattichar { from { background-position: 0 0; } to { background-position: -384px 0; } }
   #pshadow {
-    position: absolute; left: 259px; top: 180px;
+    position: absolute; left: 321px; top: 180px;
     width: 22px; height: 5px;
     border-radius: 50%; background: rgba(64, 24, 108, .5);
   }
   #mayu {
-    position: absolute; left: 112px; top: 112px;
+    position: absolute; left: 34px; top: 112px;
     width: 30px; height: 72px;
     background-image: url(mayu_back_shaded.png);
     background-repeat: no-repeat;
@@ -276,7 +276,7 @@
   @keyframes mayuchar { from { background-position: 0 0; } to { background-position: -360px 0; } }
   @media (prefers-reduced-motion: reduce) { #patti, #mayu { animation: none; } }
   #mshadow {
-    position: absolute; left: 116px; top: 180px;
+    position: absolute; left: 39px; top: 180px;
     width: 20px; height: 5px;
     border-radius: 50%; background: rgba(64, 24, 108, .5);
   }
@@ -489,31 +489,30 @@ function hoverTalk(el, text) {
 // - Vimeoのbackgroundモードは有料プラン限定のため使わない
 const V = id => 'https://player.vimeo.com/video/' + id + '?autoplay=1&muted=1&loop=1&title=0&byline=0&portrait=0&dnt=1';
 const Y = id => 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&mute=1&controls=0&loop=1&playlist=' + id + '&rel=0&playsinline=1&enablejsapi=1';
+const M = n => 'meta:' + n;      // メタバースは画像の連番(metaverse.json)
+// items[j] = 再生するもの / titles[j] = 電飾マーキーに出す名前
 const CATS = [
-  { name: 'コンテンツクリエイティブ', disp: 'コンテンツ<br>クリエイティブ',
-    items: [] },                                     // 後日そろう予定(いまは準備中)
-  { name: '3DCGアニメーション', disp: '3DCG<br>アニメーション',
-    items: [V('1029119982'), V('1166568421'), V('1166566557'), V('708043721')] },
-  { name: 'クラフトアニメーション', disp: 'クラフト<br>アニメーション',
-    items: [Y('Y3UOLaso-MI'), V('1073816481'), V('1084182206'), V('1011215567')] },
+  { name: '私たちの創造', disp: '私たちの創造', items: [], titles: [] },
+  { name: 'アニメーション', disp: 'アニメーション',
+    items: [V('1029119982'), V('1166566557'), Y('Y3UOLaso-MI'), V('708043721')],
+    titles: ["The Seven Deadly Sins - The Battle of Light and Darkness", "Honor Of Kings - The Story of Treasure", "【赤ちゃんが喜ぶ歌】すきなきもちもち（うた：SAKANAMON）【赤ちゃんが泣き止む・喜ぶ動画】", "QQ Dance - Ice Queen.mp4"] },
   { name: '絵本', disp: '絵本',
-    items: ['book'] },
+    items: ['book'], titles: ['おばけのパッチ'] },
   { name: 'メタバース', disp: 'メタバース',
-    items: [Y('lcd2cR3ceaI'), Y('PJ-stpaVk5I'), Y('VtyGpJFycNc')] },
+    items: [M(0), M(1), M(2), M(3)], titles: [] },     // 名前は metaverse.json から入れる
+  { name: '実写映像', disp: '実写映像',
+    items: [Y('a6ickLwrHRE'), Y('RBAMbSCEbSQ'), Y('XKyWWychUZA'), Y('bomW6K3pvsY')],
+    titles: ["【インタビュー映像】彩響衆 樂クラファン用", "【ドキュメンタリー映像】50 days until GAKU FES【彩響衆 樂】", "【インタビュー映像】KATANAクラファン用", "【プロモーション映像】一宮市七夕祭り"] },
 ];
+let META = null;
+fetch('metaverse.json', NOCACHE).then(r => r.json()).then(j => {
+  META = j;
+  CATS[3].titles = j.map(g => g.name);
+}).catch(() => {});
 
 const MENU_TOP = 28, MENU_H = 22;   // カード(y30+22i,高19)の中心とボタンの中心を合わせる
-const BTN_POS = [[297, 62], [321, 62], [297, 86], [321, 86]];   // 丸ボタン(19x19)の左上
-
-const scrwait = document.getElementById('scrwait');
-const scrframe = document.getElementById('scrframe');
-const bookbox = document.getElementById('bookbox');
-const screenglow = document.getElementById('screenglow');
-const catname = document.getElementById('catname');
-
-let cat = 0, num = -1;
-let BOOK = null, bkpage = 0;
-fetch('book.json', NOCACHE).then(r => r.json()).then(j => BOOK = j).catch(() => {});
+const BTN_POS = [[297, 85], [321, 85], [297, 110], [321, 110]];   // 丸ボタン(19x19)の左上
+let cat = 0, num = -1, bkpage = 0;
 
 // メニュー項目(5つ)
 const miEls = [];
@@ -586,7 +585,8 @@ function stopScreen() {
 function selectCat(i) {
   cat = i;
   miEls.forEach((b, k) => b.classList.toggle('sel', k === i));
-  catname.innerHTML = CATS[i].disp;          // 電球の枠に選んだ項目名を出す
+  catname.innerHTML = CATS[i].disp;          // まずは項目名。番号を押すと作品名に変わる
+  catname.classList.remove('long');
   nbEls.forEach((b, j) => b.classList.toggle('off', !CATS[i].items[j]));
   stopScreen();
   if (CATS[i].items.length === 0) {
@@ -606,9 +606,24 @@ function selectNum(j) {
   }
   num = j;
   nbEls.forEach((b, k) => b.classList.toggle('on', k === j));
+  const tt = (CATS[cat].titles || [])[j];    // 電球の枠に「いま流れているもの」の名前を出す
+  if (tt) {
+    catname.textContent = tt;
+    catname.classList.toggle('long', tt.length > 16);
+  }
   scrwait.style.display = 'none';
   screenglow.style.display = 'block';
-  if (item === 'book') {
+  if (typeof item === 'string' && item.startsWith('meta:')) {
+    scrframe.src = 'about:blank';
+    scrframe.style.display = 'none';
+    document.getElementById('scrguard').style.display = 'none';
+    scrsnd.style.display = 'none';
+    bookbox.style.display = 'block';
+    metaIdx = parseInt(item.slice(5), 10);
+    bkpage = 0;
+    drawBook();
+  } else if (item === 'book') {
+    metaIdx = -1;
     scrframe.src = 'about:blank';
     scrframe.style.display = 'none';
     document.getElementById('scrguard').style.display = 'none';
@@ -617,6 +632,7 @@ function selectNum(j) {
     bkpage = 0;
     drawBook();
   } else {
+    metaIdx = -1;
     bookbox.style.display = 'none';
     scrframe.src = item;
     scrframe.style.display = 'block';
@@ -629,21 +645,27 @@ function selectNum(j) {
   }
 }
 
-// ─── 絵本(TOPの絵本無料公開と同じ画像データ) ───
+// ─── 画面に出す連番画像(絵本 / メタバース で共用) ───
+let metaIdx = -1;
+function pages() {
+  if (metaIdx >= 0) return META ? META[metaIdx].files : null;
+  return BOOK ? BOOK.pages.map(pg => pg.img) : null;
+}
 function drawBook() {
-  if (!BOOK) { document.getElementById('bknum').textContent = '絵本を準備中…'; return; }
-  const pg = BOOK.pages[bkpage];
-  document.getElementById('bkimg').src = pg.img;
-  document.getElementById('bknum').textContent = (bkpage + 1) + ' / ' + BOOK.pages.length;
+  const ps = pages();
+  if (!ps) { document.getElementById('bknum').textContent = '準備中…'; return; }
+  bkpage = (bkpage + ps.length) % ps.length;
+  document.getElementById('bkimg').src = ps[bkpage];
+  document.getElementById('bknum').textContent = (bkpage + 1) + ' / ' + ps.length;
 }
 document.getElementById('bkprev').addEventListener('click', () => {
-  if (!BOOK) return;
-  bkpage = (bkpage - 1 + BOOK.pages.length) % BOOK.pages.length;
+  if (!pages()) return;
+  bkpage -= 1;
   drawBook();
 });
 document.getElementById('bknext').addEventListener('click', () => {
-  if (!BOOK) return;
-  bkpage = (bkpage + 1) % BOOK.pages.length;
+  if (!pages()) return;
+  bkpage += 1;
   drawBook();
 });
 
