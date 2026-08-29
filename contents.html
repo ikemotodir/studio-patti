@@ -137,12 +137,12 @@
 
   /* ─── 大スクリーン(中身はここに載る) ─── */
   #screenbox {
-    position: absolute; left: 114px; top: 22px;
-    width: 176px; height: 93px; overflow: hidden;
+    position: absolute; left: 106px; top: 22px;
+    width: 172px; height: 93px; overflow: hidden;
     background: transparent;
   }
   #screenglow {
-    position: absolute; left: 113px; top: 10px; width: 194px; height: 113px;
+    position: absolute; left: 105px; top: 10px; width: 190px; height: 113px;
     pointer-events: none; mix-blend-mode: screen; display: none;
     background: radial-gradient(closest-side, rgba(126, 224, 235, .20), rgba(126, 224, 235, 0) 80%);
   }
@@ -193,7 +193,7 @@
 
   /* ─── 左のメニューパネル(5項目・▶で選ぶ) ─── */
   .mi {
-    position: absolute; left: 51px; width: 52px; height: 22px;
+    position: absolute; left: 43px; width: 52px; height: 22px;
     border: 0; background: transparent; cursor: pointer; padding: 0 1px 0 6px;
     box-sizing: border-box; text-align: left; white-space: nowrap;
     display: flex; align-items: center;
@@ -212,7 +212,7 @@
   .mi:hover, .mi:focus-visible { color: #ffffff; background: rgba(236, 148, 190, .12); outline: none; }
   /* 見出し「制作事例」: 選べない銘板。項目とはベースも文字色も変える */
   #mihdr {
-    position: absolute; left: 51px; width: 52px; height: 22px;
+    position: absolute; left: 43px; width: 52px; height: 22px;
     display: flex; align-items: center; justify-content: center;
     font-family: 'DotGothic16', 'MS Gothic', monospace;
     color: #7ee0eb; font-size: 7px; letter-spacing: 2px;
@@ -222,7 +222,7 @@
 
   /* ─── 右のカテゴリ表示と数字ボタン ─── */
   #catname {
-    position: absolute; left: 302px; top: 24px; width: 45px; height: 12px;
+    position: absolute; left: 292px; top: 24px; width: 45px; height: 12px;
     display: flex; align-items: center; justify-content: center;
     font-family: 'DotGothic16', 'MS Gothic', monospace;
     color: #fff6e0; font-size: 6px; line-height: 1; text-align: center; white-space: nowrap;
@@ -366,7 +366,7 @@
     font-family: inherit; font-size: 12px; text-decoration: underline;
     cursor: pointer; padding: 6px 10px;
   }
-  @media (orientation: portrait) and (max-width: 900px) {
+  @media (orientation: portrait) and (max-width: 900px) and (hover: none) and (pointer: coarse) {
     body:not(.seeanyway) #rotate { display: flex; }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -566,7 +566,7 @@ let META = null;
 fetch('metaverse.json', NOCACHE).then(r => r.json()).then(j => { META = j; }).catch(() => {});
 
 const MENU_TOP = 28, MENU_H = 22;   // カード(y30+22i,高19)の中心とボタンの中心を合わせる
-const BTN_POS = [[302, 69], [326, 69], [302, 96], [326, 96]];   // 丸ボタン(21x21)の左上
+const BTN_POS = [[292, 69], [316, 69], [292, 96], [316, 96]];   // 丸ボタン(21x21)の左上
 let cat = 0, num = -1, bkpage = 0;
 
 // メニュー: 見出し「制作事例」(選べない銘板) + 項目4つ

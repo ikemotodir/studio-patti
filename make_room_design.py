@@ -194,12 +194,12 @@ RAIL_Y = 161                    # チョーク受け(黒板の下端・床のす
 GAR_SPANS = [(50, 192, 13, 4, 8), (192, 334, 13, 4, 8)]   # 電球ガーランド(浅く吊って標語と重ねない)
 DOORX0, DOORX1 = 345, 373       # スタジオへ戻る戸口(右の壁)
 # 黒板に貼ってある紙 (x, y, w, h)
-PAP_DESIGN = (56, 40, 66, 38)   # 黄: キャラクターデザイン＆設計
-PAP_SKETCH = (132, 44, 24, 26)  # おばけのラフ絵
+PAP_DESIGN = (57, 53, 73, 40)   # 黄: キャラクターデザイン＆設計(左上)
+PAP_SKETCH = (222, 110, 24, 27) # おばけのラフ絵(物語の右)
 PAP_STORY  = (128, 25, 128, 14) # 白: Story is King(電球の下・黒板上部センター)
-PAP_SPOOKS = (58, 88, 74, 29)   # Spooks GS(2/3へ縮小・余白2pxの細枠。内寸70x25=比2.8)
-PAP_WORLD  = (146, 128, 82, 26) # 桃: 世界観(スケッチ②の位置・大きく)
-PAP_TALE   = (196, 60, 48, 34)  # 赤: 物語(スケッチ③の位置・大きく)
+PAP_SPOOKS = (54, 123, 70, 28)  # Spooks GS(左下・余白2pxの細枠。内寸66x24)
+PAP_WORLD  = (162, 73, 80, 25)  # 桃: 世界観(黄の右)
+PAP_TALE   = (142, 124, 52, 32) # 赤: 物語(世界観の下)
 DATA_TITLE = (248, 42, 84, 13)  # キャラクターに関するデータ(見出し)
 DATA_PANEL = (248, 58, 84, 96)  # 模造紙(黒板の延長に合わせて下へ)
 
@@ -291,9 +291,9 @@ DITH('bg', bx, by, bw, 22, None, 'bd2', 'sparse')            # 天井からの�
 R('bg', bx, by, bw, 1, 'bd3')                                # 天井との見切り
 R('bg', bx, by + 1, bw, 1, 'bd2')
 # 拭き跡の弧(消しゴムの往復)
-for ax, ay, arx, ary in [(112, 60, 50, 24), (208, 104, 58, 22), (276, 40, 38, 17),
-                         (76, 128, 34, 14), (172, 34, 42, 16), (300, 148, 34, 12),
-                         (150, 148, 40, 12)]:
+for ax, ay, arx, ary in [(100, 104, 50, 22), (206, 130, 40, 20), (276, 40, 38, 17),
+                         (90, 60, 34, 14), (172, 50, 42, 16), (300, 148, 34, 12),
+                         (250, 100, 30, 14)]:
     for yy in range(max(by, ay - ary), min(by + bh, ay + ary + 1)):
         for xx in range(max(bx, ax - arx), min(bx + bw, ax + arx + 1)):
             e = ((xx - ax) / float(arx)) ** 2 + ((yy - ay) / float(ary)) ** 2
@@ -357,31 +357,31 @@ def chalk_write(x9, y9, rows, wmax):
 
 obj('チョークの矢印')
 # 設計の紙 → 世界観 (下へ回り込む)
-chalk_line([(136, 78), (140, 92), (146, 106), (150, 118)])
-chalk_head(151, 123, 0, 1)
-# 世界観 → 物語 (上へ)
-chalk_line([(216, 124), (222, 112), (226, 103)])
-chalk_head(227, 99, 0, -1)
+chalk_line([(133, 68), (142, 72), (151, 77), (158, 81)])
+chalk_head(160, 82, 1, 1)
+# 世界観 → 物語 (下へ)
+chalk_line([(196, 100), (193, 109), (186, 116), (179, 120)])
+chalk_head(176, 122, -1, 1)
 
 obj('チョークの書き込み')
-# キャラのあたり(円+十字)。左下の空きへ
-chalk_circle(88, 143, 10); chalk_circle(88, 143, 7, 4)
+# キャラのあたり(円+十字)。黄と物語のあいだの空きへ
+chalk_circle(148, 106, 10); chalk_circle(148, 106, 7, 4)
 for k in range(-8, 9):
-    if k % 3: PXL('bg', 88 + k, 143, 'chk2')
+    if k % 3: PXL('bg', 148 + k, 106, 'chk2')
 for k in range(-8, 9):
-    if k % 3: PXL('bg', 88, 143 + k, 'chk2')
-# 身長比較のあたり線(縦の目盛り)。ラフ絵と物語のあいだ
-for yy in range(64, 112, 2):
-    PXL('bg', 184, yy, 'chk2')
-for k, yy in enumerate((66, 80, 96, 110)):
+    if k % 3: PXL('bg', 148, 106 + k, 'chk2')
+# 身長比較のあたり線(縦の目盛り)。物語とラフ絵のあいだ
+for yy in range(104, 150, 2):
+    PXL('bg', 204, yy, 'chk2')
+for k, yy in enumerate((106, 118, 132, 148)):
     for dx9 in range(4):
-        PXL('bg', 184 + dx9, yy, 'chk' if k == 1 else 'chk2')
+        PXL('bg', 204 + dx9, yy, 'chk' if k == 1 else 'chk2')
 # 走り書き
-chalk_write(110, 138, 3, 30)
-chalk_write(236, 140, 3, 44)
-chalk_write(150, 156, 2, 60)
+chalk_write(62, 98, 3, 44)
+chalk_write(208, 152, 2, 38)
+chalk_write(136, 156, 2, 56)
 # 小さなおばけの落書き
-for k, (gx9, gy9) in enumerate(((128, 148), (322, 30))):
+for k, (gx9, gy9) in enumerate(((134, 100), (322, 30))):
     r9 = 5
     for a9 in range(180, 361, 12):
         PXL('bg', int(gx9 + math.cos(math.radians(a9)) * r9),
@@ -391,7 +391,7 @@ for k, (gx9, gy9) in enumerate(((128, 148), (322, 30))):
             PXL('bg', gx9 + dx9, gy9 + r9 - abs(dx9) % 2, 'chk2')
     PXL('bg', gx9 - 2, gy9 - 1, 'chk'); PXL('bg', gx9 + 2, gy9 - 1, 'chk')
 # きらめき(★)
-for sx9, sy9 in ((238, 116), (240, 34), (86, 26)):
+for sx9, sy9 in ((200, 60), (140, 46), (86, 26)):
     PXL('bg', sx9, sy9 - 2, 'chk'); PXL('bg', sx9, sy9 + 2, 'chk')
     PXL('bg', sx9 - 2, sy9, 'chk'); PXL('bg', sx9 + 2, sy9, 'chk')
     PXL('bg', sx9, sy9, 'chk')

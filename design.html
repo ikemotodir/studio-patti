@@ -200,7 +200,7 @@
 
   /* ─── キャラクター(スケッチ準拠: マユは右向き / パッチは左向き) ─── */
   #mayu {
-    position: absolute; left: 88px; top: 112px;
+    position: absolute; left: 26px; top: 112px;
     width: 30px; height: 72px;
     background-image: url(mayu_right_shaded.png);
     background-repeat: no-repeat; background-size: 360px 72px;
@@ -209,7 +209,7 @@
   }
   @keyframes mayuchar { from { background-position: 0 0; } to { background-position: -360px 0; } }
   #mshadow {
-    position: absolute; left: 93px; top: 180px;
+    position: absolute; left: 31px; top: 180px;
     width: 20px; height: 5px;
     border-radius: 50%; background: rgba(64, 24, 108, .5);
   }
@@ -288,7 +288,7 @@
     font-family: inherit; font-size: 12px; text-decoration: underline;
     cursor: pointer; padding: 6px 10px;
   }
-  @media (orientation: portrait) and (max-width: 900px) {
+  @media (orientation: portrait) and (max-width: 900px) and (hover: none) and (pointer: coarse) {
     body:not(.seeanyway) #rotate { display: flex; }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -334,8 +334,11 @@
     font-family: 'DotGothic16', 'MS Gothic', monospace;
   }
   #dpsheet h2 {
-    font-size: 20px; margin: 0 0 4px; letter-spacing: 1px;
-    border-bottom: 3px solid #241c30; display: inline-block; padding-bottom: 3px;
+    font-size: 27px; margin: -22px -26px 14px; letter-spacing: 4px;
+    padding: 13px 26px 11px; text-align: center;
+    background: #241c30; color: #f6f1e2;
+    border-bottom: 4px solid #9c2b4e;
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, .55);
   }
   #dpsheet .lead { font-size: 12px; line-height: 1.7; margin: 10px 0 4px; }
   #dpsheet .note {
@@ -352,13 +355,15 @@
     display: flex; gap: 12px; align-items: baseline;
   }
   #dpsheet .fig {
-    flex: 0 0 132px; font-size: 17px; line-height: 1.25; color: #9c2b4e; font-weight: bold;
+    flex: 0 0 186px; font-size: 17px; line-height: 1.25; color: #9c2b4e; font-weight: bold;
+    white-space: nowrap;                 /* 数字は必ず1行 */
+    display: flex; align-items: baseline; gap: 7px;
   }
   #dpsheet .body { flex: 1 1 auto; }
-  #dpsheet .say { font-size: 12px; line-height: 1.65; }
-  #dpsheet .src { font-size: 10px; line-height: 1.6; color: #5c5140; margin-top: 3px; }
+  #dpsheet .say { font-size: 14px; line-height: 1.6; font-weight: bold; }
+  #dpsheet .src { font-size: 12px; line-height: 1.6; color: #5c5140; margin-top: 4px; }
   #dpsheet .src a { color: #3d5a8c; }
-  #dpsheet .rec { color: #b8860b; }
+  #dpsheet .rec { color: #b8860b; font-size: 14px; }
   #dpclose {
     position: absolute; right: 0; top: -30px;
     border: 1px solid #e8e4f4; background: rgba(8, 6, 40, .9);
@@ -379,16 +384,16 @@
             aria-label="スタジオ（トップページ）にもどる"></button>
 
     <div id="ppstory" aria-hidden="true">Story is King</div>
-    <button class="pp" id="ppdesign" style="left:56px;top:40px;width:66px;height:38px"
+    <button class="pp" id="ppdesign" style="left:57px;top:53px;width:73px;height:40px"
             aria-label="キャラクターデザインと設計"><span>キャラクター<br>デザイン＆設計</span></button>
-    <button class="pp" id="ppsketch" style="left:132px;top:44px;width:24px;height:26px"
+    <button class="pp" id="ppsketch" style="left:222px;top:110px;width:24px;height:27px"
             aria-label="おばけのラフスケッチ"></button>
-    <button class="pp" id="ppspooks" style="left:58px;top:88px;width:74px;height:29px"
+    <button class="pp" id="ppspooks" style="left:54px;top:123px;width:70px;height:28px"
             aria-label="Spooks GS（おばけたちの一覧）"><img id="spooksimg"
             src="spooks_gs_paper.jpg" alt=""></button>
-    <button class="pp" id="ppworld" style="left:146px;top:128px;width:82px;height:26px"
+    <button class="pp" id="ppworld" style="left:162px;top:73px;width:80px;height:25px"
             aria-label="世界観"><span>世界観</span></button>
-    <button class="pp" id="pptale" style="left:196px;top:60px;width:48px;height:34px"
+    <button class="pp" id="pptale" style="left:142px;top:124px;width:52px;height:32px"
             aria-label="物語"><span>物語</span></button>
     <button class="pp" id="ppdatatitle" style="left:248px;top:42px;width:84px;height:13px;color:#dcecdf"
             aria-label="キャラクターに関するデータ">キャラクターに関するデータ</button>
@@ -614,18 +619,18 @@ const DATA_SECTIONS = [
       say: '10代のYouTube利用率(20代97.2%)。TikTokも10代65.7%と、全年代で最も高い。',
       src: '総務省 情報通信政策研究所「令和6年度 情報通信メディアの利用時間と情報行動に関する調査」',
       url: 'https://www.soumu.go.jp/main_content/001017240.pdf' },
-    { fig: '165分 vs 40分', rec: true,
-      say: '10代の平日1日あたり、ネット動画の視聴時間とテレビ(リアルタイム)視聴時間。差は約4倍。',
+    { fig: '1日165分', rec: true,
+      say: '10代が平日1日にネット動画を見ている時間。テレビ(リアルタイム)は40分で、その差は約4倍。',
       src: '総務省 情報通信政策研究所(同上・令和6年度)',
       url: 'https://www.soumu.go.jp/main_content/001017240.pdf' },
-    { fig: '75.0% / 78.0%', rec: false,
-      say: '10代・20代のInstagram利用率。絵とキャラクターで語れる素材を持つほど、若年層への発信で有利になる。',
+    { fig: '75.0%', rec: false,
+      say: '10代のInstagram利用率(20代は78.0%)。絵とキャラクターで語れる素材を持つほど、若年層への発信で有利になる。',
       src: '総務省 情報通信政策研究所(同上・令和6年度)',
       url: 'https://www.soumu.go.jp/main_content/001017240.pdf' },
   ]},
   { h: 'だから、採用に効く', items: [
-    { fig: '86.6% → 77.0%', rec: true,
-      say: 'Z世代の就活生が企業選びで採用動画を参考にした割合と、観たあとに志望度が上がった割合。',
+    { fig: '86.6%', rec: true,
+      say: 'Z世代の就活生が企業選びで採用動画を参考にした割合。観たあとに志望度が上がった人は77.0%。',
       src: 'moovy「Z世代就活生の採用動画に関する調査」(2022年)',
       url: 'https://prtimes.jp/main/html/rd/p/000000009.000062343.html' },
     { fig: '8割超', rec: false,
@@ -665,10 +670,11 @@ function buildDataSheet() {
   DATA_SECTIONS.forEach(sec => {
     h += '<h3>' + esc(sec.h) + '</h3><ul>';
     sec.items.forEach(it => {
-      h += '<li><div class="fig">' + (it.rec ? '<span class="rec">★</span> ' : '') + esc(it.fig) + '</div>'
+      h += '<li><div class="fig"><span>' + esc(it.fig) + '</span>'
+         + (it.rec ? '<span class="rec">★</span>' : '') + '</div>'
          + '<div class="body"><div class="say">' + esc(it.say) + '</div>'
-         + '<div class="src">出典: ' + esc(it.src)
-         + ' <a href="' + it.url + '" target="_blank" rel="noopener">[リンク]</a></div></div></li>';
+         + '<div class="src"><a href="' + it.url + '" target="_blank" rel="noopener">出典先</a>'
+         + '</div></div></li>';
     });
     h += '</ul>';
   });

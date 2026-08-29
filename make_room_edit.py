@@ -180,14 +180,14 @@ def NTXT(l, x, y, ch, c):
             if bit == '1': PXL(l, x + rx, y + ry, c)
 
 # ═══════════════ 主要座標(ここだけ見れば配置が分かる) ═══════════════
-MENU = (48, 24, 58, 114)        # メニューパネル(左壁との隙間8px=上の隙間とそろえる)
-SCR  = (114, 22, 176, 93)       # スクリーン画面(左右へ拡張。センター202=チェアと同心)
-MARQ = (298, 18, 53, 24)        # 電飾マーキー(選んだ項目を1行で出す表示板)
-BTNP = (298, 52, 53, 82)        # 数字ボタンパネル(上へ伸ばす。上端に銘板を置いて空きを埋める)
-BTNC = [(312, 79), (336, 79), (312, 106), (336, 106)]   # 丸ボタン中心(21px・パネルと同心)
+MENU = (40, 24, 58, 114)        # メニューパネル(左壁ぎわまで寄せて隙間を潰す)
+SCR  = (106, 22, 172, 93)       # スクリーン画面(センター192=部屋の中心と同心)
+MARQ = (288, 18, 53, 24)        # 電飾マーキー(選んだ項目を1行で出す表示板)
+BTNP = (288, 52, 53, 82)        # 数字ボタンパネル(上端に銘板を置いて空きを埋める)
+BTNC = [(302, 79), (326, 79), (302, 106), (326, 106)]   # 丸ボタン中心(21px・パネルと同心)
 DESK_Y = 138                    # 編集卓の天板
-CHAIR = (182, 122)              # ゲーミングチェア左上(センター202)
-EDITC = (130, 116, 145)         # 編集機 x,幅の基準 (センター202)
+CHAIR = (172, 122)              # ゲーミングチェア左上(センター192)
+EDITC = (120, 116, 145)         # 編集機 x,幅の基準 (センター192)
 
 # ═══════════════ bg : TOPの部屋と同じ壁・床・天井 ═══════════════
 obj()
@@ -227,7 +227,7 @@ for i, x in enumerate(range(0, W + 32, 32)):
 for x, y in [(60,168),(150,183),(250,170),(340,180),(90,194),(230,194),(160,222),(320,226),(50,232)]:
     R('bg', x, y, 3, 1, 'q0')
 # スクリーンから出る光の床への映り込み
-for rx in range(150, 286, 7):
+for rx in range(136, 279, 7):
     R('bg', rx, 149, 1, 5 - (rx // 7) % 3, 'b1')
     R('bg', rx + 1, 149, 1, 2, 'b1')
 for bi, (by0, by1) in enumerate([(149,161),(162,175),(176,189),(190,203),(204,217),(218,231)]):
@@ -249,7 +249,7 @@ DI('bg', 0, 230, W, 10, 'q0', 'ink')
 for yy in range(150, 236):
     t = (yy - 150) / 86.0
     half = int(52 + 30 * t + 0.5)
-    x0c, x1c = 205 - half, 205 + half
+    x0c, x1c = 192 - half, 192 + half
     for xx in range(x0c, x1c + 1):
         if xx == x0c or xx == x1c:
             c = 'm0'
@@ -447,7 +447,7 @@ DITH('bg', 40, DESK_Y + 29, 304, 2, None, 'q0', 'check')
 
 # ─── 編集機(ミキシングコンソール) ───
 obj('編集機')
-CX0, CX1 = 130, 274
+CX0, CX1 = 120, 264
 BR0, BR1 = 116, 121                                      # メーターブリッジ面
 TP0, TP1 = 123, 132                                      # 操作天板
 ARM = 134                                                # アームレスト
@@ -480,24 +480,29 @@ for cxp, cyp in ((CX0 + 9, BR0 + 3), (CX0 + 17, BR0 + 5)):   # 挿さったコ�
     for k in range(4):
         PXL('furniture', cxp + k // 2, cyp + 2 + k, 'm0')
 
-# ── メーター(点灯/消灯が同時に見える。最明色はここだけ) ──
+# ── メーター(実機のVUと同じく、下から緑→黄→赤。点灯と消灯が同時に見える) ──
+def METER_COL(k, lit, peak):
+    """段kの色。lit=点いているか / peak=その帯の一番上か。"""
+    if not lit:
+        return 'q2'                                          # 消灯も物として描く
+    if k <= 2:
+        return 'g2' if peak else 'g1'
+    if k <= 4:
+        return 'y2' if peak else 'y1'
+    return 'cor' if peak else 'm2'
+
 METER_LV = [4, 5, 3, 5, 2, 4, 6, 3, 5, 4, 2, 5, 3]
 METERS = []       # (x, 一番下のy, 段数) 書き出しでコマごとに高さを変える
-for i in range(13):
+for i in range(48):
     mxm = CX0 + 34 + i * 4
-    if mxm > CX1 - 24:
+    if mxm + 2 > CX1 - 6:                                    # 卓の右端まで伸ばす
         break
     for pair in (0, 2):
         lit = max(1, METER_LV[(i * 3 + pair) % len(METER_LV)] - (pair and 1))
         for k in range(6):
-            yy = BR1 - 1 - k
-            if k < lit:
-                c = 'cync' if k == lit - 1 else 'cyn2'
-                PXL('furniture', mxm + pair, yy, c)
-            else:
-                PXL('furniture', mxm + pair, yy, 'q2')       # 消灯も物として描く
+            PXL('furniture', mxm + pair, BR1 - 1 - k, METER_COL(k, k < lit, k == lit - 1))
         METERS.append((mxm + pair, BR1 - 1, 6))
-DITH('furniture', CX0 + 34, BR1 + 2, 52, 2, None, 'q3', 'sparse')   # メーターの照り返し
+DITH('furniture', CX0 + 34, BR1 + 2, CX1 - 6 - (CX0 + 34), 2, None, 'q3', 'sparse')  # 照り返し
 
 # ── チャンネルストリップ(ピッチ4px・8本ごとにモジュールの継ぎ目) ──
 FADER_LV = [1, 0, 2, 1, 3, 2, 0, 1, 2, 3, 1, 2]
@@ -1078,11 +1083,7 @@ for f in range(3):
         lv = 2 + int(abs(math.sin(i * 1.7 + f * 2.1)) * (seg - 2) + 0.5)
         for k in range(seg):
             yy = lyb - k
-            if k < lv:
-                col = 'cync' if k == lv - 1 else 'cyn2'
-            else:
-                col = 'q2'
-            bd.point((f * W + lx, yy - BY0), fill=C(col))
+            bd.point((f * W + lx, yy - BY0), fill=C(METER_COL(k, k < lv, k == lv - 1)))
 blink.save(os.path.join(WEB, "edit_blink.png"))
 print("edit_blink.png", blink.size, "band y", BY0, "h", BBH)
 
