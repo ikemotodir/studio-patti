@@ -506,6 +506,8 @@ PAPERS.forEach(p => {
   hoverTalk(el, p.talk);
   if (p.id === 'ppspooks') {
     el.addEventListener('click', () => openLightbox('spooks_gs_full.jpg'));
+  } else if (p.id === 'ppdata' || p.id === 'ppdatatitle') {
+    el.addEventListener('click', () => openDataPop());   // 資料はポップアップで拡大
   } else {
     el.addEventListener('click', () => tease(p.name));
   }
@@ -678,10 +680,6 @@ function closeDataPop() { dpop.classList.remove('on'); }
 document.getElementById('dpclose').addEventListener('click', closeDataPop);
 dpop.addEventListener('click', e => { if (e.target === dpop) closeDataPop(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDataPop(); });
-['ppdata', 'ppdatatitle'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener('click', openDataPop);
-});
 </script>
 </body>
 </html>
