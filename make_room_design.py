@@ -197,7 +197,7 @@ DOORX0, DOORX1 = 345, 373       # スタジオへ戻る戸口(右の壁)
 PAP_DESIGN = (56, 40, 66, 38)   # 黄: キャラクターデザイン＆設計
 PAP_SKETCH = (132, 44, 24, 26)  # おばけのラフ絵
 PAP_STORY  = (128, 25, 128, 14) # 白: Story is King(電球の下・黒板上部センター)
-PAP_SPOOKS = (56, 78, 113, 46)  # Spooks GS(実画像をHTMLで重ねる台紙。内寸が比2.81)
+PAP_SPOOKS = (58, 88, 74, 29)   # Spooks GS(2/3へ縮小・余白2pxの細枠。内寸70x25=比2.8)
 PAP_WORLD  = (146, 128, 82, 26) # 桃: 世界観(スケッチ②の位置・大きく)
 PAP_TALE   = (196, 60, 48, 34)  # 赤: 物語(スケッチ③の位置・大きく)
 DATA_TITLE = (248, 42, 84, 13)  # キャラクターに関するデータ(見出し)
@@ -357,7 +357,7 @@ def chalk_write(x9, y9, rows, wmax):
 
 obj('チョークの矢印')
 # 設計の紙 → 世界観 (下へ回り込む)
-chalk_line([(122, 74), (134, 86), (144, 102), (150, 118)])
+chalk_line([(136, 78), (140, 92), (146, 106), (150, 118)])
 chalk_head(151, 123, 0, 1)
 # 世界観 → 物語 (上へ)
 chalk_line([(216, 124), (222, 112), (226, 103)])
@@ -521,7 +521,7 @@ tape(PAP_STORY[0] - 2, PAP_STORY[1] - 1, 8)
 tape(PAP_STORY[0] + PAP_STORY[2] - 6, PAP_STORY[1] - 1, 8)
 
 obj('Spooks GSの紙')
-paper(*PAP_SPOOKS, base='ivory2', hi='ivory', shade='gray0', curl=4)
+paper(*PAP_SPOOKS, base='ivory2', hi='ivory', shade='gray0', curl=2)
 # 実画像(spooks_gs_paper.jpg)はHTML側で紙の内側に重ねる(ピクセル化しない指示)
 
 obj('世界観の紙')

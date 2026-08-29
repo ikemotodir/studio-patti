@@ -180,11 +180,11 @@ def NTXT(l, x, y, ch, c):
             if bit == '1': PXL(l, x + rx, y + ry, c)
 
 # ═══════════════ 主要座標(ここだけ見れば配置が分かる) ═══════════════
-MENU = (40, 24, 72, 114)        # メニューパネル外形(最長ラベル72pxが枠内に収まる幅)
-SCR  = (120, 22, 165, 93)       # スクリーン画面(16:9・面積1.47倍。センター202=チェアと同心)
-MARQ = (293, 18, 50, 58)        # 電飾マーキー(いま流れているコンテンツ名を出す)
-BTNP = (293, 80, 50, 54)        # 数字ボタンパネル(マーキーの下)
-BTNC = [(306, 94), (330, 94), (306, 119), (330, 119)]   # 丸ボタン中心(19px)
+MENU = (48, 24, 58, 114)        # メニューパネル(左壁との隙間8px=上の隙間とそろえる)
+SCR  = (114, 22, 176, 93)       # スクリーン画面(左右へ拡張。センター202=チェアと同心)
+MARQ = (298, 18, 53, 24)        # 電飾マーキー(選んだ項目を1行で出す表示板)
+BTNP = (298, 52, 53, 82)        # 数字ボタンパネル(上へ伸ばす。上端に銘板を置いて空きを埋める)
+BTNC = [(312, 79), (336, 79), (312, 106), (336, 106)]   # 丸ボタン中心(21px・パネルと同心)
 DESK_Y = 138                    # 編集卓の天板
 CHAIR = (182, 122)              # ゲーミングチェア左上(センター202)
 EDITC = (130, 116, 145)         # 編集機 x,幅の基準 (センター202)
@@ -396,19 +396,21 @@ DITH('bg', sx - 12, sy - 12, sw + 24, 6, None, 'n4', 'sparse')  # 壁への光�
 # ─── 奥壁: 電飾マーキー(この部屋の看板。小さな電球がぐるりと並ぶ) ───
 obj('電飾マーキー')
 cx, cy, cw, ch = MARQ
-BEVEL('furniture', cx, cy, cw, ch, 'q2', 'q4', 'q0')     # 枠(電球の台座)
-INSET('furniture', cx + 4, cy + 4, cw - 8, ch - 8, 'n0', 'q1', 'ink')   # 文字が入る凹み
+BEVEL('furniture', cx, cy, cw, ch, 'q3', 'q5', 'q0')     # 枠(電球の台座。明るい面)
+DITH('furniture', cx + 1, cy + 1, cw - 2, ch - 2, None, 'q4', 'grain')  # 塗装の粒
+INSET('furniture', cx + 4, cy + 6, cw - 8, ch - 12, 'n0', 'q1', 'ink')  # 文字が入る凹み
 DITH('bg', cx + 2, cy + ch, cw - 2, 2, None, 'q0', 'check')             # 壁への落ち影
 
 # 電球: 枠のふちを2px内側でぐるりと1周し、4pxおきに並べる
-_bl, _bt = cx + 2, cy + 2
-_br, _bb = cx + cw - 3, cy + ch - 3
+_bl, _bt = cx + 2, cy + 3
+_br, _bb = cx + cw - 3, cy + ch - 4
 _path = ([(x, _bt) for x in range(_bl, _br + 1)] +
          [(_br, y) for y in range(_bt + 1, _bb + 1)] +
          [(x, _bb) for x in range(_br - 1, _bl - 1, -1)] +
          [(_bl, y) for y in range(_bb - 1, _bt, -1)])
 MARQ_BULBS = [_path[i] for i in range(0, len(_path), 4)]
 for (bxb, byb) in MARQ_BULBS:
+    PXL('furniture', bxb, byb + 1, 'q0')      # 座(電球の影)。これがないと枠に溶ける
     PXL('furniture', bxb, byb, 'ivory2')
 
 # ─── 奥壁: 数字ボタンパネル(右) ───
@@ -417,12 +419,16 @@ bx, by, bw, bh = BTNP
 BEVEL('furniture', bx, by, bw, bh, 'q2', 'q4', 'q0')
 DITH('furniture', bx + 2, by + 2, bw - 4, bh - 4, 'q1', 'q2', 'sparse')  # パネル面
 DITH('bg', bx + 2, by + bh, bw - 2, 2, None, 'q0', 'check')              # 壁への落ち影
+INSET('furniture', bx + 5, by + 4, bw - 10, 7, 'n0', 'q1', 'ink')        # 上端の銘板(凹み)
+for k in range(4):                                                        # 送りの目盛り
+    R('furniture', bx + 9 + k * 9, by + 6, 5, 1, 'q3')
+    PXL('furniture', bx + 9 + k * 9, by + 8, 'cyn1')
 for i, (bcx, bcy) in enumerate(BTNC):
-    EL('furniture', bcx - 9, bcy - 8, bcx + 9, bcy + 10, fill='q0', out='q0')  # 座ぐりの影
-    EL('furniture', bcx - 9, bcy - 9, bcx + 9, bcy + 9, fill='pnk1', out='pnk0')
-    EL('furniture', bcx - 7, bcy - 7, bcx + 7, bcy + 7, fill='pnk2')
-    EL('furniture', bcx - 5, bcy - 6, bcx - 1, bcy - 2, fill='pnkc')           # 樹脂ドームの映り込み
-    PXL('furniture', bcx + 5, bcy + 4, 'pnkc')                                 # 反対側の反射光
+    EL('furniture', bcx - 10, bcy - 9, bcx + 10, bcy + 11, fill='q0', out='q0')  # 座ぐりの影
+    EL('furniture', bcx - 10, bcy - 10, bcx + 10, bcy + 10, fill='pnk1', out='pnk0')
+    EL('furniture', bcx - 8, bcy - 8, bcx + 8, bcy + 8, fill='pnk2')
+    EL('furniture', bcx - 6, bcy - 7, bcx - 1, bcy - 2, fill='pnkc')           # 樹脂ドームの映り込み
+    PXL('furniture', bcx + 6, bcy + 5, 'pnkc')                                 # 反対側の反射光
     NTXT('furniture', bcx - 1, bcy - 2, str(i + 1), 'ink')   # 字形3x5なので中心-1,-2 が真ん中
 
 # ─── 編集卓(壁ぎわのカウンター。天板の小口→膝板→接地影の3層) ───
@@ -572,14 +578,17 @@ R('furniture', mx + 4, my + 4, mw - 8, 1, 'pnk0')         # 内側のネオン(�
 for i in range(5):                                         # 見出し1枚+差し込みカード4枚
     cy2 = my + 6 + i * 22
     if i == 0:
-        # 見出し「制作事例」: 選べるカードではなく、パネルに刻まれた銘板(藍+シアン)
-        R('furniture', mx + 3, cy2, mw - 6, 19, 'n1')
-        R('furniture', mx + 3, cy2, mw - 6, 1, 'cyn1')
-        R('furniture', mx + 3, cy2 + 18, mw - 6, 1, 'n0')
-        R('furniture', mx + 3, cy2 + 19, mw - 6, 1, 'n0')
-        DITH('furniture', mx + 4, cy2 + 1, mw - 8, 17, None, 'n2', 'sparse')
-        PXL('furniture', mx + 4, cy2 + 1, 'cyn2')
-        PXL('furniture', mx + mw - 5, cy2 + 17, 'cyn0')
+        # 見出し「制作事例」: 差し込みカードではなく、パネルに彫り込まれた銘板。
+        # 面を1段落として(凹み)、シアンの罫と両端のLEDで「押せない表示」だと分からせる
+        INSET('furniture', mx + 3, cy2 + 1, mw - 6, 17, 'n0', 'n2', 'ink')
+        DITH('furniture', mx + 4, cy2 + 2, mw - 8, 15, None, 'n1', 'grain')
+        R('furniture', mx + 6, cy2 + 3, mw - 12, 1, 'cyn0')        # 上の罫(シアン)
+        R('furniture', mx + 6, cy2 + 15, mw - 12, 1, 'cyn0')       # 下の罫
+        for _lx in (mx + 5, mx + mw - 6):                          # 両端のLED
+            PXL('furniture', _lx, cy2 + 9, 'cync')
+            PXL('furniture', _lx, cy2 + 8, 'cyn2')
+            PXL('furniture', _lx, cy2 + 10, 'cyn2')
+        R('furniture', mx + 3, cy2 + 19, mw - 6, 1, 'q0')          # 銘板とカードの境の影
         continue
     R('furniture', mx + 3, cy2, mw - 6, 19, 'q1')         # カードの面
     R('furniture', mx + 3, cy2, mw - 6, 1, 'q3')          # カードの上辺(受光)

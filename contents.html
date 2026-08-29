@@ -39,7 +39,7 @@
   #room { z-index: 1; }
   #doorGlowStudio, #editblink, #marqblink, #screenglow, #motes { z-index: 2; }
   #screenbox { z-index: 3; }
-  .hs, .mi, .nb, #catname { z-index: 4; }
+  .hs, .mi, .nb, #mihdr, #catname { z-index: 4; }
   #mshadow, #mayu, #pshadow, #pattifloat { z-index: 5; }
   #navbar, #talkbox { z-index: 6; }
 
@@ -122,9 +122,9 @@
   /* ─── 電飾マーキーの電球がぐるりと流れる(4コマ) ─── */
   #marqblink {
     position: absolute; left: 0; top: 18px;
-    width: 384px; height: 36px; pointer-events: none;
+    width: 384px; height: 24px; pointer-events: none;
     background-image: url(marquee_blink.png);
-    background-size: 1536px 36px;
+    background-size: 1536px 24px;
     animation: marqblink 1.0s steps(1) infinite;
   }
   @keyframes marqblink {
@@ -137,12 +137,12 @@
 
   /* ─── 大スクリーン(中身はここに載る) ─── */
   #screenbox {
-    position: absolute; left: 133px; top: 21px;
-    width: 154px; height: 87px; overflow: hidden;
+    position: absolute; left: 114px; top: 22px;
+    width: 176px; height: 93px; overflow: hidden;
     background: transparent;
   }
   #screenglow {
-    position: absolute; left: 119px; top: 10px; width: 183px; height: 112px;
+    position: absolute; left: 113px; top: 10px; width: 194px; height: 113px;
     pointer-events: none; mix-blend-mode: screen; display: none;
     background: radial-gradient(closest-side, rgba(126, 224, 235, .20), rgba(126, 224, 235, 0) 80%);
   }
@@ -193,7 +193,7 @@
 
   /* ─── 左のメニューパネル(5項目・▶で選ぶ) ─── */
   .mi {
-    position: absolute; left: 43px; width: 66px; height: 22px;
+    position: absolute; left: 51px; width: 52px; height: 22px;
     border: 0; background: transparent; cursor: pointer; padding: 0 1px 0 6px;
     box-sizing: border-box; text-align: left; white-space: nowrap;
     display: flex; align-items: center;
@@ -212,7 +212,7 @@
   .mi:hover, .mi:focus-visible { color: #ffffff; background: rgba(236, 148, 190, .12); outline: none; }
   /* 見出し「制作事例」: 選べない銘板。項目とはベースも文字色も変える */
   #mihdr {
-    position: absolute; left: 43px; width: 66px; height: 22px;
+    position: absolute; left: 51px; width: 52px; height: 22px;
     display: flex; align-items: center; justify-content: center;
     font-family: 'DotGothic16', 'MS Gothic', monospace;
     color: #7ee0eb; font-size: 7px; letter-spacing: 2px;
@@ -222,15 +222,15 @@
 
   /* ─── 右のカテゴリ表示と数字ボタン ─── */
   #catname {
-    position: absolute; left: 297px; top: 23px; width: 42px; height: 26px;
+    position: absolute; left: 302px; top: 24px; width: 45px; height: 12px;
     display: flex; align-items: center; justify-content: center;
     font-family: 'DotGothic16', 'MS Gothic', monospace;
-    color: #fff6e0; font-size: 6px; line-height: 1.6; text-align: center;
+    color: #fff6e0; font-size: 6px; line-height: 1; text-align: center; white-space: nowrap;
     text-shadow: 0 0 3px rgba(255, 232, 176, .55);
     pointer-events: none;
   }
   .nb {
-    position: absolute; width: 19px; height: 19px;
+    position: absolute; width: 21px; height: 21px;
     border: 0; background: transparent; cursor: pointer; padding: 0;
     border-radius: 50%;
   }
@@ -566,7 +566,7 @@ let META = null;
 fetch('metaverse.json', NOCACHE).then(r => r.json()).then(j => { META = j; }).catch(() => {});
 
 const MENU_TOP = 28, MENU_H = 22;   // カード(y30+22i,高19)の中心とボタンの中心を合わせる
-const BTN_POS = [[297, 85], [321, 85], [297, 110], [321, 110]];   // 丸ボタン(19x19)の左上
+const BTN_POS = [[302, 69], [326, 69], [302, 96], [326, 96]];   // 丸ボタン(21x21)の左上
 let cat = 0, num = -1, bkpage = 0;
 
 // メニュー: 見出し「制作事例」(選べない銘板) + 項目4つ

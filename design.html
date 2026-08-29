@@ -142,8 +142,8 @@
   @media (prefers-reduced-motion: reduce) { .pp { transition: none; } }
   /* Spooks GS: 紙の内側に実画像をそのまま(なめらかに)出す */
   #spooksimg {
-    position: absolute; left: 3px; top: 4px;
-    width: calc(100% - 7px); height: calc(100% - 9px);
+    position: absolute; left: 2px; top: 2px;
+    width: calc(100% - 4px); height: calc(100% - 4px);
     object-fit: cover; image-rendering: auto; display: block;
     pointer-events: none;
   }
@@ -317,6 +317,55 @@
     position: absolute; left: 0; right: 0; bottom: 3vh; text-align: center;
     font-family: 'DotGothic16', 'MS Gothic', monospace; color: #f2eefc; font-size: 13px;
   }
+
+  /* ─── データの資料ポップアップ(模造紙を拡大したイメージ) ─── */
+  #dpop {
+    position: fixed; inset: 0; z-index: 130; display: none;
+    align-items: center; justify-content: center;
+    background: rgba(6, 4, 20, .86); padding: 24px 16px;
+  }
+  #dpop.on { display: flex; }
+  #dpwrap { position: relative; width: min(920px, 94vw); max-height: 88vh; }
+  #dpsheet {
+    max-height: 88vh; overflow-y: auto;
+    background: #efe8d6; color: #241c30;
+    border: 3px solid #cdbfa0; box-shadow: 0 10px 0 rgba(0, 0, 0, .35);
+    padding: 22px 26px 26px;
+    font-family: 'DotGothic16', 'MS Gothic', monospace;
+  }
+  #dpsheet h2 {
+    font-size: 20px; margin: 0 0 4px; letter-spacing: 1px;
+    border-bottom: 3px solid #241c30; display: inline-block; padding-bottom: 3px;
+  }
+  #dpsheet .lead { font-size: 12px; line-height: 1.7; margin: 10px 0 4px; }
+  #dpsheet .note {
+    font-size: 11px; line-height: 1.7; margin: 8px 0 18px;
+    background: #fdf7e6; border-left: 4px solid #d8a13a; padding: 8px 10px;
+  }
+  #dpsheet h3 {
+    font-size: 13px; margin: 20px 0 8px; padding: 3px 8px;
+    background: #241c30; color: #efe8d6; display: inline-block;
+  }
+  #dpsheet ul { list-style: none; margin: 0; padding: 0; }
+  #dpsheet li {
+    border-bottom: 1px dashed #bdb098; padding: 9px 2px 9px 0;
+    display: flex; gap: 12px; align-items: baseline;
+  }
+  #dpsheet .fig {
+    flex: 0 0 132px; font-size: 17px; line-height: 1.25; color: #9c2b4e; font-weight: bold;
+  }
+  #dpsheet .body { flex: 1 1 auto; }
+  #dpsheet .say { font-size: 12px; line-height: 1.65; }
+  #dpsheet .src { font-size: 10px; line-height: 1.6; color: #5c5140; margin-top: 3px; }
+  #dpsheet .src a { color: #3d5a8c; }
+  #dpsheet .rec { color: #b8860b; }
+  #dpclose {
+    position: absolute; right: 0; top: -30px;
+    border: 1px solid #e8e4f4; background: rgba(8, 6, 40, .9);
+    color: #f2eefc; font-family: 'DotGothic16', 'MS Gothic', monospace;
+    font-size: 13px; padding: 5px 12px; cursor: pointer;
+  }
+  #dpclose:hover { background: rgba(236, 148, 190, .5); }
 </style>
 </head>
 <body>
@@ -334,7 +383,7 @@
             aria-label="キャラクターデザインと設計"><span>キャラクター<br>デザイン＆設計</span></button>
     <button class="pp" id="ppsketch" style="left:132px;top:44px;width:24px;height:26px"
             aria-label="おばけのラフスケッチ"></button>
-    <button class="pp" id="ppspooks" style="left:56px;top:78px;width:113px;height:46px"
+    <button class="pp" id="ppspooks" style="left:58px;top:88px;width:74px;height:29px"
             aria-label="Spooks GS（おばけたちの一覧）"><img id="spooksimg"
             src="spooks_gs_paper.jpg" alt=""></button>
     <button class="pp" id="ppworld" style="left:146px;top:128px;width:82px;height:26px"
@@ -364,7 +413,7 @@
     </div>
     <div id="talkbox">
       <span class="name">パッチ</span>
-      <span id="talktext">ここはデザイン室だよ！<br>気になるところにタッチしてね！</span>
+      <span id="talktext">ここはデザイン室！<br>キャラクターをデザインして、世界と物語まで設計するよ！</span>
       <span class="cursor" aria-hidden="true"></span>
     </div>
   </div>
@@ -385,11 +434,17 @@
   <div class="cap">クリックでとじる</div>
 </div>
 
+<div id="dpop" role="dialog" aria-label="キャラクターに関するデータ">
+  <div id="dpwrap">
+    <button id="dpclose" type="button" aria-label="とじる">× とじる</button>
+    <div id="dpsheet"></div>
+  </div>
+</div>
 <script>
 const COMPANY_URL = 'https://canva.link/5xu274fv1b00091';
 const stage = document.getElementById('stage');
 const talktext = document.getElementById('talktext');
-const TALK_DEFAULT = 'ここはデザイン室だよ！<br>気になるところにタッチしてね！';
+const TALK_DEFAULT = 'ここはデザイン室！<br>キャラクターをデザインして、世界と物語まで設計するよ！';
 const setTalk = t => { talktext.innerHTML = t; };
 
 function fitStage() {
@@ -418,20 +473,20 @@ function hoverTalk(el, text) {
 // ─── 黒板に貼ってある紙 ───
 const PAPERS = [
   { id: 'ppdesign',    name: 'キャラクターデザイン＆設計',
-    talk: 'キャラクターのデザインと設計！<br>パッチたちが生まれるところだよ！' },
+    talk: 'キャラクターをゼロからデザインするよ！<br>見た目だけじゃなく、性格や生い立ちまで設計するんだ！' },
   { id: 'ppsketch',    name: 'ラフスケッチ',
-    talk: 'かべに貼ってあるラフスケッチ！<br>ぐりぐり描いてるところだね！' },
+    talk: 'ラフをたくさん描いて形をさがすよ！<br>ここで「らしさ」を見つけるんだ！' },
 
   { id: 'ppspooks',    name: 'Spooks GS',
-    talk: 'おばけたちの一覧「Spooks GS」！<br>さわると大きく見られるよ！' },
+    talk: 'これまでデザインしたキャラクターたち！<br>さわると大きく見られるよ！' },
   { id: 'ppworld',     name: '世界観',
-    talk: 'おばけのパッチの世界観だよ！' },
+    talk: 'キャラクターが住む世界のルールを決めるよ！<br>世界観がそろうと、ぜんぶがつながるんだ！' },
   { id: 'pptale',      name: '物語',
-    talk: 'ここから物語が生まれるんだ！' },
+    talk: '物語を書くよ！<br>キャラクターは物語の中でこそ心が動くんだ！' },
   { id: 'ppdatatitle', name: 'キャラクターに関するデータ',
-    talk: 'キャラクターに関するデータ！<br>いろんな資料がはってあるよ！' },
+    talk: 'キャラクターがなぜ効くのか、データで見せるよ！<br>さわると大きく見られるよ！' },
   { id: 'ppdata',      name: 'キャラクターに関するデータ',
-    talk: 'キャラクターに関するデータ！<br>いろんな資料がはってあるよ！' },
+    talk: 'キャラクターがなぜ効くのか、データで見せるよ！<br>さわると大きく見られるよ！' },
 ];
 const lightbox = document.getElementById('lightbox');
 const lbimg = document.getElementById('lbimg');
@@ -535,6 +590,98 @@ const MOTE_BOT = 146;
   };
   requestAnimationFrame(tick);
 })();
+
+// ─── キャラクターに関するデータ(仮。池本さんが選んだものを本掲載にする) ───
+const DATA_SECTIONS = [
+  { h: '若い人は、キャラクターとアニメの中で暮らしている', items: [
+    { fig: '87.4%', rec: false,
+      say: '高校生がアニメを観ている割合。大学生も85.6%。好きな作品にお金を使った経験も7割を超える。',
+      src: 'TesTee Lab「学生のアニメに関する調査【2024年版】」(テスティー)',
+      url: 'https://lab.testee.co/anime_student2024/' },
+    { fig: '約4人に3人', rec: true,
+      say: '15〜19歳に「好きなキャラクターがいる」割合(男72.9%／女75.1%)。全年代で最も高い。',
+      src: '矢野経済研究所「キャラクターに関する消費者アンケート調査(2025年)」',
+      url: 'https://www.yano.co.jp/press-release/show/press_id/4012' },
+    { fig: '約1.5倍', rec: false,
+      say: '「推し活」主要16分野の市場規模が2020→2024年度で約50%拡大。国の広報誌が若年層主導の成長消費と位置づけている。',
+      src: '財務省広報誌『ファイナンス』経済トレンド「推し活」(2025年)',
+      url: 'https://www.mof.go.jp/public_relations/finance/2025011/202511f.pdf' },
+  ]},
+  { h: '会社の話は、もうテレビでは届かない', items: [
+    { fig: '95.7%', rec: true,
+      say: '10代のYouTube利用率(20代97.2%)。TikTokも10代65.7%と、全年代で最も高い。',
+      src: '総務省 情報通信政策研究所「令和6年度 情報通信メディアの利用時間と情報行動に関する調査」',
+      url: 'https://www.soumu.go.jp/main_content/001017240.pdf' },
+    { fig: '165分 vs 40分', rec: true,
+      say: '10代の平日1日あたり、ネット動画の視聴時間とテレビ(リアルタイム)視聴時間。差は約4倍。',
+      src: '総務省 情報通信政策研究所(同上・令和6年度)',
+      url: 'https://www.soumu.go.jp/main_content/001017240.pdf' },
+    { fig: '75.0% / 78.0%', rec: false,
+      say: '10代・20代のInstagram利用率。絵とキャラクターで語れる素材を持つほど、若年層への発信で有利になる。',
+      src: '総務省 情報通信政策研究所(同上・令和6年度)',
+      url: 'https://www.soumu.go.jp/main_content/001017240.pdf' },
+  ]},
+  { h: 'だから、採用に効く', items: [
+    { fig: '86.6% → 77.0%', rec: true,
+      say: 'Z世代の就活生が企業選びで採用動画を参考にした割合と、観たあとに志望度が上がった割合。',
+      src: 'moovy「Z世代就活生の採用動画に関する調査」(2022年)',
+      url: 'https://prtimes.jp/main/html/rd/p/000000009.000062343.html' },
+    { fig: '8割超', rec: false,
+      say: '2026年卒の学生が、就活準備・インターンの情報収集に「動画を活用したい」と答えた割合。',
+      src: '学情「就職活動準備における動画活用」調査(2024年・26卒対象)',
+      url: 'https://prtimes.jp/main/html/rd/p/000001237.000013485.html' },
+    { fig: '57.1%', rec: false,
+      say: '20代がTikTokで就職活動の情報を集めた経験。動画で発信している企業には約88%が好印象を持つ。',
+      src: 'TORIHADA「Z世代の就職活動におけるTikTok活用調査」(2024年)',
+      url: 'https://prtimes.jp/main/html/rd/p/000000160.000030350.html' },
+  ]},
+  { h: 'キャラクターは、すでに社会のインフラ', items: [
+    { fig: '2兆8,492億円', rec: true,
+      say: '国内キャラクタービジネスの市場規模(2025年度予測)。前年度比102.6%で拡大が続いている。',
+      src: '矢野経済研究所「キャラクタービジネスに関する調査(2025年)」',
+      url: 'https://www.yano.co.jp/press-release/show/press_id/4012' },
+    { fig: '1,553体', rec: false,
+      say: '自治体の公式ご当地キャラクターの数(2021年度)。10年で倍増し、市区町村の約8割が持っている。',
+      src: '日本経済新聞「目指せくまモン 全国1500超、ゆるキャラに託す発信力」(2022年)',
+      url: 'https://www.nikkei.com/article/DGXZQOCC0429G0U2A200C2000000/' },
+    { fig: '42%', rec: false,
+      say: '「キャラクターを使っている企業は記憶に残る」と答えた生活者の割合。商品理解に役立つは約46%。',
+      src: 'Minto「企業によるキャラクター利用効果の調査」',
+      url: 'https://prtimes.jp/main/html/rd/p/000000059.000029274.html' },
+  ]},
+];
+const dpop = document.getElementById('dpop');
+const dpsheet = document.getElementById('dpsheet');
+function buildDataSheet() {
+  if (dpsheet.dataset.built) return;
+  const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  let h = '<h2>キャラクターに関するデータ</h2>'
+        + '<p class="lead">企業や自治体が、若い人材に届き、選ばれるために。'
+        + 'キャラクターとアニメーションが「あった方がいいもの」ではなく「必要なもの」である理由を、公的統計と調査データで。</p>'
+        + '<p class="note">※これは仮のボードです。★はスタジオパッチのおすすめ。'
+        + 'ここから載せるものを選んでいただければ、出典つきで黒板に清書します。</p>';
+  DATA_SECTIONS.forEach(sec => {
+    h += '<h3>' + esc(sec.h) + '</h3><ul>';
+    sec.items.forEach(it => {
+      h += '<li><div class="fig">' + (it.rec ? '<span class="rec">★</span> ' : '') + esc(it.fig) + '</div>'
+         + '<div class="body"><div class="say">' + esc(it.say) + '</div>'
+         + '<div class="src">出典: ' + esc(it.src)
+         + ' <a href="' + it.url + '" target="_blank" rel="noopener">[リンク]</a></div></div></li>';
+    });
+    h += '</ul>';
+  });
+  dpsheet.innerHTML = h;
+  dpsheet.dataset.built = '1';
+}
+function openDataPop() { buildDataSheet(); dpop.classList.add('on'); dpsheet.scrollTop = 0; }
+function closeDataPop() { dpop.classList.remove('on'); }
+document.getElementById('dpclose').addEventListener('click', closeDataPop);
+dpop.addEventListener('click', e => { if (e.target === dpop) closeDataPop(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDataPop(); });
+['ppdata', 'ppdatatitle'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('click', openDataPop);
+});
 </script>
 </body>
 </html>
