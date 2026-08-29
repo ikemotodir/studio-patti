@@ -193,7 +193,7 @@
 
   /* ─── 左のメニューパネル(5項目・▶で選ぶ) ─── */
   .mi {
-    position: absolute; left: 43px; width: 80px; height: 22px;
+    position: absolute; left: 43px; width: 66px; height: 22px;
     border: 0; background: transparent; cursor: pointer; padding: 0 1px 0 6px;
     box-sizing: border-box; text-align: left; white-space: nowrap;
     display: flex; align-items: center;
@@ -210,6 +210,15 @@
   .mi.sel { color: #ffffff; }
   .mi.sel .cur { visibility: visible; }
   .mi:hover, .mi:focus-visible { color: #ffffff; background: rgba(236, 148, 190, .12); outline: none; }
+  /* 見出し「制作事例」: 選べない銘板。項目とはベースも文字色も変える */
+  #mihdr {
+    position: absolute; left: 43px; width: 66px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DotGothic16', 'MS Gothic', monospace;
+    color: #7ee0eb; font-size: 7px; letter-spacing: 2px;
+    text-shadow: 0 0 3px rgba(126, 224, 235, .45);
+    pointer-events: none;
+  }
 
   /* ─── 右のカテゴリ表示と数字ボタン ─── */
   #catname {
@@ -370,6 +379,49 @@
     position: absolute; left: 0; top: 0; width: 384px; height: 240px;
     pointer-events: none; image-rendering: pixelated;
   }
+
+  /* ─── モニタのサムネイルと▶(センター) ─── */
+  #thumbbox { position: absolute; inset: 0; display: none; }
+  #thumbimg {
+    width: 100%; height: 100%; object-fit: cover;
+    image-rendering: auto; display: block;
+  }
+  #playbig {
+    position: absolute; left: 50%; top: 50%; width: 34px; height: 34px;
+    transform: translate(-50%, -50%);
+    border: 2px solid #f2eefc; border-radius: 50%;
+    background: rgba(8, 6, 40, .78); cursor: pointer; padding: 0;
+  }
+  #playbig::after {
+    content: ''; position: absolute; left: 55%; top: 50%;
+    transform: translate(-50%, -50%);
+    border-left: 12px solid #f2eefc;
+    border-top: 8px solid transparent; border-bottom: 8px solid transparent;
+  }
+  #playbig:hover, #playbig:focus-visible {
+    background: rgba(236, 148, 190, .55); outline: none;
+  }
+
+  /* ─── ポップアップ再生(背景に編集室がうっすら残る) ─── */
+  #vpop {
+    position: fixed; inset: 0; z-index: 130; display: none;
+    align-items: center; justify-content: center;
+    background: rgba(6, 4, 20, .84);
+  }
+  #vpop.on { display: flex; }
+  #vpwrap {
+    position: relative;
+    width: min(86vw, 152vh); aspect-ratio: 16 / 9;
+    border: 2px solid #e8e4f4; background: #000;
+  }
+  #vpframe { width: 100%; height: 100%; border: 0; display: block; }
+  #vpclose {
+    position: absolute; right: 0; top: -34px;
+    border: 1px solid #e8e4f4; background: rgba(8, 6, 40, .9);
+    color: #f2eefc; font-family: 'DotGothic16', 'MS Gothic', monospace;
+    font-size: 13px; padding: 5px 12px; cursor: pointer;
+  }
+  #vpclose:hover { background: rgba(236, 148, 190, .5); }
 </style>
 </head>
 <body>
@@ -404,6 +456,10 @@
         <button id="bkprev" class="bknav" type="button" aria-label="前のページに戻る">◀</button>
         <button id="bknext" class="bknav" type="button" aria-label="次のページに進む">▶</button>
         <div id="bknum"></div>
+      </div>
+      <div id="thumbbox">
+        <img id="thumbimg" src="" alt="作品のサムネイル">
+        <button id="playbig" type="button" aria-label="この作品をさいせいする"></button>
       </div>
       <div id="scrguard" aria-hidden="true"></div>
       <button id="scrsnd" type="button" aria-label="音を出す">♪ おとを出す</button>
@@ -440,6 +496,12 @@
 </div>
 
 <div id="toast"></div>
+<div id="vpop" role="dialog" aria-label="作品のさいせい">
+  <div id="vpwrap">
+    <iframe id="vpframe" title="作品のさいせい画面" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+    <button id="vpclose" type="button" aria-label="とじる">× とじる</button>
+  </div>
+</div>
 
 <script>
 // ─────────────────────────────────────────────
@@ -490,36 +552,34 @@ function hoverTalk(el, text) {
 const V = id => 'https://player.vimeo.com/video/' + id + '?autoplay=1&muted=1&loop=1&title=0&byline=0&portrait=0&dnt=1';
 const Y = id => 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&mute=1&controls=0&loop=1&playlist=' + id + '&rel=0&playsinline=1&enablejsapi=1';
 const M = n => 'meta:' + n;      // メタバースは画像の連番(metaverse.json)
-// items[j] = 再生するもの / titles[j] = 電飾マーキーに出す名前
+// 動画は {t:'v'|'y', id} で持ち、サムネ(thumbs/)を出して▶でポップアップ再生する
+const HEAD_NAME = '制作事例';
 const CATS = [
-  { name: '私たちの創造', disp: '私たちの創造', items: [], titles: [] },
   { name: 'アニメーション', disp: 'アニメーション',
-    items: [V('1029119982'), V('1166566557'), Y('Y3UOLaso-MI'), V('708043721')],
-    titles: ["The Seven Deadly Sins - The Battle of Light and Darkness", "Honor Of Kings - The Story of Treasure", "【赤ちゃんが喜ぶ歌】すきなきもちもち（うた：SAKANAMON）【赤ちゃんが泣き止む・喜ぶ動画】", "QQ Dance - Ice Queen.mp4"] },
-  { name: '絵本', disp: '絵本',
-    items: ['book'], titles: ['おばけのパッチ'] },
-  { name: 'メタバース', disp: 'メタバース',
-    items: [M(0), M(1), M(2), M(3)], titles: [] },     // 名前は metaverse.json から入れる
+    items: [{t:'v',id:'1029119982'}, {t:'v',id:'1166566557'}, {t:'y',id:'Y3UOLaso-MI'}, {t:'v',id:'1084182206'}] },
+  { name: '絵本', disp: '絵本', items: ['book'] },
+  { name: 'メタバース', disp: 'メタバース', items: [M(0), M(1), M(2), M(3)] },
   { name: '実写映像', disp: '実写映像',
-    items: [Y('a6ickLwrHRE'), Y('RBAMbSCEbSQ'), Y('XKyWWychUZA'), Y('bomW6K3pvsY')],
-    titles: ["【インタビュー映像】彩響衆 樂クラファン用", "【ドキュメンタリー映像】50 days until GAKU FES【彩響衆 樂】", "【インタビュー映像】KATANAクラファン用", "【プロモーション映像】一宮市七夕祭り"] },
+    items: [{t:'y',id:'a6ickLwrHRE'}, {t:'y',id:'RBAMbSCEbSQ'}, {t:'y',id:'XKyWWychUZA'}, {t:'y',id:'bomW6K3pvsY'}] },
 ];
 let META = null;
-fetch('metaverse.json', NOCACHE).then(r => r.json()).then(j => {
-  META = j;
-  CATS[3].titles = j.map(g => g.name);
-}).catch(() => {});
+fetch('metaverse.json', NOCACHE).then(r => r.json()).then(j => { META = j; }).catch(() => {});
 
 const MENU_TOP = 28, MENU_H = 22;   // カード(y30+22i,高19)の中心とボタンの中心を合わせる
 const BTN_POS = [[297, 85], [321, 85], [297, 110], [321, 110]];   // 丸ボタン(19x19)の左上
 let cat = 0, num = -1, bkpage = 0;
 
-// メニュー項目(5つ)
+// メニュー: 見出し「制作事例」(選べない銘板) + 項目4つ
+const hdr = document.createElement('div');
+hdr.id = 'mihdr';
+hdr.style.top = MENU_TOP + 'px';
+hdr.textContent = HEAD_NAME;
+stage.appendChild(hdr);
 const miEls = [];
 CATS.forEach((c, i) => {
   const b = document.createElement('button');
   b.className = 'mi';
-  b.style.top = (MENU_TOP + i * MENU_H) + 'px';
+  b.style.top = (MENU_TOP + (i + 1) * MENU_H) + 'px';
   b.innerHTML = '<span class="cur"></span>' + c.name;   // メニューは1行(dispはカテゴリ表示板用)
   b.setAttribute('aria-label', c.name);
   b.addEventListener('click', () => selectCat(i));
@@ -569,6 +629,8 @@ function setSnd(on) {
 scrsnd.addEventListener('click', () => setSnd(!sndOn));
 
 function stopScreen() {
+  const tb = document.getElementById('thumbbox');
+  if (tb) tb.style.display = 'none';
   num = -1;
   scrframe.src = 'about:blank';
   scrframe.style.display = 'none';
@@ -606,11 +668,6 @@ function selectNum(j) {
   }
   num = j;
   nbEls.forEach((b, k) => b.classList.toggle('on', k === j));
-  const tt = (CATS[cat].titles || [])[j];    // 電球の枠に「いま流れているもの」の名前を出す
-  if (tt) {
-    catname.textContent = tt;
-    catname.classList.toggle('long', tt.length > 16);
-  }
   scrwait.style.display = 'none';
   screenglow.style.display = 'block';
   if (typeof item === 'string' && item.startsWith('meta:')) {
@@ -632,18 +689,37 @@ function selectNum(j) {
     bkpage = 0;
     drawBook();
   } else {
+    // 動画: モニタにはサムネイルと▶だけを出し、▶でポップアップ再生する
     metaIdx = -1;
     bookbox.style.display = 'none';
-    scrframe.src = item;
-    scrframe.style.display = 'block';
-    document.getElementById('scrguard').style.display = 'block';
-    sndOn = false;
-    scrsnd.textContent = '♪ おとを出す';
-    scrsnd.style.display = 'block';
-    // 読み込み直後にミュート状態を確実にそろえる
-    scrframe.addEventListener('load', applySound, { once: true });
+    scrframe.style.display = 'none';
+    document.getElementById('scrguard').style.display = 'none';
+    scrsnd.style.display = 'none';
+    thumbimg.src = 'thumbs/' + item.t + item.id + '.jpg';
+    thumbbox.style.display = 'block';
+    thumbbox.dataset.t = item.t;
+    thumbbox.dataset.id = item.id;
   }
 }
+
+// ─── ポップアップ再生(うしろに編集室をうっすら残す) ───
+const thumbbox = document.getElementById('thumbbox');
+const thumbimg = document.getElementById('thumbimg');
+const vpop = document.getElementById('vpop');
+const vpframe = document.getElementById('vpframe');
+function popupURL(t, id) {
+  return t === 'v'
+    ? 'https://player.vimeo.com/video/' + id + '?autoplay=1&title=0&byline=0&portrait=0&dnt=1'
+    : 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0&playsinline=1';
+}
+document.getElementById('playbig').addEventListener('click', () => {
+  vpframe.src = popupURL(thumbbox.dataset.t, thumbbox.dataset.id);
+  vpop.classList.add('on');
+});
+function closeVpop() { vpop.classList.remove('on'); vpframe.src = 'about:blank'; }
+document.getElementById('vpclose').addEventListener('click', closeVpop);
+vpop.addEventListener('click', e => { if (e.target === vpop) closeVpop(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeVpop(); });
 
 // ─── 画面に出す連番画像(絵本 / メタバース で共用) ───
 let metaIdx = -1;

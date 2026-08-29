@@ -140,6 +140,13 @@
   .pp:hover, .pp:focus-visible { transform: translateY(-1px); outline: none; }
   .pp:hover::after, .pp:focus-visible::after { opacity: 1; }
   @media (prefers-reduced-motion: reduce) { .pp { transition: none; } }
+  /* Spooks GS: 紙の内側に実画像をそのまま(なめらかに)出す */
+  #spooksimg {
+    position: absolute; left: 3px; top: 4px;
+    width: calc(100% - 7px); height: calc(100% - 9px);
+    object-fit: cover; image-rendering: auto; display: block;
+    pointer-events: none;
+  }
   /* 見出しはチョークで書いてあるので紙より控えめに光らせる */
   #ppdatatitle::after { width: 116%; height: 190%; }
   /* 紙の上の文字: 白抜き+濃い縁取りで、紙の地に負けないようにする */
@@ -158,7 +165,7 @@
   @media (prefers-reduced-motion: reduce) { .pp.tap::before { animation: none; } }
   /* Story is King: 黒板の上の標語。他と違うフォントで、押せないもの */
   #ppstory {
-    position: absolute; left: 128px; top: 18px; width: 128px; height: 15px;
+    position: absolute; left: 128px; top: 25px; width: 128px; height: 14px;
     display: flex; align-items: center; justify-content: center;
     font-family: Georgia, 'Times New Roman', serif; font-style: italic;
     font-size: 9px; letter-spacing: .6px; color: #3a3446;
@@ -327,15 +334,16 @@
             aria-label="キャラクターデザインと設計"><span>キャラクター<br>デザイン＆設計</span></button>
     <button class="pp" id="ppsketch" style="left:132px;top:44px;width:24px;height:26px"
             aria-label="おばけのラフスケッチ"></button>
-    <button class="pp" id="ppspooks" style="left:56px;top:82px;width:121px;height:43px"
-            aria-label="Spooks GS（おばけたちの一覧）"></button>
-    <button class="pp" id="ppworld" style="left:190px;top:96px;width:52px;height:22px"
+    <button class="pp" id="ppspooks" style="left:56px;top:78px;width:113px;height:46px"
+            aria-label="Spooks GS（おばけたちの一覧）"><img id="spooksimg"
+            src="spooks_gs_paper.jpg" alt=""></button>
+    <button class="pp" id="ppworld" style="left:146px;top:128px;width:82px;height:26px"
             aria-label="世界観"><span>世界観</span></button>
-    <button class="pp" id="pptale" style="left:196px;top:60px;width:44px;height:22px"
+    <button class="pp" id="pptale" style="left:196px;top:60px;width:48px;height:34px"
             aria-label="物語"><span>物語</span></button>
     <button class="pp" id="ppdatatitle" style="left:248px;top:42px;width:84px;height:13px;color:#dcecdf"
             aria-label="キャラクターに関するデータ">キャラクターに関するデータ</button>
-    <button class="pp" id="ppdata" style="left:248px;top:58px;width:84px;height:76px"
+    <button class="pp" id="ppdata" style="left:248px;top:58px;width:84px;height:96px"
             aria-label="キャラクターに関するデータの資料"></button>
 
     <canvas id="motes" width="384" height="240" aria-hidden="true"></canvas>

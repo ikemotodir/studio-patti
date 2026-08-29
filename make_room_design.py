@@ -188,20 +188,20 @@ def NTXT(l, x, y, ch, c):
             if bit == '1': PXL(l, x + rx, y + ry, c)
 
 # ═══════════════ 主要座標(ここだけ見れば配置が分かる) ═══════════════
-BOARD  = (47, 12, 290, 134)     # 壁一面が黒板(床まで) x47..336 / y12..145
+BOARD  = (47, 12, 290, 150)     # 壁一面が黒板(赤線指示どおり下まで) x47..336 / y12..161
 
-RAIL_Y = 141                    # チョーク受け(黒板の下端・床のすぐ上)
-GAR_SPANS = [(50, 192, 16, 6, 8), (192, 334, 16, 6, 8)]   # 電球ガーランド(2連・16球)
+RAIL_Y = 161                    # チョーク受け(黒板の下端・床のすぐ上)
+GAR_SPANS = [(50, 192, 13, 4, 8), (192, 334, 13, 4, 8)]   # 電球ガーランド(浅く吊って標語と重ねない)
 DOORX0, DOORX1 = 345, 373       # スタジオへ戻る戸口(右の壁)
 # 黒板に貼ってある紙 (x, y, w, h)
 PAP_DESIGN = (56, 40, 66, 38)   # 黄: キャラクターデザイン＆設計
 PAP_SKETCH = (132, 44, 24, 26)  # おばけのラフ絵
-PAP_STORY  = (128, 18, 128, 15) # 白: Story is King(黒板上部センター・横細長)
-PAP_SPOOKS = (56, 82, 121, 43)  # Spooks GS(画像の比2.81に合わせた枠)
-PAP_WORLD  = (190, 96, 52, 22)  # 桃: 世界観
-PAP_TALE   = (196, 60, 44, 22)  # 赤: 物語
+PAP_STORY  = (128, 25, 128, 14) # 白: Story is King(電球の下・黒板上部センター)
+PAP_SPOOKS = (56, 78, 113, 46)  # Spooks GS(実画像をHTMLで重ねる台紙。内寸が比2.81)
+PAP_WORLD  = (146, 128, 82, 26) # 桃: 世界観(スケッチ②の位置・大きく)
+PAP_TALE   = (196, 60, 48, 34)  # 赤: 物語(スケッチ③の位置・大きく)
 DATA_TITLE = (248, 42, 84, 13)  # キャラクターに関するデータ(見出し)
-DATA_PANEL = (248, 58, 84, 76)  # 模造紙
+DATA_PANEL = (248, 58, 84, 96)  # 模造紙(黒板の延長に合わせて下へ)
 
 # ═══════════════ bg : 天井・奥壁・床 ═══════════════
 obj()
@@ -246,6 +246,11 @@ for si, sx5 in enumerate(range(56, W - 48, 24)):
 DI('bg', 0, 224, W, 6, 'q1', 'q0')
 DI('bg', 0, 230, W, 10, 'q0', 'ink')
 
+# ── 壁を床側へ延長(赤線指示: 黒板を下まで)。壁と床の境目は見切り2段でくっきり ──
+R('bg', 0, 148, W, 16, 'q2')
+R('bg', 0, 164, W, 2, 'ink')
+R('bg', 0, 166, W, 2, 'q0')
+
 # ─── 側壁(TOP・編集室と同じ台形) ───
 def side_wall(left):
     for i in range(47):
@@ -286,8 +291,9 @@ DITH('bg', bx, by, bw, 22, None, 'bd2', 'sparse')            # 天井からの�
 R('bg', bx, by, bw, 1, 'bd3')                                # 天井との見切り
 R('bg', bx, by + 1, bw, 1, 'bd2')
 # 拭き跡の弧(消しゴムの往復)
-for ax, ay, arx, ary in [(112, 60, 50, 24), (208, 100, 58, 22), (276, 40, 38, 17),
-                         (76, 118, 34, 14), (172, 34, 42, 16), (300, 120, 30, 14)]:
+for ax, ay, arx, ary in [(112, 60, 50, 24), (208, 104, 58, 22), (276, 40, 38, 17),
+                         (76, 128, 34, 14), (172, 34, 42, 16), (300, 148, 34, 12),
+                         (150, 148, 40, 12)]:
     for yy in range(max(by, ay - ary), min(by + bh, ay + ary + 1)):
         for xx in range(max(bx, ax - arx), min(bx + bw, ax + arx + 1)):
             e = ((xx - ax) / float(arx)) ** 2 + ((yy - ay) / float(ary)) ** 2
@@ -351,34 +357,31 @@ def chalk_write(x9, y9, rows, wmax):
 
 obj('チョークの矢印')
 # 設計の紙 → 世界観 (下へ回り込む)
-chalk_line([(62, 80), (50, 90), (52, 100), (60, 104)])
-chalk_head(60, 104, 0, 1)
-# 世界観 → 物語 (右上へ)
-chalk_line([(244, 100), (254, 92), (260, 88)])
-chalk_head(262, 86, 1, -1)
+chalk_line([(122, 74), (134, 86), (144, 102), (150, 118)])
+chalk_head(151, 123, 0, 1)
+# 世界観 → 物語 (上へ)
+chalk_line([(216, 124), (222, 112), (226, 103)])
+chalk_head(227, 99, 0, -1)
 
 obj('チョークの書き込み')
-# キャラのあたり(円+十字)。デザイン室らしい痕跡
-chalk_circle(206, 122, 12); chalk_circle(206, 122, 8, 4)
-for k in range(-9, 10):
-    if k % 3: PXL('bg', 206 + k, 122, 'chk2')
-for k in range(-10, 11):
-    if k % 3: PXL('bg', 206, 122 + k, 'chk2')
-chalk_circle(232, 118, 7)
-for k in range(-5, 6):
-    if k % 3: PXL('bg', 232 + k, 118, 'chk2')
-# 身長比較のあたり線(縦の目盛り)
-for yy in range(56, 110, 2):
-    PXL('bg', 244, yy, 'chk2')
-for k, yy in enumerate((58, 72, 88, 104)):
+# キャラのあたり(円+十字)。左下の空きへ
+chalk_circle(88, 143, 10); chalk_circle(88, 143, 7, 4)
+for k in range(-8, 9):
+    if k % 3: PXL('bg', 88 + k, 143, 'chk2')
+for k in range(-8, 9):
+    if k % 3: PXL('bg', 88, 143 + k, 'chk2')
+# 身長比較のあたり線(縦の目盛り)。ラフ絵と物語のあいだ
+for yy in range(64, 112, 2):
+    PXL('bg', 184, yy, 'chk2')
+for k, yy in enumerate((66, 80, 96, 110)):
     for dx9 in range(4):
-        PXL('bg', 244 + dx9, yy, 'chk' if k == 1 else 'chk2')
+        PXL('bg', 184 + dx9, yy, 'chk' if k == 1 else 'chk2')
 # 走り書き
-chalk_write(56, 124, 3, 40)
-chalk_write(140, 126, 3, 44)
-chalk_write(258, 138, 2, 60)
+chalk_write(110, 138, 3, 30)
+chalk_write(236, 140, 3, 44)
+chalk_write(150, 156, 2, 60)
 # 小さなおばけの落書き
-for k, (gx9, gy9) in enumerate(((132, 122), (322, 30))):
+for k, (gx9, gy9) in enumerate(((128, 148), (322, 30))):
     r9 = 5
     for a9 in range(180, 361, 12):
         PXL('bg', int(gx9 + math.cos(math.radians(a9)) * r9),
@@ -388,7 +391,7 @@ for k, (gx9, gy9) in enumerate(((132, 122), (322, 30))):
             PXL('bg', gx9 + dx9, gy9 + r9 - abs(dx9) % 2, 'chk2')
     PXL('bg', gx9 - 2, gy9 - 1, 'chk'); PXL('bg', gx9 + 2, gy9 - 1, 'chk')
 # きらめき(★)
-for sx9, sy9 in ((172, 118), (240, 34), (86, 26)):
+for sx9, sy9 in ((238, 116), (240, 34), (86, 26)):
     PXL('bg', sx9, sy9 - 2, 'chk'); PXL('bg', sx9, sy9 + 2, 'chk')
     PXL('bg', sx9 - 2, sy9, 'chk'); PXL('bg', sx9 + 2, sy9, 'chk')
     PXL('bg', sx9, sy9, 'chk')
@@ -519,24 +522,7 @@ tape(PAP_STORY[0] + PAP_STORY[2] - 6, PAP_STORY[1] - 1, 8)
 
 obj('Spooks GSの紙')
 paper(*PAP_SPOOKS, base='ivory2', hi='ivory', shade='gray0', curl=4)
-# 池本の「Spooks GS」(おばけ一覧)を紙の内側に焼き込む
-_sg = Image.open(os.path.join(WEB, 'spooks_gs.png')).convert('RGB')
-_sw2, _sh2 = PAP_SPOOKS[2] - 6, PAP_SPOOKS[3] - 8
-_sg = _sg.resize((_sw2, _sh2), Image.LANCZOS)
-_sp2 = _sg.load()
-for _y in range(_sh2):
-    for _x in range(_sw2):
-        _r, _g, _b = _sp2[_x, _y]
-        _v = (_r * 299 + _g * 587 + _b * 114) // 1000
-        # 線画なので、暗い所だけインクとして拾う(紙の地は残す)
-        if _v < 132:
-            PXL('furniture', PAP_SPOOKS[0] + 3 + _x, PAP_SPOOKS[1] + 5 + _y, 'ink')
-        elif _v < 186:
-            PXL('furniture', PAP_SPOOKS[0] + 3 + _x, PAP_SPOOKS[1] + 5 + _y, 'gray0')
-        elif _v < 222:
-            PXL('furniture', PAP_SPOOKS[0] + 3 + _x, PAP_SPOOKS[1] + 5 + _y, 'gray1')
-pin(PAP_SPOOKS[0] + 4, PAP_SPOOKS[1] + 2, 'b3', 'b0')
-pin(PAP_SPOOKS[0] + PAP_SPOOKS[2] - 5, PAP_SPOOKS[1] + 2, 'b3', 'b0')
+# 実画像(spooks_gs_paper.jpg)はHTML側で紙の内側に重ねる(ピクセル化しない指示)
 
 obj('世界観の紙')
 paper(*PAP_WORLD, base='m4', hi='pnkc', shade='m2', curl=4)
@@ -596,8 +582,10 @@ photo(293, 86, 27, 24, 'r0')
 EL('furniture', 300, 90, 312, 101, fill='r1', out='r2')
 sticky(249, 88, 18, 15, 'y2', 'ivory', 'y0')
 sticky(271, 90, 16, 13, 'm4', 'pnkc', 'm2')
-for k in range(6):                                             # 手書きの行
+for k in range(9):                                             # 手書きの行
     R('furniture', 249, 112 + k * 3, 36 - (k % 3) * 7, 1, 'gray1')
+for k in range(4):
+    R('furniture', 290, 138 + k * 3, 30 - (k % 2) * 6, 1, 'gray1')
 for k in range(5):                                             # 小さなグラフ
     hgt = (k * 3 + 4) % 13
     R('furniture', 292 + k * 5, 127 - hgt, 3, hgt, 'b3')

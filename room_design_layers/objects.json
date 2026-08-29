@@ -32,23 +32,23 @@
    },
    {
     "name": "世界観の紙",
-    "file": "objects/bg__016_世界観の紙.png"
+    "file": "objects/bg__015_世界観の紙.png"
    },
    {
     "name": "物語の紙",
-    "file": "objects/bg__019_物語の紙.png"
+    "file": "objects/bg__018_物語の紙.png"
    },
    {
     "name": "キャラクターに関するデータ",
-    "file": "objects/bg__022_キャラクターに関するデータ.png"
+    "file": "objects/bg__021_キャラクターに関するデータ.png"
    },
    {
     "name": "チョーク受け",
-    "file": "objects/bg__029_チョーク受け.png"
+    "file": "objects/bg__028_チョーク受け.png"
    },
    {
     "name": "戸口のあかり",
-    "file": "objects/bg__031_戸口のあかり.png"
+    "file": "objects/bg__030_戸口のあかり.png"
    },
    {
     "name": "その他",
@@ -77,31 +77,31 @@
    },
    {
     "name": "世界観の紙",
-    "file": "objects/furniture__017_世界観の紙.png"
+    "file": "objects/furniture__016_世界観の紙.png"
    },
    {
     "name": "物語の紙",
-    "file": "objects/furniture__020_物語の紙.png"
+    "file": "objects/furniture__019_物語の紙.png"
    },
    {
     "name": "キャラクターに関するデータ",
-    "file": "objects/furniture__023_キャラクターに関するデータ.png"
+    "file": "objects/furniture__022_キャラクターに関するデータ.png"
    },
    {
     "name": "スタジオへの戸口",
-    "file": "objects/furniture__025_スタジオへの戸口.png"
+    "file": "objects/furniture__024_スタジオへの戸口.png"
    },
    {
     "name": "スタジオの看板",
-    "file": "objects/furniture__026_スタジオの看板.png"
+    "file": "objects/furniture__025_スタジオの看板.png"
    },
    {
     "name": "ガーランド",
-    "file": "objects/furniture__027_ガーランド.png"
+    "file": "objects/furniture__026_ガーランド.png"
    },
    {
     "name": "チョーク受け",
-    "file": "objects/furniture__028_チョーク受け.png"
+    "file": "objects/furniture__027_チョーク受け.png"
    }
   ]
  },
@@ -121,24 +121,20 @@
     "file": "objects/props__012_Story is Kingの紙.png"
    },
    {
-    "name": "Spooks GSの紙",
-    "file": "objects/props__015_Spooks GSの紙.png"
-   },
-   {
     "name": "世界観の紙",
-    "file": "objects/props__018_世界観の紙.png"
+    "file": "objects/props__017_世界観の紙.png"
    },
    {
     "name": "物語の紙",
-    "file": "objects/props__021_物語の紙.png"
+    "file": "objects/props__020_物語の紙.png"
    },
    {
     "name": "キャラクターに関するデータ",
-    "file": "objects/props__024_キャラクターに関するデータ.png"
+    "file": "objects/props__023_キャラクターに関するデータ.png"
    },
    {
     "name": "チョーク",
-    "file": "objects/props__030_チョーク.png"
+    "file": "objects/props__029_チョーク.png"
    }
   ]
  },

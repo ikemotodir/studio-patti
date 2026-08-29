@@ -569,8 +569,18 @@ R('furniture', mx + mw - 1, my, 1, mh, 'q0')
 R('furniture', mx, my + mh - 1, mw, 1, 'q0')
 INSET('furniture', mx + 2, my + 2, mw - 4, mh - 4, 'n0', 'q1', 'ink')   # カードが入る凹み
 R('furniture', mx + 4, my + 4, mw - 8, 1, 'pnk0')         # 内側のネオン(上辺)
-for i in range(5):                                         # 差し込みカード5枚
+for i in range(5):                                         # 見出し1枚+差し込みカード4枚
     cy2 = my + 6 + i * 22
+    if i == 0:
+        # 見出し「制作事例」: 選べるカードではなく、パネルに刻まれた銘板(藍+シアン)
+        R('furniture', mx + 3, cy2, mw - 6, 19, 'n1')
+        R('furniture', mx + 3, cy2, mw - 6, 1, 'cyn1')
+        R('furniture', mx + 3, cy2 + 18, mw - 6, 1, 'n0')
+        R('furniture', mx + 3, cy2 + 19, mw - 6, 1, 'n0')
+        DITH('furniture', mx + 4, cy2 + 1, mw - 8, 17, None, 'n2', 'sparse')
+        PXL('furniture', mx + 4, cy2 + 1, 'cyn2')
+        PXL('furniture', mx + mw - 5, cy2 + 17, 'cyn0')
+        continue
     R('furniture', mx + 3, cy2, mw - 6, 19, 'q1')         # カードの面
     R('furniture', mx + 3, cy2, mw - 6, 1, 'q3')          # カードの上辺(受光)
     R('furniture', mx + 3, cy2 + 18, mw - 6, 1, 'q0')     # 下辺の影
