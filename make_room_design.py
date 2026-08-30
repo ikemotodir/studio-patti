@@ -195,12 +195,12 @@ RAIL_Y = 161                    # チョーク受け(黒板の下端・床のす
 GAR_SPANS = [(50, 192, 13, 4, 8), (192, 334, 13, 4, 8)]   # 電球ガーランド(浅く吊って標語と重ねない)
 DOORX0, DOORX1 = 345, 373       # スタジオへ戻る戸口(右の壁)
 # 黒板に貼ってある紙 (x, y, w, h)
-PAP_DESIGN = (57, 47, 73, 40)   # 黄: キャラクターデザイン＆設計(左上・少し上へ)
+PAP_DESIGN = (57, 47, 73, 40)   # 黄: キャラクターデザイン＆設計(左上)
 PAP_SKETCH = (222, 110, 24, 27) # おばけのラフ絵(物語の右)
 PAP_STORY  = (128, 25, 128, 14) # 白: Story is King(電球の下・黒板上部センター)
-PAP_SPOOKS = (54, 90, 70, 28)   # Spooks GS(上へ寄せてマユの居場所を空ける)
+PAP_SPOOKS = (66, 110, 70, 28)  # Spooks GS(指示画像の赤枠を実尺で測った位置)
 PAP_WORLD  = (162, 73, 80, 25)  # 桃: 世界観(黄の右)
-PAP_TALE   = (142, 104, 52, 32) # 赤: 物語(世界観の下・上へ)
+PAP_TALE   = (151, 118, 52, 32) # 赤: 物語(指示画像の赤枠を実尺で測った位置)
 DATA_TITLE = (265, 46, 56, 12)  # 見出し「データまとめ」(模造紙と同心)
 DATA_PANEL = (256, 62, 74, 80)  # 模造紙(上下左右に余白を取った大きさ)
 
@@ -444,6 +444,21 @@ for sx, sy, sl in [(88, 44, 9), (152, 78, 6), (240, 116, 11), (306, 66, 7), (62,
 
 # ─── チョークの線(かすれた点線)と矢印 ───
 _cn = [0]
+# 紙が貼ってあるところにチョークを引くと、紙で半分隠れて汚く見える。
+# 紙の矩形+余白の中には引かない。
+PAPER_RECTS = [PAP_DESIGN, PAP_SKETCH, PAP_STORY, PAP_SPOOKS, PAP_WORLD, PAP_TALE,
+               DATA_TITLE, DATA_PANEL]
+
+def chalk_free(x, y, pad=4):
+    for (rx9, ry9, rw9, rh9) in PAPER_RECTS:
+        if rx9 - pad <= x < rx9 + rw9 + pad and ry9 - pad <= y < ry9 + rh9 + pad:
+            return False
+    return True
+
+def CPX(x, y, c):
+    if chalk_free(x, y):
+        PXL('bg', x, y, c)
+
 def chalk_line(pts):
     for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
         steps = max(abs(x1 - x0), abs(y1 - y0))
@@ -453,14 +468,14 @@ def chalk_line(pts):
             _cn[0] += 1
             if _cn[0] % 5 == 4:
                 continue                                   # かすれ
-            PXL('bg', xx, yy, 'chk' if _cn[0] % 3 else 'chk2')
+            CPX(xx, yy, 'chk' if _cn[0] % 3 else 'chk2')
 
 def chalk_head(x, y, dx, dy):
     """矢じり(進む向きに開く)"""
     for k in range(1, 5):
-        PXL('bg', x - dx * k - dy * (k // 2), y - dy * k + dx * (k // 2), 'chk')
-        PXL('bg', x - dx * k + dy * (k // 2), y - dy * k - dx * (k // 2), 'chk')
-    PXL('bg', x, y, 'chk')
+        CPX(x - dx * k - dy * (k // 2), y - dy * k + dx * (k // 2), 'chk')
+        CPX(x - dx * k + dy * (k // 2), y - dy * k - dx * (k // 2), 'chk')
+    CPX(x, y, 'chk')
 
 def chalk_circle(cx9, cy9, r9, dense=3):
     """チョークで描いた円(あたり)。かすれさせる。"""
@@ -469,7 +484,7 @@ def chalk_circle(cx9, cy9, r9, dense=3):
         a9 = k * 2 * math.pi / n9
         if k % dense == 0:
             continue
-        PXL('bg', int(cx9 + math.cos(a9) * r9 + 0.5),
+        CPX(int(cx9 + math.cos(a9) * r9 + 0.5),
                   int(cy9 + math.sin(a9) * r9 * 0.92 + 0.5), 'chk2')
 
 def chalk_write(x9, y9, rows, wmax):
@@ -482,7 +497,7 @@ def chalk_write(x9, y9, rows, wmax):
             seg = 2 + (xx * 3 + r9) % 4
             for k in range(seg):
                 if (xx + k) < x9 + ln:
-                    PXL('bg', xx + k, yy, 'chk2')
+                    CPX(xx + k, yy, 'chk2')
             xx += seg + 2
 
 obj('チョークの矢印')
@@ -493,28 +508,28 @@ def chalk_arrow(pts, hx, hy, dx, dy):
     chalk_line([(x, y + 1) for x, y in pts])
     for k in range(6):                                   # 矢じり(三角)
         for m in range(-k, k + 1):
-            PXL('bg', hx + dx * (-k) + (m if dy else 0),
+            CPX(hx + dx * (-k) + (m if dy else 0),
                       hy + dy * (-k) + (0 if dy else m), 'chk')
-    PXL('bg', hx, hy, 'chk')
+    CPX(hx, hy, 'chk')
 
-# 黄 → 世界観 (右へ)
-chalk_arrow([(133, 62), (142, 66), (151, 71), (156, 75)], 159, 77, 1, 0)
+# 黄 → 世界観 (右へ)。矢じりは紙の4px手前で止める
+chalk_arrow([(134, 58), (142, 62), (149, 66)], 154, 69, 1, 0)
 # 世界観 → 物語 (下へ)
-chalk_arrow([(196, 100), (192, 106), (186, 111), (181, 114)], 178, 116, -1, 0)
+chalk_arrow([(186, 102), (186, 106)], 186, 112, 0, 1)
 
 obj('チョークの書き込み')
 # キャラのあたり(円+十字)。黄と物語のあいだの空きへ
 chalk_circle(148, 106, 10); chalk_circle(148, 106, 7, 4)
 for k in range(-8, 9):
-    if k % 3: PXL('bg', 148 + k, 106, 'chk2')
+    if k % 3: CPX( 148 + k, 106, 'chk2')
 for k in range(-8, 9):
-    if k % 3: PXL('bg', 148, 106 + k, 'chk2')
+    if k % 3: CPX( 148, 106 + k, 'chk2')
 # 身長比較のあたり線(縦の目盛り)。物語とラフ絵のあいだ
 for yy in range(104, 150, 2):
-    PXL('bg', 204, yy, 'chk2')
+    CPX( 204, yy, 'chk2')
 for k, yy in enumerate((106, 118, 132, 148)):
     for dx9 in range(4):
-        PXL('bg', 204 + dx9, yy, 'chk' if k == 1 else 'chk2')
+        CPX( 204 + dx9, yy, 'chk' if k == 1 else 'chk2')
 # 走り書き
 chalk_write(62, 98, 3, 44)
 chalk_write(208, 152, 2, 38)
@@ -523,17 +538,17 @@ chalk_write(136, 156, 2, 56)
 for k, (gx9, gy9) in enumerate(((134, 100), (322, 30))):
     r9 = 5
     for a9 in range(180, 361, 12):
-        PXL('bg', int(gx9 + math.cos(math.radians(a9)) * r9),
+        CPX( int(gx9 + math.cos(math.radians(a9)) * r9),
                   int(gy9 + math.sin(math.radians(a9)) * r9), 'chk2')
     for dx9 in range(-r9, r9 + 1):
         if (dx9 + r9) % 3 != 1:
-            PXL('bg', gx9 + dx9, gy9 + r9 - abs(dx9) % 2, 'chk2')
-    PXL('bg', gx9 - 2, gy9 - 1, 'chk'); PXL('bg', gx9 + 2, gy9 - 1, 'chk')
+            CPX( gx9 + dx9, gy9 + r9 - abs(dx9) % 2, 'chk2')
+    CPX( gx9 - 2, gy9 - 1, 'chk'); CPX( gx9 + 2, gy9 - 1, 'chk')
 # きらめき(★)
 for sx9, sy9 in ((200, 60), (140, 46), (86, 26)):
-    PXL('bg', sx9, sy9 - 2, 'chk'); PXL('bg', sx9, sy9 + 2, 'chk')
-    PXL('bg', sx9 - 2, sy9, 'chk'); PXL('bg', sx9 + 2, sy9, 'chk')
-    PXL('bg', sx9, sy9, 'chk')
+    CPX( sx9, sy9 - 2, 'chk'); CPX( sx9, sy9 + 2, 'chk')
+    CPX( sx9 - 2, sy9, 'chk'); CPX( sx9 + 2, sy9, 'chk')
+    CPX( sx9, sy9, 'chk')
 
 # ═══════════════ furniture : 貼り紙・模造紙・戸口・ガーランド ═══════════════
 def paper(x, y, w, h, base, hi, shade, curl=5, rule=0, grid=False, torn=0):
@@ -547,11 +562,11 @@ def paper(x, y, w, h, base, hi, shade, curl=5, rule=0, grid=False, torn=0):
         for xx in range(x + d, x + w + d):
             yy = y + h - 1 + d
             if onboard(xx, yy) and (xx + yy) % dens == 0:
-                PXL('bg', xx, yy, 'bd0')
+                CPX( xx, yy, 'bd0')
         for yy in range(y + d, y + h + d):
             xx = x + w - 1 + d
             if onboard(xx, yy) and (xx + yy) % dens == 0:
-                PXL('bg', xx, yy, 'bd0')
+                CPX( xx, yy, 'bd0')
     # ── 面: 上が明るく下が落ちる ──
     R('furniture', x, y, w, h, base)
     band = max(2, h // 4)
@@ -600,7 +615,7 @@ def paper(x, y, w, h, base, hi, shade, curl=5, rule=0, grid=False, torn=0):
         for i in range(n - 2):                                # めくれの影
             yy, xx = y + h - i, x + w - 1 - i
             if onboard(xx, yy):
-                PXL('bg', xx, yy, 'bd0')
+                CPX( xx, yy, 'bd0')
 
 def pin(x, y, c, c2):
     """画鋲。頭のドーム+ハイライト+紙に落ちる1pxの影。"""

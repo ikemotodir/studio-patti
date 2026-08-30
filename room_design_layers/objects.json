@@ -19,40 +19,16 @@
     "file": "objects/bg__004_チョークの書き込み.png"
    },
    {
-    "name": "キャラクターデザインと設計の紙",
-    "file": "objects/bg__005_キャラクターデザインと設計の紙.png"
-   },
-   {
-    "name": "おばけのラフ絵",
-    "file": "objects/bg__008_おばけのラフ絵.png"
-   },
-   {
-    "name": "Story is Kingの紙",
-    "file": "objects/bg__011_Story is Kingの紙.png"
-   },
-   {
-    "name": "Spooks GSの紙",
-    "file": "objects/bg__014_Spooks GSの紙.png"
-   },
-   {
-    "name": "世界観の紙",
-    "file": "objects/bg__016_世界観の紙.png"
-   },
-   {
-    "name": "物語の紙",
-    "file": "objects/bg__019_物語の紙.png"
-   },
-   {
     "name": "キャラクターに関するデータ",
-    "file": "objects/bg__022_キャラクターに関するデータ.png"
+    "file": "objects/bg__016_キャラクターに関するデータ.png"
    },
    {
     "name": "チョーク受け",
-    "file": "objects/bg__029_チョーク受け.png"
+    "file": "objects/bg__023_チョーク受け.png"
    },
    {
     "name": "戸口のあかり",
-    "file": "objects/bg__031_戸口のあかり.png"
+    "file": "objects/bg__025_戸口のあかり.png"
    },
    {
     "name": "その他",
@@ -65,47 +41,47 @@
   "children": [
    {
     "name": "キャラクターデザインと設計の紙",
-    "file": "objects/furniture__006_キャラクターデザインと設計の紙.png"
+    "file": "objects/furniture__005_キャラクターデザインと設計の紙.png"
    },
    {
     "name": "おばけのラフ絵",
-    "file": "objects/furniture__009_おばけのラフ絵.png"
+    "file": "objects/furniture__007_おばけのラフ絵.png"
    },
    {
     "name": "Story is Kingの紙",
-    "file": "objects/furniture__012_Story is Kingの紙.png"
+    "file": "objects/furniture__009_Story is Kingの紙.png"
    },
    {
     "name": "Spooks GSの紙",
-    "file": "objects/furniture__015_Spooks GSの紙.png"
+    "file": "objects/furniture__011_Spooks GSの紙.png"
    },
    {
     "name": "世界観の紙",
-    "file": "objects/furniture__017_世界観の紙.png"
+    "file": "objects/furniture__012_世界観の紙.png"
    },
    {
     "name": "物語の紙",
-    "file": "objects/furniture__020_物語の紙.png"
+    "file": "objects/furniture__014_物語の紙.png"
    },
    {
     "name": "キャラクターに関するデータ",
-    "file": "objects/furniture__023_キャラクターに関するデータ.png"
+    "file": "objects/furniture__017_キャラクターに関するデータ.png"
    },
    {
     "name": "スタジオへの戸口",
-    "file": "objects/furniture__025_スタジオへの戸口.png"
+    "file": "objects/furniture__019_スタジオへの戸口.png"
    },
    {
     "name": "スタジオの看板",
-    "file": "objects/furniture__026_スタジオの看板.png"
+    "file": "objects/furniture__020_スタジオの看板.png"
    },
    {
     "name": "ガーランド",
-    "file": "objects/furniture__027_ガーランド.png"
+    "file": "objects/furniture__021_ガーランド.png"
    },
    {
     "name": "チョーク受け",
-    "file": "objects/furniture__028_チョーク受け.png"
+    "file": "objects/furniture__022_チョーク受け.png"
    }
   ]
  },
@@ -114,31 +90,31 @@
   "children": [
    {
     "name": "キャラクターデザインと設計の紙",
-    "file": "objects/props__007_キャラクターデザインと設計の紙.png"
+    "file": "objects/props__006_キャラクターデザインと設計の紙.png"
    },
    {
     "name": "おばけのラフ絵",
-    "file": "objects/props__010_おばけのラフ絵.png"
+    "file": "objects/props__008_おばけのラフ絵.png"
    },
    {
     "name": "Story is Kingの紙",
-    "file": "objects/props__013_Story is Kingの紙.png"
+    "file": "objects/props__010_Story is Kingの紙.png"
    },
    {
     "name": "世界観の紙",
-    "file": "objects/props__018_世界観の紙.png"
+    "file": "objects/props__013_世界観の紙.png"
    },
    {
     "name": "物語の紙",
-    "file": "objects/props__021_物語の紙.png"
+    "file": "objects/props__015_物語の紙.png"
    },
    {
     "name": "キャラクターに関するデータ",
-    "file": "objects/props__024_キャラクターに関するデータ.png"
+    "file": "objects/props__018_キャラクターに関するデータ.png"
    },
    {
     "name": "チョーク",
-    "file": "objects/props__030_チョーク.png"
+    "file": "objects/props__024_チョーク.png"
    }
   ]
  },

@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>配置ツール — STUDIO PATTI</title>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #14101f; color: #eee8ff;
+    font-family: 'DotGothic16', 'MS Gothic', sans-serif;
+  }
+  header {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 10px 16px; background: #1d1730; border-bottom: 1px solid #3a2f57;
+  }
+  header h1 { font-size: 16px; margin: 0 10px 0 0; letter-spacing: 1px; }
+  button, select {
+    font-family: inherit; font-size: 13px; padding: 6px 12px;
+    background: #2f2650; color: #eee8ff; border: 1px solid #55467f; cursor: pointer;
+  }
+  button:hover { background: #4b3d7d; }
+  button.on { background: #ec94be; color: #1d1730; border-color: #ec94be; }
+  .hint { font-size: 12px; color: #b7aede; line-height: 1.7; }
+  main { display: flex; gap: 16px; padding: 16px; align-items: flex-start; flex-wrap: wrap; }
+  #stagewrap { position: relative; flex: 0 0 auto; }
+  #stage {
+    position: relative; image-rendering: pixelated;
+    background-repeat: no-repeat; background-size: 100% 100%;
+    border: 2px solid #55467f;
+  }
+  #dim { position: absolute; inset: 0; background: #14101f; opacity: .5; pointer-events: none; }
+  .box {
+    position: absolute; border: 2px solid #ffd166; background: rgba(255, 209, 102, .18);
+    cursor: move; touch-action: none;
+  }
+  .box.chara { border-color: #7ee0eb; background: rgba(126, 224, 235, .16); }
+  .box.sel { border-color: #ec94be; background: rgba(236, 148, 190, .30); box-shadow: 0 0 0 2px #ec94be; }
+  .box b {
+    position: absolute; left: 0; top: -17px; white-space: nowrap;
+    font-size: 11px; font-weight: normal; padding: 1px 5px;
+    background: rgba(20, 16, 31, .9); border: 1px solid #55467f;
+  }
+  .box i {
+    position: absolute; right: -6px; bottom: -6px; width: 12px; height: 12px;
+    background: #ffd166; border: 1px solid #14101f; cursor: nwse-resize;
+  }
+  .box.chara i { display: none; }
+  #side { flex: 1 1 340px; min-width: 320px; }
+  #out {
+    width: 100%; height: 340px; background: #0d0a16; color: #d6f7ff;
+    border: 1px solid #55467f; padding: 10px; font-family: ui-monospace, monospace;
+    font-size: 12px; line-height: 1.6; resize: vertical;
+  }
+  #cur { font-size: 14px; margin: 10px 0; color: #ffd166; min-height: 20px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>配置ツール</h1>
+  <button id="roomD" class="on" type="button">デザイン室</button>
+  <button id="roomE" type="button">編集室</button>
+  <button id="zoomOut" type="button">－</button>
+  <span id="zlabel">3倍</span>
+  <button id="zoomIn" type="button">＋</button>
+  <button id="reset" type="button">最初にもどす</button>
+  <button id="copy" type="button">この数字をコピー</button>
+</header>
+
+<main>
+  <div id="stagewrap">
+    <div id="stage"><div id="dim"></div></div>
+  </div>
+
+  <div id="side">
+    <p class="hint">
+      枠をマウスでつかんで動かしてください。右下の四角をつかむと大きさを変えられます。<br>
+      枠をえらんでから <b>矢印キー</b>で1ドットずつ、<b>Shift+矢印</b>で5ドットずつ動きます。<br>
+      キャラクターは大きさを <b>[ ] キー</b>で変えられます。<br>
+      置きたいところに置いたら「この数字をコピー」を押して、そのまま貼って送ってください。
+    </p>
+    <div id="cur">えらばれていません</div>
+    <textarea id="out" readonly spellcheck="false"></textarea>
+  </div>
+</main>
+
+<script>
+const Z0 = 3;
+let Z = Z0;
+
+// ── 部屋ごとの中身。x,y,w,h はドット絵の座標(384x240) ──
+const ROOMS = {
+  design: {
+    bg: 'room_design.png',
+    items: [
+      { id: 'PAP_DESIGN', name: 'キャラクターデザイン＆設計', x: 57, y: 47, w: 73, h: 40 },
+      { id: 'PAP_STORY',  name: 'Story is King',            x: 128, y: 25, w: 128, h: 14 },
+      { id: 'PAP_SPOOKS', name: 'Spooks GS',                x: 66, y: 110, w: 70, h: 28 },
+      { id: 'PAP_WORLD',  name: '世界観',                    x: 162, y: 73, w: 80, h: 25 },
+      { id: 'PAP_TALE',   name: '物語',                      x: 151, y: 118, w: 52, h: 32 },
+      { id: 'PAP_SKETCH', name: 'ラフ絵',                    x: 222, y: 110, w: 24, h: 27 },
+      { id: 'DATA_TITLE', name: 'データまとめ(見出し)',        x: 265, y: 46, w: 56, h: 12 },
+      { id: 'DATA_PANEL', name: 'データの模造紙',             x: 256, y: 62, w: 74, h: 80 },
+      { id: 'mayu',  name: 'マユちゃん', chara: true, x: 37, y: 123, w: 30, h: 72, s: 0.90 },
+      { id: 'patti', name: 'パッチ',     chara: true, x: 261, y: 138, w: 32, h: 48, s: 0.92 },
+    ],
+  },
+  edit: {
+    bg: 'room_edit.png',
+    items: [
+      { id: 'MENU', name: 'メニューの枠',   x: 40, y: 24, w: 58, h: 114 },
+      { id: 'SCR',  name: 'モニターの画面', x: 106, y: 22, w: 172, h: 93 },
+      { id: 'MARQ', name: '電飾の表示板',   x: 288, y: 18, w: 53, h: 24 },
+      { id: 'BTNP', name: '数字ボタンの枠', x: 288, y: 52, w: 53, h: 82 },
+      { id: 'mayu',  name: 'マユちゃん', chara: true, x: 22, y: 116, w: 30, h: 72, s: 0.75 },
+      { id: 'patti', name: 'パッチ',     chara: true, x: 316, y: 136, w: 32, h: 48, s: 0.75 },
+    ],
+  },
+};
+
+let room = 'design';
+let items = [];
+let sel = null;
+const stage = document.getElementById('stage');
+const out = document.getElementById('out');
+const cur = document.getElementById('cur');
+
+function clone(a) { return a.map(o => Object.assign({}, o)); }
+
+function build() {
+  const R = ROOMS[room];
+  stage.style.width = (384 * Z) + 'px';
+  stage.style.height = (240 * Z) + 'px';
+  stage.style.backgroundImage = 'url(' + R.bg + '?v=' + Date.now() + ')';
+  [...stage.querySelectorAll('.box')].forEach(e => e.remove());
+  items.forEach(it => {
+    const d = document.createElement('div');
+    d.className = 'box' + (it.chara ? ' chara' : '');
+    d.dataset.id = it.id;
+    d.innerHTML = '<b>' + it.name + '</b><i></i>';
+    stage.appendChild(d);
+    it.el = d;
+    d.addEventListener('pointerdown', e => startDrag(e, it, e.target.tagName === 'I'));
+  });
+  render();
+}
+
+function render() {
+  items.forEach(it => {
+    const w = it.chara ? it.w * it.s : it.w;
+    const h = it.chara ? it.h * it.s : it.h;
+    const x = it.chara ? it.x + (it.w - w) / 2 : it.x;
+    const y = it.chara ? it.y + (it.h - h) : it.y;
+    it.el.style.left = (x * Z) + 'px';
+    it.el.style.top = (y * Z) + 'px';
+    it.el.style.width = (w * Z) + 'px';
+    it.el.style.height = (h * Z) + 'px';
+    it.el.classList.toggle('sel', it === sel);
+  });
+  cur.textContent = sel
+    ? (sel.name + ' :  x=' + sel.x + '  y=' + sel.y
+       + (sel.chara ? '  大きさ=' + sel.s.toFixed(2) : '  よこ=' + sel.w + '  たて=' + sel.h))
+    : 'えらばれていません';
+  dump();
+}
+
+function dump() {
+  const L = ['【' + (room === 'design' ? 'デザイン室' : '編集室') + ' の配置】'];
+  items.forEach(it => {
+    if (it.chara) {
+      L.push(it.name + ' : x=' + it.x + ' y=' + it.y + ' 大きさ=' + it.s.toFixed(2));
+    } else {
+      L.push(it.id + ' = (' + it.x + ', ' + it.y + ', ' + it.w + ', ' + it.h + ')   # ' + it.name);
+    }
+  });
+  out.value = L.join('\n');
+}
+
+let drag = null;
+function startDrag(e, it, resize) {
+  e.preventDefault();
+  sel = it;
+  drag = { it: it, resize: resize, px: e.clientX, py: e.clientY, ox: it.x, oy: it.y, ow: it.w, oh: it.h };
+  it.el.setPointerCapture(e.pointerId);
+  render();
+}
+stage.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const dx = Math.round((e.clientX - drag.px) / Z);
+  const dy = Math.round((e.clientY - drag.py) / Z);
+  const it = drag.it;
+  if (drag.resize) {
+    it.w = Math.max(6, drag.ow + dx);
+    it.h = Math.max(6, drag.oh + dy);
+  } else {
+    it.x = drag.ox + dx;
+    it.y = drag.oy + dy;
+  }
+  render();
+});
+stage.addEventListener('pointerup', () => { drag = null; });
+stage.addEventListener('pointercancel', () => { drag = null; });
+
+document.addEventListener('keydown', e => {
+  if (!sel) return;
+  const step = e.shiftKey ? 5 : 1;
+  if (e.key === 'ArrowLeft')  { sel.x -= step; }
+  else if (e.key === 'ArrowRight') { sel.x += step; }
+  else if (e.key === 'ArrowUp')    { sel.y -= step; }
+  else if (e.key === 'ArrowDown')  { sel.y += step; }
+  else if (e.key === '[' && sel.chara) { sel.s = Math.max(0.4, +(sel.s - 0.02).toFixed(2)); }
+  else if (e.key === ']' && sel.chara) { sel.s = Math.min(1.6, +(sel.s + 0.02).toFixed(2)); }
+  else return;
+  e.preventDefault();
+  render();
+});
+
+function load(name) {
+  room = name;
+  items = clone(ROOMS[name].items);
+  sel = null;
+  build();
+  document.getElementById('roomD').classList.toggle('on', name === 'design');
+  document.getElementById('roomE').classList.toggle('on', name === 'edit');
+}
+document.getElementById('roomD').addEventListener('click', () => load('design'));
+document.getElementById('roomE').addEventListener('click', () => load('edit'));
+document.getElementById('reset').addEventListener('click', () => load(room));
+document.getElementById('zoomIn').addEventListener('click', () => {
+  Z = Math.min(6, Z + 1); document.getElementById('zlabel').textContent = Z + '倍'; build();
+});
+document.getElementById('zoomOut').addEventListener('click', () => {
+  Z = Math.max(2, Z - 1); document.getElementById('zlabel').textContent = Z + '倍'; build();
+});
+document.getElementById('copy').addEventListener('click', () => {
+  out.select();
+  navigator.clipboard.writeText(out.value).then(
+    () => { const b = document.getElementById('copy'); b.textContent = 'コピーしました！';
+            setTimeout(() => b.textContent = 'この数字をコピー', 1600); },
+    () => document.execCommand('copy'));
+});
+
+load('design');
+</script>
+</body>
+</html>
