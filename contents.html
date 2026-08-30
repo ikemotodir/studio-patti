@@ -148,19 +148,14 @@
   }
   #scrwait { position: absolute; inset: 0; }
   #wstars { position: absolute; left: 0; top: 0; }
-  #wplay {
-    position: absolute; left: 0; top: 18px; width: 100%;
-    font-family: 'DotGothic16', 'MS Gothic', monospace;
-    color: #7ecfe0; font-size: 17px; text-align: center;
-    text-shadow: 0 0 4px rgba(126, 224, 235, .9);
-    animation: wbreath 2.4s ease-in-out infinite;
-  }
   #wtext {
-    position: absolute; left: 0; top: 48px; width: 100%;
+    position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
     font-family: 'DotGothic16', 'MS Gothic', monospace;
     color: #6d7fc0; font-size: 7px; line-height: 1.8; text-align: center;
   }
-  @keyframes wbreath { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+  @keyframes wbreath_unused { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
   #scrsnd {
     position: absolute; right: 2px; bottom: 2px; display: none;
     border: 1px solid rgba(126, 224, 235, .55); background: rgba(8, 6, 40, .78);
@@ -168,28 +163,9 @@
     font-family: 'DotGothic16', 'MS Gothic', monospace; font-size: 6px; line-height: 1.2;
   }
   #scrsnd:hover, #scrsnd:focus-visible { color: #ffffff; background: rgba(126, 224, 235, .25); outline: none; }
-  @media (prefers-reduced-motion: reduce) { #wplay { animation: none; } }
   #scrframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: none; background: #000; }
   #scrguard { position: absolute; inset: 0; display: none; }   /* 動画の上の透明ガード(UIを出さない) */
-  #bookbox { position: absolute; inset: 0; display: none; background: #0a0820; }
-  #bkimg {
-    position: absolute; left: 14px; top: 0; width: 114px; height: 74px;
-    object-fit: contain; image-rendering: auto;
-  }
-  .bknav {
-    position: absolute; top: 0; width: 14px; height: 74px;
-    border: 0; background: transparent; cursor: pointer; padding: 0;
-    font-family: 'DotGothic16', 'MS Gothic', monospace;
-    color: #f2eefc; font-size: 9px; line-height: 74px; text-align: center;
-  }
-  .bknav:hover, .bknav:focus-visible { color: #fcc800; background: rgba(252, 200, 0, .10); outline: none; }
-  #bkprev { left: 0; }
-  #bknext { right: 0; }
-  #bknum {
-    position: absolute; left: 0; bottom: 0; width: 100%; height: 7px;
-    font-family: 'DotGothic16', 'MS Gothic', monospace;
-    color: #8a86b0; font-size: 5px; line-height: 7px; text-align: center;
-  }
+
 
   /* ─── 左のメニューパネル(5項目・▶で選ぶ) ─── */
   .mi {
@@ -222,7 +198,7 @@
 
   /* ─── 右のカテゴリ表示と数字ボタン ─── */
   #catname {
-    position: absolute; left: 292px; top: 24px; width: 45px; height: 12px;
+    position: absolute; left: 292px; top: 24.15px; width: 45px; height: 12px;
     display: flex; align-items: center; justify-content: center;
     font-family: 'DotGothic16', 'MS Gothic', monospace;
     color: #fff6e0; font-size: 6px; line-height: 1; text-align: center; white-space: nowrap;
@@ -274,9 +250,9 @@
     border-radius: 50%; background: rgba(64, 24, 108, .5);
   }
   #mayu {
-    position: absolute; left: 34px; top: 112px;
+    position: absolute; left: 22px; top: 116px;
     width: 30px; height: 72px;
-    background-image: url(mayu_back_shaded.png);
+    background-image: url(mayu_frontright_shaded.png);
     background-repeat: no-repeat;
     background-size: 360px 72px;
     transform: scale(.75); transform-origin: 50% 100%;
@@ -285,7 +261,7 @@
   @keyframes mayuchar { from { background-position: 0 0; } to { background-position: -360px 0; } }
   @media (prefers-reduced-motion: reduce) { #patti, #mayu { animation: none; } }
   #mshadow {
-    position: absolute; left: 39px; top: 180px;
+    position: absolute; left: 27px; top: 184px;
     width: 20px; height: 5px;
     border-radius: 50%; background: rgba(64, 24, 108, .5);
   }
@@ -386,6 +362,7 @@
     width: 100%; height: 100%; object-fit: cover;
     image-rendering: auto; display: block;
   }
+  #thumbbox.fit #thumbimg { object-fit: contain; background: #05030f; }
   #playbig {
     position: absolute; left: 50%; top: 50%; width: 34px; height: 34px;
     transform: translate(-50%, -50%);
@@ -401,6 +378,43 @@
   #playbig:hover, #playbig:focus-visible {
     background: rgba(236, 148, 190, .55); outline: none;
   }
+
+  /* ─── 画像のポップアップ(絵本・メタバース) ─── */
+  #ipop {
+    position: fixed; inset: 0; z-index: 130; display: none;
+    align-items: center; justify-content: center;
+    background: rgba(6, 4, 20, .88); padding: 40px 16px;
+  }
+  #ipop.on { display: flex; }
+  #ipwrap {
+    position: relative; width: min(94vw, 1400px); height: min(84vh, 900px);
+    display: flex; align-items: center; justify-content: center;
+  }
+  #ipimg {
+    max-width: 100%; max-height: 100%;
+    object-fit: contain; image-rendering: auto; display: block;
+    border: 2px solid #e8e4f4; background: #05030f;
+  }
+  .ipnav {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 44px; height: 64px; border: 1px solid rgba(232, 228, 244, .5);
+    background: rgba(8, 6, 40, .72); color: #f2eefc; cursor: pointer;
+    font-family: 'DotGothic16', 'MS Gothic', monospace; font-size: 20px; padding: 0;
+  }
+  .ipnav:hover, .ipnav:focus-visible { background: rgba(236, 148, 190, .55); outline: none; }
+  #ipprev { left: -6px; }
+  #ipnext { right: -6px; }
+  #ipnum {
+    position: absolute; left: 0; right: 0; bottom: -28px; text-align: center;
+    font-family: 'DotGothic16', 'MS Gothic', monospace; color: #cfc9e6; font-size: 13px;
+  }
+  #ipclose {
+    position: absolute; right: 0; top: -32px;
+    border: 1px solid #e8e4f4; background: rgba(8, 6, 40, .9);
+    color: #f2eefc; font-family: 'DotGothic16', 'MS Gothic', monospace;
+    font-size: 13px; padding: 5px 12px; cursor: pointer;
+  }
+  #ipclose:hover { background: rgba(236, 148, 190, .5); }
 
   /* ─── ポップアップ再生(背景に編集室がうっすら残る) ─── */
   #vpop {
@@ -447,16 +461,9 @@
     <div id="screenbox">
       <div id="scrwait">
         <canvas id="wstars" width="172" height="93" aria-hidden="true"></canvas>
-        <div id="wplay" aria-hidden="true">▶</div>
-        <div id="wtext">左のパネルを ▶ でえらんで<br>右のすうじをおしてね</div>
+        <div id="wtext">左のパネルをえらんで<br>右のすうじをおしてね</div>
       </div>
       <iframe id="scrframe" title="作品の再生画面" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
-      <div id="bookbox">
-        <img id="bkimg" src="" alt="絵本のページ">
-        <button id="bkprev" class="bknav" type="button" aria-label="前のページに戻る">◀</button>
-        <button id="bknext" class="bknav" type="button" aria-label="次のページに進む">▶</button>
-        <div id="bknum"></div>
-      </div>
       <div id="thumbbox">
         <img id="thumbimg" src="" alt="作品のサムネイル">
         <button id="playbig" type="button" aria-label="この作品をさいせいする"></button>
@@ -496,6 +503,15 @@
 </div>
 
 <div id="toast"></div>
+<div id="ipop" role="dialog" aria-label="作品を見る">
+  <div id="ipwrap">
+    <img id="ipimg" src="" alt="作品の画像">
+    <button id="ipprev" class="ipnav" type="button" aria-label="前へ">◀</button>
+    <button id="ipnext" class="ipnav" type="button" aria-label="次へ">▶</button>
+    <div id="ipnum"></div>
+    <button id="ipclose" type="button" aria-label="とじる">× とじる</button>
+  </div>
+</div>
 <div id="vpop" role="dialog" aria-label="作品のさいせい">
   <div id="vpwrap">
     <iframe id="vpframe" title="作品のさいせい画面" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
@@ -562,17 +578,18 @@ const CATS = [
   { name: '実写映像', disp: '実写映像',
     items: [{t:'y',id:'a6ickLwrHRE'}, {t:'y',id:'RBAMbSCEbSQ'}, {t:'y',id:'XKyWWychUZA'}, {t:'y',id:'bomW6K3pvsY'}] },
 ];
-let META = null;
+let META = null, BOOK = null;
 fetch('metaverse.json', NOCACHE).then(r => r.json()).then(j => { META = j; }).catch(() => {});
+fetch('book.json', NOCACHE).then(r => r.json()).then(j => { BOOK = j; }).catch(() => {});
 
-const MENU_TOP = 28, MENU_H = 22;   // カード(y30+22i,高19)の中心とボタンの中心を合わせる
+const MENU_TOP = 29.42, MENU_H = 22;   // 実測(check_center.py)で字面の中心を刷り面に合わせた値   // カード(y30+22i,高19)の中心とボタンの中心を合わせる
 const BTN_POS = [[292, 69], [316, 69], [292, 96], [316, 96]];   // 丸ボタン(21x21)の左上
 let cat = 0, num = -1, bkpage = 0;
 
 // メニュー: 見出し「制作事例」(選べない銘板) + 項目4つ
 const hdr = document.createElement('div');
 hdr.id = 'mihdr';
-hdr.style.top = MENU_TOP + 'px';
+hdr.style.top = '28.8px';   // 見出しは7px字なのでズレ量が違う
 hdr.textContent = HEAD_NAME;
 stage.appendChild(hdr);
 const miEls = [];
@@ -635,7 +652,6 @@ function stopScreen() {
   scrframe.src = 'about:blank';
   scrframe.style.display = 'none';
   document.getElementById('scrguard').style.display = 'none';
-  bookbox.style.display = 'none';
   scrwait.style.display = 'block';
   screenglow.style.display = 'none';
   scrsnd.style.display = 'none';
@@ -660,46 +676,34 @@ function selectCat(i) {
 
 function selectNum(j) {
   const item = CATS[cat].items[j];
-  if (!item) {
-    setTalk('この番号はいま準備中だよ！');
-    clearTimeout(window._tz);
-    window._tz = setTimeout(() => setTalk(TALK_DEFAULT), 2600);
-    return;
-  }
+  if (item === undefined) { tease(CATS[cat].name); return; }
   num = j;
   nbEls.forEach((b, k) => b.classList.toggle('on', k === j));
-  scrwait.style.display = 'none';
-  screenglow.style.display = 'block';
+
+  // どの種類でも、モニターにはサムネイルと▶を出す。中身はポップアップで見せる
+  scrframe.style.display = 'none';
+  document.getElementById('scrguard').style.display = 'none';
+  scrsnd.style.display = 'none';
+  document.getElementById('scrwait').style.display = 'none';
+
   if (typeof item === 'string' && item.startsWith('meta:')) {
-    scrframe.src = 'about:blank';
-    scrframe.style.display = 'none';
-    document.getElementById('scrguard').style.display = 'none';
-    scrsnd.style.display = 'none';
-    bookbox.style.display = 'block';
-    metaIdx = parseInt(item.slice(5), 10);
-    bkpage = 0;
-    drawBook();
+    const gi = parseInt(item.slice(5), 10);
+    if (!META || !META[gi]) { tease(CATS[cat].name); return; }
+    showThumb('images', META[gi].files, META[gi].name);
   } else if (item === 'book') {
-    metaIdx = -1;
-    scrframe.src = 'about:blank';
-    scrframe.style.display = 'none';
-    document.getElementById('scrguard').style.display = 'none';
-    scrsnd.style.display = 'none';
-    bookbox.style.display = 'block';
-    bkpage = 0;
-    drawBook();
+    if (!BOOK) { tease(CATS[cat].name); return; }
+    showThumb('images', BOOK.pages.map(pg => pg.img), BOOK.title || '絵本');
   } else {
-    // 動画: モニタにはサムネイルと▶だけを出し、▶でポップアップ再生する
-    metaIdx = -1;
-    bookbox.style.display = 'none';
-    scrframe.style.display = 'none';
-    document.getElementById('scrguard').style.display = 'none';
-    scrsnd.style.display = 'none';
-    thumbimg.src = 'thumbs/' + item.t + item.id + '.jpg';
-    thumbbox.style.display = 'block';
-    thumbbox.dataset.t = item.t;
-    thumbbox.dataset.id = item.id;
+    showThumb('video', ['thumbs/' + item.t + item.id + '.jpg'], '', item);
   }
+}
+
+let SHOW = { kind: '', list: [], idx: 0, video: null };
+function showThumb(kind, list, name, video) {
+  SHOW = { kind: kind, list: list, idx: 0, video: video || null };
+  thumbimg.src = list[0];
+  thumbbox.classList.toggle('fit', kind === 'images');
+  thumbbox.style.display = 'block';
 }
 
 // ─── ポップアップ再生(うしろに編集室をうっすら残す) ───
@@ -713,37 +717,42 @@ function popupURL(t, id) {
     : 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0&playsinline=1';
 }
 document.getElementById('playbig').addEventListener('click', () => {
-  vpframe.src = popupURL(thumbbox.dataset.t, thumbbox.dataset.id);
-  vpop.classList.add('on');
+  if (SHOW.kind === 'video') {
+    vpframe.src = popupURL(SHOW.video.t, SHOW.video.id);
+    vpop.classList.add('on');
+  } else if (SHOW.kind === 'images') {
+    SHOW.idx = 0;
+    drawImagePop();
+    ipop.classList.add('on');
+  }
+});
+
+// ─── 画像のポップアップ(絵本・メタバース) ───
+const ipop = document.getElementById('ipop');
+const ipimg = document.getElementById('ipimg');
+function drawImagePop() {
+  const n = SHOW.list.length;
+  SHOW.idx = (SHOW.idx + n) % n;
+  ipimg.src = SHOW.list[SHOW.idx];
+  document.getElementById('ipnum').textContent = (SHOW.idx + 1) + ' / ' + n;
+  document.getElementById('ipprev').style.display = n > 1 ? 'block' : 'none';
+  document.getElementById('ipnext').style.display = n > 1 ? 'block' : 'none';
+}
+document.getElementById('ipprev').addEventListener('click', () => { SHOW.idx -= 1; drawImagePop(); });
+document.getElementById('ipnext').addEventListener('click', () => { SHOW.idx += 1; drawImagePop(); });
+function closeIpop() { ipop.classList.remove('on'); }
+document.getElementById('ipclose').addEventListener('click', closeIpop);
+ipop.addEventListener('click', e => { if (e.target === ipop) closeIpop(); });
+document.addEventListener('keydown', e => {
+  if (!ipop.classList.contains('on')) return;
+  if (e.key === 'Escape') closeIpop();
+  if (e.key === 'ArrowLeft') { SHOW.idx -= 1; drawImagePop(); }
+  if (e.key === 'ArrowRight') { SHOW.idx += 1; drawImagePop(); }
 });
 function closeVpop() { vpop.classList.remove('on'); vpframe.src = 'about:blank'; }
 document.getElementById('vpclose').addEventListener('click', closeVpop);
 vpop.addEventListener('click', e => { if (e.target === vpop) closeVpop(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeVpop(); });
-
-// ─── 画面に出す連番画像(絵本 / メタバース で共用) ───
-let metaIdx = -1;
-function pages() {
-  if (metaIdx >= 0) return META ? META[metaIdx].files : null;
-  return BOOK ? BOOK.pages.map(pg => pg.img) : null;
-}
-function drawBook() {
-  const ps = pages();
-  if (!ps) { document.getElementById('bknum').textContent = '準備中…'; return; }
-  bkpage = (bkpage + ps.length) % ps.length;
-  document.getElementById('bkimg').src = ps[bkpage];
-  document.getElementById('bknum').textContent = (bkpage + 1) + ' / ' + ps.length;
-}
-document.getElementById('bkprev').addEventListener('click', () => {
-  if (!pages()) return;
-  bkpage -= 1;
-  drawBook();
-});
-document.getElementById('bknext').addEventListener('click', () => {
-  if (!pages()) return;
-  bkpage += 1;
-  drawBook();
-});
 
 // 初期状態: スケッチと同じく「コンテンツクリエイティブ」に▶
 selectCat(0);

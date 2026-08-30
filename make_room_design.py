@@ -195,12 +195,12 @@ RAIL_Y = 161                    # チョーク受け(黒板の下端・床のす
 GAR_SPANS = [(50, 192, 13, 4, 8), (192, 334, 13, 4, 8)]   # 電球ガーランド(浅く吊って標語と重ねない)
 DOORX0, DOORX1 = 345, 373       # スタジオへ戻る戸口(右の壁)
 # 黒板に貼ってある紙 (x, y, w, h)
-PAP_DESIGN = (57, 53, 73, 40)   # 黄: キャラクターデザイン＆設計(左上)
+PAP_DESIGN = (57, 47, 73, 40)   # 黄: キャラクターデザイン＆設計(左上・少し上へ)
 PAP_SKETCH = (222, 110, 24, 27) # おばけのラフ絵(物語の右)
 PAP_STORY  = (128, 25, 128, 14) # 白: Story is King(電球の下・黒板上部センター)
-PAP_SPOOKS = (54, 123, 70, 28)  # Spooks GS(左下・余白2pxの細枠。内寸66x24)
+PAP_SPOOKS = (54, 90, 70, 28)   # Spooks GS(上へ寄せてマユの居場所を空ける)
 PAP_WORLD  = (162, 73, 80, 25)  # 桃: 世界観(黄の右)
-PAP_TALE   = (142, 124, 52, 32) # 赤: 物語(世界観の下)
+PAP_TALE   = (142, 104, 52, 32) # 赤: 物語(世界観の下・上へ)
 DATA_TITLE = (265, 46, 56, 12)  # 見出し「データまとめ」(模造紙と同心)
 DATA_PANEL = (256, 62, 74, 80)  # 模造紙(上下左右に余白を取った大きさ)
 
@@ -342,7 +342,10 @@ side_wall(False)
 obj('教室の窓')
 WI0, WI1 = 0, 43                       # 窓が入る壁の範囲(i が大きいほど奥・画面の端まで続く)
 MULL_I = (13, 22, 31, 38)              # 縦の桟(奥ほど詰まる)
-TREE = (2, 4, 7, 9, 8, 5, 3, 1, 3, 6, 10, 12, 11, 8, 5, 2, 0, 2, 5, 7, 6, 4, 2, 1)  # 木立の稜線
+# 窓の外の家並み: 列ごとの屋根の高さ。切妻と陸屋根が混じる低い町
+TREE = (3, 6, 9, 9, 9, 9, 5, 2, 2, 7, 11, 13, 13, 13, 9, 4, 2, 5, 8, 8, 8, 8, 4, 2)
+# 明かりの漏れる窓(列オフセット, 稜線からの深さ)
+HOMEWIN = ((3, 4), (4, 7), (10, 4), (12, 8), (13, 4), (18, 5), (19, 8), (20, 4))
 
 def _wall_band(i):
     t = i / 46.0
@@ -352,7 +355,7 @@ def _wall_band(i):
 
 for i in range(WI0, WI1 + 1):
     ytop, rail = _wall_band(i)
-    wy0, wy1 = ytop + 5, rail - 6                            # 窓の上下
+    wy0, wy1 = ytop + 14, rail - 2                           # 窓の上下(少し下へ)
     hh = max(1, wy1 - wy0)
     mid = wy0 + int(hh * 0.46)                               # 上下の障子の分かれ目
     horizon = wy0 + int(hh * 0.76)                           # 遠くの稜線
@@ -366,8 +369,13 @@ for i in range(WI0, WI1 + 1):
         else:
             # 空は夕暮れ。上が藍、地平に近づくほど暖色になる
             g = (yy - wy0) / float(hh)
-            if yy >= tree_top:                               # 木立と地面のシルエット
-                c = 'ink' if yy > horizon + 3 else ('bd1' if (i * 3 + yy) % 7 == 0 else 'bd0')
+            if yy >= tree_top:                               # 家並みのシルエット
+                c = 'ink' if yy > horizon + 4 else 'bd0'
+                if yy == tree_top:
+                    c = 'bd1'                                # 屋根の稜線がわずかに残る
+                for hw, hd in HOMEWIN:                       # 明かりの漏れる窓(2px角)
+                    if i % len(TREE) in (hw, hw + 1) and tree_top + hd <= yy <= tree_top + hd + 1:
+                        c = 'y2' if yy == tree_top + hd else 'o1'
             elif g < 0.20:
                 c = 'cool1'
             elif g < 0.38:
@@ -479,11 +487,20 @@ def chalk_write(x9, y9, rows, wmax):
 
 obj('チョークの矢印')
 # 設計の紙 → 世界観 (下へ回り込む)
-chalk_line([(133, 68), (142, 72), (151, 77), (158, 81)])
-chalk_head(160, 82, 1, 1)
+def chalk_arrow(pts, hx, hy, dx, dy):
+    """矢印。線は2本重ねて太くし、矢じりは三角形で描く(細い線だと矢印に見えない)。"""
+    chalk_line(pts)
+    chalk_line([(x, y + 1) for x, y in pts])
+    for k in range(6):                                   # 矢じり(三角)
+        for m in range(-k, k + 1):
+            PXL('bg', hx + dx * (-k) + (m if dy else 0),
+                      hy + dy * (-k) + (0 if dy else m), 'chk')
+    PXL('bg', hx, hy, 'chk')
+
+# 黄 → 世界観 (右へ)
+chalk_arrow([(133, 62), (142, 66), (151, 71), (156, 75)], 159, 77, 1, 0)
 # 世界観 → 物語 (下へ)
-chalk_line([(196, 100), (193, 109), (186, 116), (179, 120)])
-chalk_head(176, 122, -1, 1)
+chalk_arrow([(196, 100), (192, 106), (186, 111), (181, 114)], 178, 116, -1, 0)
 
 obj('チョークの書き込み')
 # キャラのあたり(円+十字)。黄と物語のあいだの空きへ
@@ -1130,6 +1147,21 @@ def _textbed(x, y, w, h):
     R('furniture', x, y + h - 1, w, 1, 'n2')     # 底で拾う反射
     PXL('furniture', x, y, 'ink')
     PXL('furniture', x + w - 1, y + h - 1, 'n2')
+
+# ── 逆光のシルエット: チェアは大スクリーンを背にしているので面は暗いまま ──
+_ch_oid = OBJ_ID.get(('furniture', 'ゲーミングチェア'))
+if _ch_oid is not None:
+    _cown = OWNER['furniture'].load()
+    _cfx = L['furniture'].load()
+    for _y in range(1, H - 1):
+        for _x in range(1, W - 1):
+            if _cown[_x, _y] != _ch_oid:
+                continue
+            _rim = any(_cown[_x + dx, _y + dy] != _ch_oid
+                       for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)))
+            r0, g0, b0, a0 = _cfx[_x, _y]
+            k = 0.90 if _rim else 0.40           # ふちは残し、面は落とす
+            _cfx[_x, _y] = (int(r0 * k), int(g0 * k), int(b0 * k), a0)
 
 if 'MENU' in globals():                          # この面があるのは編集室だけ
     _mx, _my, _mw, _mh = MENU

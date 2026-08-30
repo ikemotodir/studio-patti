@@ -81,6 +81,8 @@ def cut(ms_png, ms_json, tag, out_png):
     print(out_png, out.size, "コマ", n, "コマ幅", FW)
 
 cut("mayu_ms.png", "mayu_ms.json", "Mayu_back", "mayu_back_shaded.png")
+# 編集室のマユ: 正面やや右向き(池本さん指定)
+cut("mayu_ms.png", "mayu_ms.json", "Mayu_frontright", "mayu_frontright_shaded.png")
 cut("patti_ms.png", "patti_ms.json", "shomen", "patti_front_shaded.png")
 # デザイン室: 二人は黒板をはさんで向かい合う(スケッチ準拠)
 cut("mayu_ms.png", "mayu_ms.json", "Mayu_right", "mayu_right_shaded.png")

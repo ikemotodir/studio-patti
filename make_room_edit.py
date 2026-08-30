@@ -1003,6 +1003,21 @@ def _textbed(x, y, w, h):
     PXL('furniture', x, y, 'ink')
     PXL('furniture', x + w - 1, y + h - 1, 'n2')
 
+# ── 逆光のシルエット: チェアは大スクリーンを背にしているので面は暗いまま ──
+_ch_oid = OBJ_ID.get(('furniture', 'ゲーミングチェア'))
+if _ch_oid is not None:
+    _cown = OWNER['furniture'].load()
+    _cfx = L['furniture'].load()
+    for _y in range(1, H - 1):
+        for _x in range(1, W - 1):
+            if _cown[_x, _y] != _ch_oid:
+                continue
+            _rim = any(_cown[_x + dx, _y + dy] != _ch_oid
+                       for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)))
+            r0, g0, b0, a0 = _cfx[_x, _y]
+            k = 0.90 if _rim else 0.40           # ふちは残し、面は落とす
+            _cfx[_x, _y] = (int(r0 * k), int(g0 * k), int(b0 * k), a0)
+
 if 'MENU' in globals():                          # この面があるのは編集室だけ
     _mx, _my, _mw, _mh = MENU
     for _i in range(5):                          # 見出し1枚+カード4枚
