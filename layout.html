@@ -26,6 +26,13 @@
   button:hover { background: #4b3d7d; }
   button.on { background: #ec94be; color: #1d1730; border-color: #ec94be; }
   .hint { font-size: 12px; color: #b7aede; line-height: 1.7; }
+  #notice {
+    margin: 12px 16px 0; padding: 10px 14px; line-height: 1.8;
+    background: #3a2340; border: 1px solid #ec94be; color: #ffe6f2; font-size: 13px;
+  }
+  #notice b { color: #ffd166; }
+  #notice span { color: #c9b6d8; font-size: 12px; }
+  #saved { font-size: 12px; color: #8fd6a0; margin-left: 8px; }
   main { display: flex; gap: 16px; padding: 16px; align-items: flex-start; flex-wrap: wrap; }
   #stagewrap { position: relative; flex: 0 0 auto; }
   #stage {
@@ -95,7 +102,7 @@
 <body>
 
 <header>
-  <h1>配置ツール <span style="font-size:11px;color:#9a93c4">v2</span></h1>
+  <h1>配置ツール <span style="font-size:11px;color:#9a93c4">v3</span></h1>
   <button id="roomD" class="on" type="button">デザイン室</button>
   <button id="roomE" type="button">編集室</button>
   <button id="zoomOut" type="button">－</button>
@@ -103,8 +110,14 @@
   <button id="zoomIn" type="button">＋</button>
   <button id="reset" type="button">最初にもどす</button>
   <button id="copy" type="button">この数字をコピー</button>
+  <span id="saved"></span>
 </header>
 
+<div id="notice">
+  ここで動かしても<b>サイトはまだ変わりません</b>。動かしたら
+  <b>「この数字をコピー」</b>を押して、その数字を送ってください。<br>
+  <span>置いた場所はこのブラウザに自動で保存されます。閉じても、次に開いたとき続きから直せます。</span>
+</div>
 <main>
   <div id="stagewrap">
     <div id="stage"><div id="dim"></div></div>
@@ -189,6 +202,34 @@ const cur = document.getElementById('cur');
 
 function clone(a) { return a.map(o => Object.assign({}, o)); }
 
+const KEY = 'patti-layout-';
+function save() {
+  try {
+    const d = items.map(it => ({ id: it.id, x: it.x, y: it.y, w: it.w, h: it.h, s: it.s }));
+    localStorage.setItem(KEY + room, JSON.stringify(d));
+    const e = document.getElementById('saved');
+    e.textContent = '保存しました';
+    clearTimeout(save.t);
+    save.t = setTimeout(() => e.textContent = '', 1400);
+  } catch (err) {}
+}
+function restore(list) {
+  try {
+    const raw = localStorage.getItem(KEY + room);
+    if (!raw) return list;
+    const d = JSON.parse(raw);
+    list.forEach(it => {
+      const o = d.find(q => q.id === it.id);
+      if (!o) return;
+      it.x = o.x; it.y = o.y;
+      if (o.w != null) it.w = o.w;
+      if (o.h != null) it.h = o.h;
+      if (o.s != null) it.s = o.s;
+    });
+  } catch (err) {}
+  return list;
+}
+
 function build() {
   const R = ROOMS[room];
   stage.style.width = (384 * Z) + 'px';
@@ -243,6 +284,7 @@ function render() {
   });
   document.getElementById('warn').innerHTML = hidden.length
     ? '⚠ ' + hidden.join('<br>⚠ ') : '';
+  save();
   cur.textContent = sel
     ? (sel.name + ' :  x=' + sel.x + '  y=' + sel.y
        + (sel.chara ? '  大きさ=' + sel.s.toFixed(2) : '  よこ=' + sel.w + '  たて=' + sel.h))
@@ -303,7 +345,7 @@ document.addEventListener('keydown', e => {
 
 function load(name) {
   room = name;
-  items = clone(ROOMS[name].items);
+  items = restore(clone(ROOMS[name].items));
   sel = null;
   build();
   document.getElementById('roomD').classList.toggle('on', name === 'design');
@@ -311,7 +353,10 @@ function load(name) {
 }
 document.getElementById('roomD').addEventListener('click', () => load('design'));
 document.getElementById('roomE').addEventListener('click', () => load('edit'));
-document.getElementById('reset').addEventListener('click', () => load(room));
+document.getElementById('reset').addEventListener('click', () => {
+  try { localStorage.removeItem(KEY + room); } catch (e) {}
+  load(room);
+});
 document.getElementById('zoomIn').addEventListener('click', () => {
   Z = Math.min(6, Z + 1); document.getElementById('zlabel').textContent = Z + '倍'; build();
 });
