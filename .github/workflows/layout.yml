@@ -1,0 +1,44 @@
+name: 配置を反映する
+
+# 配置ツールが layout.json を保存したら、GitHub 側で部屋の絵を描き直して公開する。
+# 池本さんの PC では何も動かさない。
+on:
+  push:
+    paths:
+      - 'layout.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-layout
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Pillow を入れる
+        run: python -m pip install --quiet pillow
+
+      - name: 配置を反映して絵を描き直す
+        run: python apply_layout.py layout.json
+
+      - name: 反映した結果をコミットする
+        run: |
+          git config user.name  "studio-patti-bot"
+          git config user.email "bot@studiopatti.jp"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "変わりませんでした"
+          else
+            git commit -m "配置ツールの配置を反映"
+            git push
+          fi

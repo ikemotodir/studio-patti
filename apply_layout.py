@@ -17,9 +17,7 @@ import subprocess
 import sys
 
 WEB = os.path.dirname(os.path.abspath(__file__))
-SCRATCH = (r"C:\Users\studi\AppData\Local\Temp\claude"
-           r"\C--Users-studi-Desktop-Claude-apps"
-           r"\3485a72e-2b4a-48a5-8091-a6345c07fe32\scratchpad")
+SCRATCH = WEB          # 部屋の作り方一式はリポジトリの中に置いてある
 
 
 def newest_layout():
@@ -164,15 +162,21 @@ def main():
     P.save()
 
     print("絵を描き直しています…")
-    for cmd, cwd in ((["python", "build_design.py"], SCRATCH),
-                     (["python", "make_room_edit.py"], WEB),
-                     (["python", "make_room_design.py"], WEB),
-                     (["python", "make_aseprite_edit.py"], WEB),
-                     (["python", "make_aseprite_design.py"], WEB)):
-        r = subprocess.run(cmd, cwd=cwd, capture_output=True)
+    # aseprite の書き出しは Aseprite 本体が要るので、無ければ飛ばす
+    # (GitHub 上では本体が無い。池本さんが編集する .aseprite は手元で作り直す)
+    for script, need_aseprite in (("build_design.py", False),
+                                  ("make_room_edit.py", False),
+                                  ("make_room_design.py", False),
+                                  ("make_aseprite_edit.py", True),
+                                  ("make_aseprite_design.py", True)):
+        r = subprocess.run([sys.executable, script], cwd=WEB, capture_output=True)
         if r.returncode != 0:
-            sys.exit("失敗: %s\n%s" % (" ".join(cmd), r.stderr.decode("utf-8", "replace")[-800:]))
-        print("  OK", cmd[1])
+            msg = r.stderr.decode("utf-8", "replace")[-800:]
+            if need_aseprite:
+                print("  とばした", script, "(Aseprite が無い環境)")
+                continue
+            sys.exit("失敗: %s\n%s" % (script, msg))
+        print("  OK", script)
     print("反映おわり。")
 
 

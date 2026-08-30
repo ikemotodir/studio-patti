@@ -68,11 +68,6 @@
     font-size: 12px; font-weight: bold; padding: 2px 6px; color: #14101f;
     background: #ff6f6f; border: 1px solid #14101f;
   }
-  .ref b {
-    position: absolute; left: 0; bottom: -17px; white-space: nowrap;
-    font-size: 11px; font-weight: normal; padding: 1px 5px; color: #ffd9d9;
-    background: rgba(20, 16, 31, .9); border: 1px solid #55467f;
-  }
   .ref.top b { bottom: auto; top: auto; bottom: -19px; }
   .ref:not(.fixed) b { background: #9a93c4; }
   .box b {
@@ -92,6 +87,9 @@
     font-size: 12px; line-height: 1.6; resize: vertical;
   }
   #cur { font-size: 14px; margin: 10px 0; color: #ffd166; min-height: 20px; }
+  #pub { font-size: 14px; margin: 8px 0; line-height: 1.8; min-height: 20px; color: #9fe6b5; }
+  #pub.ng { color: #ff9a9a; }
+  #keybox { margin: 10px 0; padding: 12px; background: #2a1c2e; border: 1px solid #55467f; }
   #warn { font-size: 13px; margin: 6px 0 10px; color: #ff9a9a; line-height: 1.8; min-height: 18px; }
   .box.hit { border-color: #ff6f6f; background: rgba(255, 111, 111, .30); }
   .box.hit b { color: #ffd9d9; border-color: #ff6f6f; }
@@ -102,21 +100,26 @@
 <body>
 
 <header>
-  <h1>配置ツール <span style="font-size:11px;color:#9a93c4">v3</span></h1>
+  <h1>配置ツール <span style="font-size:11px;color:#9a93c4">v5</span></h1>
   <button id="roomD" class="on" type="button">デザイン室</button>
   <button id="roomE" type="button">編集室</button>
   <button id="zoomOut" type="button">－</button>
   <span id="zlabel">3倍</span>
   <button id="zoomIn" type="button">＋</button>
+  <button id="undo" type="button" title="Ctrl+Z">← 元にもどす</button>
+  <button id="redo" type="button" title="Ctrl+Y">やり直す →</button>
   <button id="reset" type="button">最初にもどす</button>
+  <button id="publish" type="button"
+          style="background:#2f6b45;border-color:#4fbf7f;font-size:15px;padding:8px 18px">サイトに反映する</button>
+  <button id="save" type="button">配置ファイルを保存</button>
   <button id="copy" type="button">この数字をコピー</button>
   <span id="saved"></span>
 </header>
 
 <div id="notice">
-  ここで動かしても<b>サイトはまだ変わりません</b>。動かしたら
-  <b>「この数字をコピー」</b>を押して、その数字を送ってください。<br>
-  <span>置いた場所はこのブラウザに自動で保存されます。閉じても、次に開いたとき続きから直せます。</span>
+  置きおわったら <b>「サイトに反映する」</b> を押すだけです。1〜2分でサイトが変わります。<br>
+  <span>置いた場所はこのブラウザに自動で保存されます。閉じても続きから直せます。
+  <b>Ctrl+Z</b> で元にもどす、<b>Ctrl+Y</b> でやり直しです。</span>
 </div>
 <main>
   <div id="stagewrap">
@@ -128,7 +131,7 @@
       枠をマウスでつかんで動かしてください。右下の四角をつかむと大きさを変えられます。<br>
       枠をえらんでから <b>矢印キー</b>で1ドットずつ、<b>Shift+矢印</b>で5ドットずつ動きます。<br>
       キャラクターは大きさを <b>[ ] キー</b>で変えられます。<br>
-      置きたいところに置いたら「この数字をコピー」を押して、そのまま貼って送ってください。
+      置きおわったら緑の「サイトに反映する」を押せば、そのままサイトが変わります。
     </p>
     <p class="legend">
       <span style="background:rgba(255,111,111,.35);border:2px dashed #ff6f6f"></span>
@@ -138,6 +141,19 @@
     </p>
     <div id="cur">えらばれていません</div>
     <div id="warn"></div>
+    <div id="pub"></div>
+    <div id="keybox" style="display:none">
+      <p class="hint" style="color:#ffd9d9">
+        はじめだけ、書き込みの鍵を1回貼ってください。次からは要りません。<br>
+        <a href="https://github.com/settings/personal-access-tokens/new" target="_blank"
+           rel="noopener" style="color:#7ee0eb">ここを開いて</a>
+        Repository access = <b>ikemotodir/studio-patti</b>、
+        Permissions の <b>Contents</b> を <b>Read and write</b> にして作った鍵です。
+      </p>
+      <input id="key" type="password" placeholder="ghp_ ではじまる鍵をここに貼る"
+             style="width:100%;padding:8px;background:#0d0a16;color:#d6f7ff;border:1px solid #55467f;font-size:13px">
+      <button id="keysave" type="button" style="margin-top:8px">この鍵を覚える</button>
+    </div>
     <textarea id="out" readonly spellcheck="false"></textarea>
   </div>
 </main>
@@ -201,6 +217,36 @@ const out = document.getElementById('out');
 const cur = document.getElementById('cur');
 
 function clone(a) { return a.map(o => Object.assign({}, o)); }
+
+let HIST = [], HPOS = -1, quiet = false;
+function snap() {
+  if (quiet) return;
+  const cur = JSON.stringify(items.map(it => ({ id: it.id, x: it.x, y: it.y, w: it.w, h: it.h, s: it.s })));
+  if (HPOS >= 0 && HIST[HPOS] === cur) return;
+  HIST = HIST.slice(0, HPOS + 1);
+  HIST.push(cur);
+  if (HIST.length > 200) HIST.shift();
+  HPOS = HIST.length - 1;
+  updateHistBtns();
+}
+function applySnap(json) {
+  const d = JSON.parse(json);
+  items.forEach(it => {
+    const o = d.find(q => q.id === it.id);
+    if (!o) return;
+    it.x = o.x; it.y = o.y;
+    if (o.w != null) it.w = o.w;
+    if (o.h != null) it.h = o.h;
+    if (o.s != null) it.s = o.s;
+  });
+  quiet = true; render(); quiet = false;
+}
+function undo() { if (HPOS > 0) { HPOS -= 1; applySnap(HIST[HPOS]); updateHistBtns(); } }
+function redo() { if (HPOS < HIST.length - 1) { HPOS += 1; applySnap(HIST[HPOS]); updateHistBtns(); } }
+function updateHistBtns() {
+  document.getElementById('undo').disabled = HPOS <= 0;
+  document.getElementById('redo').disabled = HPOS >= HIST.length - 1;
+}
 
 const KEY = 'patti-layout-';
 function save() {
@@ -326,7 +372,7 @@ stage.addEventListener('pointermove', e => {
   }
   render();
 });
-stage.addEventListener('pointerup', () => { drag = null; });
+stage.addEventListener('pointerup', () => { if (drag) { drag = null; snap(); } });
 stage.addEventListener('pointercancel', () => { drag = null; });
 
 document.addEventListener('keydown', e => {
@@ -341,6 +387,7 @@ document.addEventListener('keydown', e => {
   else return;
   e.preventDefault();
   render();
+  snap();
 });
 
 function load(name) {
@@ -348,9 +395,18 @@ function load(name) {
   items = restore(clone(ROOMS[name].items));
   sel = null;
   build();
+  HIST = []; HPOS = -1; snap();
   document.getElementById('roomD').classList.toggle('on', name === 'design');
   document.getElementById('roomE').classList.toggle('on', name === 'edit');
 }
+document.getElementById('undo').addEventListener('click', undo);
+document.getElementById('redo').addEventListener('click', redo);
+document.addEventListener('keydown', e => {
+  if (!(e.ctrlKey || e.metaKey)) return;
+  const k = e.key.toLowerCase();
+  if (k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+  else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); redo(); }
+});
 document.getElementById('roomD').addEventListener('click', () => load('design'));
 document.getElementById('roomE').addEventListener('click', () => load('edit'));
 document.getElementById('reset').addEventListener('click', () => {
@@ -363,6 +419,98 @@ document.getElementById('zoomIn').addEventListener('click', () => {
 document.getElementById('zoomOut').addEventListener('click', () => {
   Z = Math.max(2, Z - 1); document.getElementById('zlabel').textContent = Z + '倍'; build();
 });
+// ── サイトに反映する ──
+const REPO = 'ikemotodir/studio-patti';
+const KEYK = 'patti-gh-key';
+const pub = document.getElementById('pub');
+function say(msg, ng) { pub.textContent = msg; pub.classList.toggle('ng', !!ng); }
+
+function layoutAll() {
+  const all = {};
+  ['design', 'edit'].forEach(r => {
+    let list = ROOMS[r].items.map(o => Object.assign({}, o));
+    if (r === room) {
+      list = items;
+    } else {
+      try {
+        const raw = localStorage.getItem(KEY + r);
+        if (raw) {
+          const d = JSON.parse(raw);
+          list.forEach(it => {
+            const o = d.find(q => q.id === it.id);
+            if (o) { it.x = o.x; it.y = o.y;
+                     if (o.w != null) it.w = o.w;
+                     if (o.h != null) it.h = o.h;
+                     if (o.s != null) it.s = o.s; }
+          });
+        }
+      } catch (err) {}
+    }
+    all[r] = list.map(it => {
+      const o = { id: it.id, x: it.x, y: it.y, w: it.w, h: it.h };
+      if (it.chara) o.s = +it.s.toFixed(2);
+      return o;
+    });
+  });
+  return all;
+}
+
+function b64(str) {
+  return btoa(String.fromCharCode.apply(null, new TextEncoder().encode(str)));
+}
+
+async function publish() {
+  const key = localStorage.getItem(KEYK);
+  if (!key) { document.getElementById('keybox').style.display = 'block';
+              say('はじめだけ、下の欄に鍵を貼ってください。', true); return; }
+  const btn = document.getElementById('publish');
+  btn.disabled = true;
+  say('サイトに送っています…');
+  const url = 'https://api.github.com/repos/' + REPO + '/contents/layout.json';
+  const head = { Authorization: 'Bearer ' + key, Accept: 'application/vnd.github+json' };
+  try {
+    let sha = null;
+    const g = await fetch(url + '?ref=main&t=' + Date.now(), { headers: head, cache: 'no-store' });
+    if (g.ok) { sha = (await g.json()).sha; }
+    else if (g.status === 401 || g.status === 403) {
+      localStorage.removeItem(KEYK);
+      document.getElementById('keybox').style.display = 'block';
+      say('鍵がちがうようです。もう一度貼ってください。', true);
+      btn.disabled = false; return;
+    }
+    const body = { message: '配置ツールから配置を保存', content: b64(JSON.stringify(layoutAll(), null, 1)) };
+    if (sha) body.sha = sha;
+    const r = await fetch(url, { method: 'PUT', headers: head, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error('GitHub ' + r.status + ' ' + (await r.text()).slice(0, 160));
+    say('送りました！ 1〜2分でサイトが変わります。');
+    setTimeout(() => say('反映されたか見る → design.html / contents.html を開き直してください。'), 9000);
+  } catch (e) {
+    say('うまくいきませんでした: ' + e.message, true);
+  }
+  btn.disabled = false;
+}
+document.getElementById('publish').addEventListener('click', publish);
+document.getElementById('keysave').addEventListener('click', () => {
+  const v = document.getElementById('key').value.trim();
+  if (!v) return;
+  localStorage.setItem(KEYK, v);
+  document.getElementById('key').value = '';
+  document.getElementById('keybox').style.display = 'none';
+  say('鍵を覚えました。もう一度「サイトに反映する」を押してください。');
+});
+
+document.getElementById('save').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(layoutAll(), null, 1)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'layout.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  const b = document.getElementById('save');
+  b.textContent = '保存しました！';
+  setTimeout(() => b.textContent = '配置ファイルを保存', 1800);
+});
+
 document.getElementById('copy').addEventListener('click', () => {
   out.select();
   navigator.clipboard.writeText(out.value).then(
