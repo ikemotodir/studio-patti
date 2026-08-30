@@ -589,7 +589,8 @@ let cat = 0, num = -1, bkpage = 0;
 // メニュー: 見出し「制作事例」(選べない銘板) + 項目4つ
 const hdr = document.createElement('div');
 hdr.id = 'mihdr';
-hdr.style.top = '28.8px';   // 見出しは7px字なのでズレ量が違う
+hdr.style.top = (MENU_TOP - 1.37) + 'px';   // 見出しは7px字なのでズレ量が違う。
+                                            // 枠を動かしても取り残されないよう MENU_TOP から決める
 hdr.textContent = HEAD_NAME;
 stage.appendChild(hdr);
 const miEls = [];

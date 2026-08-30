@@ -45,21 +45,22 @@ def lum(c):
 
 ng = 0
 for name, bx, by, bw, bh in BEDS:
-    x0 = int(rect["x"] + (bx + 6) * sc)          # ▶カーソルの列は外す
-    x1 = int(rect["x"] + (bx + bw) * sc)
-    y0 = int(rect["y"] + by * sc)
-    y1 = int(rect["y"] + (by + bh) * sc)
+    # 両端は ▶カーソル(メニュー)と シアンLED(見出し)があるので外して見る
+    x0 = int(rect["x"] + (bx + 5) * sc)
+    x1 = int(rect["x"] + (bx + bw - 3) * sc)
+    y0 = int(rect["y"] + (by - 3) * sc)          # 字面が枠から出ていても拾う
+    y1 = int(rect["y"] + (by + bh + 3) * sc)
     x0, x1 = max(0, x0), min(IW, x1)
     y0, y1 = max(0, y0), min(IH, y1)
-    base = sorted(lum(px[x, y]) for y in range(y0, y1) for x in range(x0, x1))
-    thr = base[int(len(base) * 0.55)] + 42       # 下地より明らかに明るい画素=文字
+    thr = 95                                     # 下地より明らかに明るい画素=文字
     rows = [y for y in range(y0, y1) if any(lum(px[x, y]) > thr for x in range(x0, x1))]
     cols = [x for x in range(x0, x1) if any(lum(px[x, y]) > thr for y in range(y0, y1))]
     if not rows or not cols:
         print("  %-22s 文字が見つからない(選択されていない項目かも)" % name)
         continue
-    dy = ((rows[0] + rows[-1]) / 2.0 - (y0 + y1 - 1) / 2.0) / sc
-    dx = ((cols[0] + cols[-1]) / 2.0 - (x0 + x1 - 1) / 2.0) / sc
+    # 刷り面そのものの中心と比べる(走査範囲の中心ではない)
+    dy = (rows[0] + rows[-1]) / 2.0 / sc - rect["y"] / sc - (by + (bh - 1) / 2.0)
+    dx = (cols[0] + cols[-1]) / 2.0 / sc - rect["x"] / sc - (bx + (bw - 1) / 2.0)
     mark = "OK " if abs(dy) <= 0.5 else "NG "
     if abs(dy) > 0.5:
         ng += 1
