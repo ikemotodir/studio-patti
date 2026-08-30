@@ -39,7 +39,7 @@ P = {
  'cyn0': (16, 84, 104), 'cyn1': (44, 164, 186), 'cyn2': (126, 224, 235), 'cync': (214, 250, 252),
  # ── デザイン室で足した色 ──
  'bd0': (12, 26, 24), 'bd1': (22, 40, 36), 'bd2': (34, 56, 50), 'bd3': (52, 78, 70),
- 'pl0': (62, 56, 50), 'pl1': (92, 84, 76), 'pl2': (120, 110, 100),  # 漆喰(木造校舎の壁)
+ 'pl0': (68, 62, 56), 'pl1': (104, 96, 86), 'pl2': (138, 128, 114),  # 漆喰(木造校舎の壁)
  'bd4': (78, 106, 96),                                                                 # 黒板
  'chk2': (146, 176, 164), 'chk': (226, 240, 230),                                       # チョーク
  'wd0': (70, 42, 26), 'wd1': (112, 70, 42), 'wd2': (156, 106, 64), 'wd3': (200, 150, 98),  # 木枠
@@ -224,31 +224,64 @@ DI('bg', 0, 128, W, 10, 'pl0', 'pl1')
 R('bg', 0, 142, W, 4, 'ink')
 R('bg', 0, 146, W, 2, 'wd0')
 
-# 床(古い木造校舎の板張り。継ぎ目は奥の消失点へ収束する)
-FL_Y0, VPX, VPY = 148, 192, 138
-R('bg', 0, FL_Y0, W, H - FL_Y0, 'wd1')
-DITH('bg', 0, FL_Y0, W, H - FL_Y0, None, 'wd0', 'hline')   # 板目
-for k in range(-13, 14):                                    # 板の継ぎ目
-    xb = VPX + k * 34
-    for yy in range(FL_Y0, H):
-        t = (yy - VPY) / float(H - VPY)
-        xx = int(VPX + (xb - VPX) * t + 0.5)
-        if 0 <= xx < W:
+# 床(古い木造校舎の板張り)
+# 遠近は部屋そのものに合わせる。側壁の足元線(i=0でy234 / i=46でy168)を
+# 左右で延長した交点が、この部屋の消失点。床の目地もそこへ向ける。
+VPX = (W - 1) / 2.0
+VPY = 234.0 - (66.0 / 46.0) * VPX
+FL_Y0 = 148
+PLANK = 30.0                                                # 画面下端での板幅
+
+def _floor_x(xb, yy):
+    """画面下端で xb を通り消失点へ向かう線の、高さ yy での x。"""
+    return VPX + (xb - VPX) * (yy - VPY) / (H - VPY)
+
+# 面: 板の中はほぼ平坦。目地とその脇の受光だけで板を見せる
+# (この解像度では細かい点描はノイズになり、遠近が読めなくなる)
+PLANK_TONE = (0, 1, 0, -1, 0, 1, -1, 0, 1, 0, -1, 1)        # 板ごとのわずかな色味の差
+for yy in range(FL_Y0, H):
+    depth = (H - VPY) / (yy - VPY)
+    for xx in range(W):
+        u = ((xx - VPX) * depth) / PLANK                     # 板の中の位置(0..1)
+        k = int(math.floor(u))
+        f = u - k
+        if f < 0.07:
+            c = 'wd0'                                        # 目地
+        elif f < 0.15:
+            c = 'wd2'                                        # 目地の脇が光を拾う
+        elif f > 0.93:
+            c = 'wd0'                                        # 反対側の縁も落ちる
+        else:
+            tone = PLANK_TONE[k % len(PLANK_TONE)]
+            c = 'wd1'
+            if tone > 0 and (xx * 3 + yy * 7) % 13 == 0:
+                c = 'wd2'
+            elif tone < 0 and (xx * 5 + yy * 3) % 13 == 0:
+                c = 'wd0'
+        PXL('bg', xx, yy, c)
+
+_inv0, _inv1 = 1.0 / (H - VPY), 1.0 / (FL_Y0 - VPY)
+for n in range(1, 7):                                        # 板の継ぎ手(奥ほど詰まる)
+    yy = int(1.0 / (_inv0 + (_inv1 - _inv0) * n / 6.0) + VPY + 0.5)
+    for k in range(-9, 9):
+        if (k + n) % 3:                                      # 互い違いに継ぐ(格子に見せない)
+            continue
+        x0 = int(_floor_x(VPX + k * PLANK, yy) + 0.5)
+        x1 = int(_floor_x(VPX + (k + 1) * PLANK, yy) + 0.5)
+        for xx in range(max(0, x0), min(W, x1)):
             PXL('bg', xx, yy, 'wd0')
-            if xx + 1 < W:
-                PXL('bg', xx + 1, yy, 'wd2')                # 継ぎ目の右が光を拾う
-for yy in (178, 202, 228):                                  # 板の継ぎ手(控えめに)
-    for xx in range(0, W, 3):
-        PXL('bg', xx, yy, 'wd0')
-for i, yy in enumerate((170, 188, 210, 232)):               # 歩いて擦れた艶
-    for xx in range(0, W, 5):
-        if (xx + i * 3) % 15 < 6:
-            PXL('bg', xx, yy, 'wd2')
-for si, sx5 in enumerate(range(56, W - 48, 24)):            # 電球の映り込み(暖色)
+
+for yy in range(FL_Y0, H):                                   # 人が通って擦れた艶
+    t = (yy - FL_Y0) / float(H - FL_Y0)
+    half = int(26 + 52 * t)
+    for xx in range(max(0, int(VPX) - half), min(W, int(VPX) + half)):
+        if (xx * 3 + yy * 5) % 23 == 0:
+            PXL('bg', xx, yy, 'wd3')
+for si, sx5 in enumerate(range(56, W - 48, 24)):             # 電球の映り込み
     PXL('bg', sx5, 176, 'y0' if si % 2 else 'o0')
-    PXL('bg', sx5 + 12, 196, 'o0' if si % 2 else 'y0')
-DI('bg', 0, 224, W, 8, 'wd0', 'ink')                        # 手前は沈む
-DI('bg', 0, 232, W, 8, 'ink', 'ink')
+    PXL('bg', sx5 + 12, 198, 'o0' if si % 2 else 'y0')
+DI('bg', 0, 222, W, 10, 'wd1', 'wd0')                        # 手前はゆるやかに沈む
+DI('bg', 0, 232, W, 8, 'wd0', 'ink')
 
 # ── 壁を床側へ延長(黒板は下まで)。境目は木の巾木でくっきり ──
 R('bg', 0, 148, W, 14, 'pl1')
@@ -304,6 +337,69 @@ def side_wall(left):
     R('bg', cx0 + (1 if left else -1), 14, 1, 154, 'wd1')
 side_wall(True)
 side_wall(False)
+
+# ─── 左の壁: 木造校舎の窓(木の格子・夜の月あかり) ───
+obj('教室の窓')
+WI0, WI1 = 0, 43                       # 窓が入る壁の範囲(i が大きいほど奥・画面の端まで続く)
+MULL_I = (13, 22, 31, 38)              # 縦の桟(奥ほど詰まる)
+TREE = (2, 4, 7, 9, 8, 5, 3, 1, 3, 6, 10, 12, 11, 8, 5, 2, 0, 2, 5, 7, 6, 4, 2, 1)  # 木立の稜線
+
+def _wall_band(i):
+    t = i / 46.0
+    ytop = int(2 + 12 * t + 0.5)
+    ybot = int(234 - 66 * t + 0.5)
+    return ytop, int(ytop + (ybot - ytop) * 0.54 + 0.5)
+
+for i in range(WI0, WI1 + 1):
+    ytop, rail = _wall_band(i)
+    wy0, wy1 = ytop + 5, rail - 6                            # 窓の上下
+    hh = max(1, wy1 - wy0)
+    mid = wy0 + int(hh * 0.46)                               # 上下の障子の分かれ目
+    horizon = wy0 + int(hh * 0.76)                           # 遠くの稜線
+    tree_top = horizon - TREE[i % len(TREE)]                 # 木立の高さ
+    frame_col = i <= WI0 + 1 or i >= WI1 - 1
+    for yy in range(wy0, wy1 + 1):
+        if frame_col or yy <= wy0 + 1 or yy >= wy1 - 1:
+            c = 'wd1'                                        # 窓枠
+        elif i in MULL_I or mid <= yy <= mid + 1:
+            c = 'wd0'                                        # 格子の桟
+        else:
+            # 空は夕暮れ。上が藍、地平に近づくほど暖色になる
+            g = (yy - wy0) / float(hh)
+            if yy >= tree_top:                               # 木立と地面のシルエット
+                c = 'ink' if yy > horizon + 3 else ('bd1' if (i * 3 + yy) % 7 == 0 else 'bd0')
+            elif g < 0.20:
+                c = 'cool1'
+            elif g < 0.38:
+                c = 'b3'
+            elif g < 0.54:
+                c = 'b4'
+            elif g < 0.64:
+                c = 'cream'
+            else:
+                c = 'cor2' if g < 0.70 else 'o1'             # 稜線ぎわが一番あかるい
+            if g < 0.36 and (i * 7 + yy * 3) % 31 == 0:
+                c = 'wht'                                    # 一番星
+        PXL('bg', i, yy, c)
+    PXL('bg', i, wy0, 'wd2')                                 # 上枠の天面が光を拾う
+    R('bg', i, wy1 + 1, 1, 2, 'wd2')                         # 窓台
+    PXL('bg', i, wy1 + 3, 'ink')                             # 窓台の下の影
+
+# 夕日が腰壁と床へこぼれる
+for i in range(WI0, WI1 + 1):
+    _, rail = _wall_band(i)
+    for k in range(9):
+        yy = rail + 4 + k
+        if (i + yy) % (2 + k // 2) == 0:
+            PXL('bg', i, yy, 'wd3' if k < 5 else 'wd2')
+for yy in range(168, 226):
+    for xx in range(0, 86):
+        if xx <= 46 and yy <= 234 - (66.0 / 46.0) * xx:
+            continue                                         # まだ壁の中
+        d = xx / 86.0 + (yy - 168) / 70.0
+        if d < 1.0 and (xx * 5 + yy * 3) % (3 + int(d * 11)) == 0:
+            PXL('bg', xx, yy, 'wd3' if d < 0.5 else 'wd2')
+
 
 # ═══════════════ 壁一面の黒板 ═══════════════
 obj('黒板')

@@ -149,14 +149,14 @@
   #scrwait { position: absolute; inset: 0; }
   #wstars { position: absolute; left: 0; top: 0; }
   #wplay {
-    position: absolute; left: 0; top: 16px; width: 142px;
+    position: absolute; left: 0; top: 18px; width: 100%;
     font-family: 'DotGothic16', 'MS Gothic', monospace;
     color: #7ecfe0; font-size: 17px; text-align: center;
     text-shadow: 0 0 4px rgba(126, 224, 235, .9);
     animation: wbreath 2.4s ease-in-out infinite;
   }
   #wtext {
-    position: absolute; left: 0; top: 44px; width: 142px;
+    position: absolute; left: 0; top: 48px; width: 100%;
     font-family: 'DotGothic16', 'MS Gothic', monospace;
     color: #6d7fc0; font-size: 7px; line-height: 1.8; text-align: center;
   }
@@ -186,7 +186,7 @@
   #bkprev { left: 0; }
   #bknext { right: 0; }
   #bknum {
-    position: absolute; left: 0; bottom: 0; width: 142px; height: 7px;
+    position: absolute; left: 0; bottom: 0; width: 100%; height: 7px;
     font-family: 'DotGothic16', 'MS Gothic', monospace;
     color: #8a86b0; font-size: 5px; line-height: 7px; text-align: center;
   }
@@ -446,7 +446,7 @@
 
     <div id="screenbox">
       <div id="scrwait">
-        <canvas id="wstars" width="142" height="80" aria-hidden="true"></canvas>
+        <canvas id="wstars" width="172" height="93" aria-hidden="true"></canvas>
         <div id="wplay" aria-hidden="true">▶</div>
         <div id="wtext">左のパネルを ▶ でえらんで<br>右のすうじをおしてね</div>
       </div>
@@ -803,13 +803,13 @@ document.querySelector('#rotate .anyway')
 (() => {
   const cv = document.getElementById('wstars');
   const g = cv.getContext('2d');
-  const SW = 142, SH = 80;
+  const SW = 172, SH = 93;
   const TONE = ['#1c5a74', '#2ca4ba', '#7ee0eb', '#d6faff'];
   const stars = [];
   for (let i = 0; i < 22; i++) {
-    // 説明文の帯(y42..70)を避けて散らす
-    const yy = Math.random() < 0.8 ? Math.floor(Math.random() * 40)
-                                   : 72 + Math.floor(Math.random() * 7);
+    // 説明文の帯(y44..78)を避けて散らす
+    const yy = Math.random() < 0.8 ? Math.floor(Math.random() * 42)
+                                   : 80 + Math.floor(Math.random() * 10);
     stars.push({ x: Math.floor(Math.random() * SW), y: yy,
                  ph: Math.random() * Math.PI * 2, sp: 0.6 + Math.random() * 1.2 });
   }
