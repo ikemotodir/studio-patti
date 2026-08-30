@@ -39,6 +39,18 @@
   }
   .box.chara { border-color: #7ee0eb; background: rgba(126, 224, 235, .16); }
   .box.sel { border-color: #ec94be; background: rgba(236, 148, 190, .30); box-shadow: 0 0 0 2px #ec94be; }
+  /* 動かせない枠(かぶるかどうかを見るための目印) */
+  .ref {
+    position: absolute; border: 2px dashed #9a93c4;
+    background: rgba(154, 147, 196, .12); pointer-events: none;
+  }
+  .ref.fixed { border-color: #ff6f6f; background: rgba(255, 111, 111, .16); }
+  .ref b {
+    position: absolute; left: 0; bottom: -17px; white-space: nowrap;
+    font-size: 11px; font-weight: normal; padding: 1px 5px; color: #ffd9d9;
+    background: rgba(20, 16, 31, .9); border: 1px solid #55467f;
+  }
+  .ref.top b { bottom: auto; top: -17px; }
   .box b {
     position: absolute; left: 0; top: -17px; white-space: nowrap;
     font-size: 11px; font-weight: normal; padding: 1px 5px;
@@ -56,6 +68,11 @@
     font-size: 12px; line-height: 1.6; resize: vertical;
   }
   #cur { font-size: 14px; margin: 10px 0; color: #ffd166; min-height: 20px; }
+  #warn { font-size: 13px; margin: 6px 0 10px; color: #ff9a9a; line-height: 1.8; min-height: 18px; }
+  .box.hit { border-color: #ff6f6f; background: rgba(255, 111, 111, .30); }
+  .box.hit b { color: #ffd9d9; border-color: #ff6f6f; }
+  .legend { font-size: 12px; color: #b7aede; margin: 8px 0 0; line-height: 1.9; }
+  .legend span { display: inline-block; width: 22px; height: 10px; margin-right: 6px; vertical-align: -1px; }
 </style>
 </head>
 <body>
@@ -83,7 +100,14 @@
       キャラクターは大きさを <b>[ ] キー</b>で変えられます。<br>
       置きたいところに置いたら「この数字をコピー」を押して、そのまま貼って送ってください。
     </p>
+    <p class="legend">
+      <span style="background:rgba(255,111,111,.35);border:2px dashed #ff6f6f"></span>
+      赤いやぶれ線 = 上のナビとテキストボックス。<b>ここにかぶると本番では隠れます</b><br>
+      <span style="background:rgba(154,147,196,.25);border:2px dashed #9a93c4"></span>
+      むらさきのやぶれ線 = 黒板・チョーク受けなど、動かせない部屋の目印
+    </p>
     <div id="cur">えらばれていません</div>
+    <div id="warn"></div>
     <textarea id="out" readonly spellcheck="false"></textarea>
   </div>
 </main>
@@ -91,6 +115,21 @@
 <script>
 const Z0 = 3;
 let Z = Z0;
+
+// ── 動かせない枠。ここにかぶると本番でも隠れる ──
+const REFS = {
+  common: [
+    { name: '上のナビゲーション（この下は隠れる）', x: 0, y: 0, w: 384, h: 15, fixed: true, top: true },
+    { name: 'テキストボックス（この中は隠れる）',   x: 72, y: 184, w: 242, h: 30, fixed: true },
+  ],
+  design: [
+    { name: '黒板', x: 47, y: 12, w: 290, h: 150 },
+    { name: 'チョーク受け', x: 47, y: 161, w: 290, h: 4 },
+  ],
+  edit: [
+    { name: '編集卓の天板', x: 40, y: 137, w: 304, h: 4 },
+  ],
+};
 
 // ── 部屋ごとの中身。x,y,w,h はドット絵の座標(384x240) ──
 const ROOMS = {
@@ -106,7 +145,7 @@ const ROOMS = {
       { id: 'DATA_TITLE', name: 'データまとめ(見出し)',        x: 265, y: 46, w: 56, h: 12 },
       { id: 'DATA_PANEL', name: 'データの模造紙',             x: 256, y: 62, w: 74, h: 80 },
       { id: 'mayu',  name: 'マユちゃん', chara: true, x: 37, y: 123, w: 30, h: 72, s: 0.90 },
-      { id: 'patti', name: 'パッチ',     chara: true, x: 261, y: 138, w: 32, h: 48, s: 0.92 },
+      { id: 'patti', name: 'パッチ',     chara: true, x: 261, y: 135, w: 32, h: 48, s: 0.92 },
     ],
   },
   edit: {
@@ -136,7 +175,17 @@ function build() {
   stage.style.width = (384 * Z) + 'px';
   stage.style.height = (240 * Z) + 'px';
   stage.style.backgroundImage = 'url(' + R.bg + '?v=' + Date.now() + ')';
-  [...stage.querySelectorAll('.box')].forEach(e => e.remove());
+  [...stage.querySelectorAll('.box, .ref')].forEach(e => e.remove());
+  REFS.common.concat(REFS[room]).forEach(rf => {
+    const d = document.createElement('div');
+    d.className = 'ref' + (rf.fixed ? ' fixed' : '') + (rf.top ? ' top' : '');
+    d.style.left = (rf.x * Z) + 'px';
+    d.style.top = (rf.y * Z) + 'px';
+    d.style.width = (rf.w * Z) + 'px';
+    d.style.height = (rf.h * Z) + 'px';
+    d.innerHTML = '<b>' + rf.name + '</b>';
+    stage.appendChild(d);
+  });
   items.forEach(it => {
     const d = document.createElement('div');
     d.className = 'box' + (it.chara ? ' chara' : '');
@@ -149,7 +198,12 @@ function build() {
   render();
 }
 
+function overlaps(a, b) {
+  return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+}
+
 function render() {
+  const hidden = [];
   items.forEach(it => {
     const w = it.chara ? it.w * it.s : it.w;
     const h = it.chara ? it.h * it.s : it.h;
@@ -160,7 +214,14 @@ function render() {
     it.el.style.width = (w * Z) + 'px';
     it.el.style.height = (h * Z) + 'px';
     it.el.classList.toggle('sel', it === sel);
+    // 隠れる枠にかぶっていないか
+    const box = { x: x, y: y, w: w, h: h };
+    const bad = REFS.common.filter(rf => rf.fixed && overlaps(box, rf));
+    it.el.classList.toggle('hit', bad.length > 0);
+    if (bad.length) hidden.push(it.name + ' が「' + bad[0].name.split('（')[0] + '」にかぶっています');
   });
+  document.getElementById('warn').innerHTML = hidden.length
+    ? '⚠ ' + hidden.join('<br>⚠ ') : '';
   cur.textContent = sel
     ? (sel.name + ' :  x=' + sel.x + '  y=' + sel.y
        + (sel.chara ? '  大きさ=' + sel.s.toFixed(2) : '  よこ=' + sel.w + '  たて=' + sel.h))
