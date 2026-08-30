@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Cache-Control" content="no-store">
 <title>配置ツール — STUDIO PATTI</title>
 <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
 <style>
@@ -44,13 +45,29 @@
     position: absolute; border: 2px dashed #9a93c4;
     background: rgba(154, 147, 196, .12); pointer-events: none;
   }
-  .ref.fixed { border-color: #ff6f6f; background: rgba(255, 111, 111, .16); }
+  .ref.fixed { border: 2px dashed #ff6f6f; background: rgba(255, 111, 111, .10); }
+  /* 本番と同じ見た目で出す(線だけだと見落とすため) */
+  .ref .real {
+    position: absolute; inset: 0; background: rgba(8, 6, 40, .92);
+    color: #f2eefc; font-size: 11px; line-height: 1.5; overflow: hidden;
+  }
+  .ref.talk .real {
+    border: 2px solid #e8e4f4; border-radius: 3px; padding: 4px 8px;
+  }
+  .ref.nav .real { border-bottom: 1px solid #2a2560; display: flex; align-items: center;
+    justify-content: flex-end; padding-right: 10px; letter-spacing: 1px; }
+  .ref b {
+    position: absolute; left: 0; bottom: -19px; white-space: nowrap; z-index: 2;
+    font-size: 12px; font-weight: bold; padding: 2px 6px; color: #14101f;
+    background: #ff6f6f; border: 1px solid #14101f;
+  }
   .ref b {
     position: absolute; left: 0; bottom: -17px; white-space: nowrap;
     font-size: 11px; font-weight: normal; padding: 1px 5px; color: #ffd9d9;
     background: rgba(20, 16, 31, .9); border: 1px solid #55467f;
   }
-  .ref.top b { bottom: auto; top: -17px; }
+  .ref.top b { bottom: auto; top: auto; bottom: -19px; }
+  .ref:not(.fixed) b { background: #9a93c4; }
   .box b {
     position: absolute; left: 0; top: -17px; white-space: nowrap;
     font-size: 11px; font-weight: normal; padding: 1px 5px;
@@ -78,7 +95,7 @@
 <body>
 
 <header>
-  <h1>配置ツール</h1>
+  <h1>配置ツール <span style="font-size:11px;color:#9a93c4">v2</span></h1>
   <button id="roomD" class="on" type="button">デザイン室</button>
   <button id="roomE" type="button">編集室</button>
   <button id="zoomOut" type="button">－</button>
@@ -119,8 +136,10 @@ let Z = Z0;
 // ── 動かせない枠。ここにかぶると本番でも隠れる ──
 const REFS = {
   common: [
-    { name: '上のナビゲーション（この下は隠れる）', x: 0, y: 0, w: 384, h: 15, fixed: true, top: true },
-    { name: 'テキストボックス（この中は隠れる）',   x: 72, y: 184, w: 242, h: 30, fixed: true },
+    { name: '↑ 上のナビ（この帯の下は隠れます）', x: 0, y: 0, w: 384, h: 15,
+      fixed: true, top: true, cls: 'nav', html: 'COMPANY　CHARACTER DESIGN　CONTENTS CREATIVE　…' },
+    { name: '↑ テキストボックス（この中は隠れます）', x: 72, y: 184, w: 242, h: 30,
+      fixed: true, cls: 'talk', html: '<span style="color:#ffd166">パッチ</span> ここに会話が出ます<br>この四角の中は見えなくなります' },
   ],
   design: [
     { name: '黒板', x: 47, y: 12, w: 290, h: 150 },
@@ -178,12 +197,14 @@ function build() {
   [...stage.querySelectorAll('.box, .ref')].forEach(e => e.remove());
   REFS.common.concat(REFS[room]).forEach(rf => {
     const d = document.createElement('div');
-    d.className = 'ref' + (rf.fixed ? ' fixed' : '') + (rf.top ? ' top' : '');
+    d.className = 'ref' + (rf.fixed ? ' fixed' : '') + (rf.top ? ' top' : '')
+                + (rf.cls ? ' ' + rf.cls : '');
     d.style.left = (rf.x * Z) + 'px';
     d.style.top = (rf.y * Z) + 'px';
     d.style.width = (rf.w * Z) + 'px';
     d.style.height = (rf.h * Z) + 'px';
-    d.innerHTML = '<b>' + rf.name + '</b>';
+    d.innerHTML = (rf.html ? '<div class="real">' + rf.html + '</div>' : '')
+                + '<b>' + rf.name + '</b>';
     stage.appendChild(d);
   });
   items.forEach(it => {
