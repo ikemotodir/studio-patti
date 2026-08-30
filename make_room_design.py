@@ -39,6 +39,7 @@ P = {
  'cyn0': (16, 84, 104), 'cyn1': (44, 164, 186), 'cyn2': (126, 224, 235), 'cync': (214, 250, 252),
  # ── デザイン室で足した色 ──
  'bd0': (12, 26, 24), 'bd1': (22, 40, 36), 'bd2': (34, 56, 50), 'bd3': (52, 78, 70),
+ 'pl0': (62, 56, 50), 'pl1': (92, 84, 76), 'pl2': (120, 110, 100),  # 漆喰(木造校舎の壁)
  'bd4': (78, 106, 96),                                                                 # 黒板
  'chk2': (146, 176, 164), 'chk': (226, 240, 230),                                       # チョーク
  'wd0': (70, 42, 26), 'wd1': (112, 70, 42), 'wd2': (156, 106, 64), 'wd3': (200, 150, 98),  # 木枠
@@ -200,82 +201,107 @@ PAP_STORY  = (128, 25, 128, 14) # 白: Story is King(電球の下・黒板上部
 PAP_SPOOKS = (54, 123, 70, 28)  # Spooks GS(左下・余白2pxの細枠。内寸66x24)
 PAP_WORLD  = (162, 73, 80, 25)  # 桃: 世界観(黄の右)
 PAP_TALE   = (142, 124, 52, 32) # 赤: 物語(世界観の下)
-DATA_TITLE = (248, 42, 84, 13)  # キャラクターに関するデータ(見出し)
-DATA_PANEL = (248, 58, 84, 96)  # 模造紙(黒板の延長に合わせて下へ)
+DATA_TITLE = (265, 46, 56, 12)  # 見出し「データまとめ」(模造紙と同心)
+DATA_PANEL = (256, 62, 74, 80)  # 模造紙(上下左右に余白を取った大きさ)
 
 # ═══════════════ bg : 天井・奥壁・床 ═══════════════
 obj()
-R('bg', 0, 0, W, H, 'q2')
-# 天井(TOP・編集室と同じ建物)
-R('bg', 0, 0, W, 10, 'ink')
-R('bg', 0, 6, W, 1, 'q1')
-R('bg', 0, 10, W, 2, 'q0')
-for x in range(4, W, 24):
-    PXL('bg', x, 4, 'wd1'); PXL('bg', x + 1, 4, 'wd1')
+R('bg', 0, 0, W, H, 'pl1')
+# 天井(木造校舎の竿縁天井。古い杉板に細い桟が渡る)
+R('bg', 0, 0, W, 12, 'wd0')
+DITH('bg', 0, 2, W, 8, None, 'wd1', 'hline')              # 板目
+R('bg', 0, 0, W, 2, 'ink')                                # 奥は暗く沈む
+for x in range(6, W, 22):                                  # 竿縁(細い桟)
+    R('bg', x, 2, 1, 9, 'ink')
+    R('bg', x + 1, 2, 1, 9, 'wd1')
+R('bg', 0, 10, W, 1, 'wd2')                                # 手前の縁が電球の光を拾う
+R('bg', 0, 11, W, 1, 'wd0')
 
-# 奥壁(黒板がのる下地)
-R('bg', 0, 12, W, 134, 'q2')
-DI('bg', 0, 12, W, 8, 'q3', 'q2')
-DI('bg', 0, 128, W, 10, 'q1', 'q2')
+# 奥壁(黒板がのる下地。漆喰)
+R('bg', 0, 12, W, 134, 'pl1')
+DI('bg', 0, 12, W, 8, 'pl2', 'pl1')
+DI('bg', 0, 128, W, 10, 'pl0', 'pl1')
 R('bg', 0, 142, W, 4, 'ink')
-R('bg', 0, 146, W, 2, 'q0')
+R('bg', 0, 146, W, 2, 'wd0')
 
-# 床(TOP・編集室と同じ間取り。継ぎ目のきらめきは暖色)
-R('bg', 0, 148, W, 92, 'q1')
-R('bg', 0, 148, W, 3, 'q0')
-for i, y in enumerate([161, 175, 189, 203, 217, 231]):
-    R('bg', 0, y, W, 1, 'q0')
-    for x in range(0, W, 16):
-        PXL('bg', x + (i * 5) % 16, y + 1, 'q2')
-for i, x in enumerate(range(0, W + 32, 32)):
-    for j, yy in enumerate([(149, 12), (162, 13), (176, 13), (190, 13), (204, 13), (218, 13), (232, 8)]):
-        xo = (x + (16 if j % 2 else 0)) % (W + 32)
-        R('bg', xo, yy[0], 1, yy[1], 'q0')
-for bi, (by0, by1) in enumerate([(149,161),(162,175),(176,189),(190,203),(204,217),(218,231)]):
-    if bi % 2 == 0:
-        for yy5 in range(by0 + 2, by1 - 2):
-            for xx5 in range(0, W):
-                if (xx5 + yy5 + bi) % 6 == 0:
-                    PXL('bg', xx5, yy5, 'q2')
-for wx5, wy5 in [(88,171),(132,178),(210,166),(262,181),(150,186),(238,192),(302,188),
-                 (180,232),(280,226),(120,224)]:
-    PXL('bg', wx5, wy5, 'q0'); PXL('bg', wx5 + 1, wy5, 'q2')
-for si, sx5 in enumerate(range(56, W - 48, 24)):
-    PXL('bg', sx5, 160, 'y0' if si % 2 else 'o0')          # 床のきらめきは電球とおなじ暖色
-    PXL('bg', sx5 + 12, 174, 'o0' if si % 2 else 'y0')
-DI('bg', 0, 224, W, 6, 'q1', 'q0')
-DI('bg', 0, 230, W, 10, 'q0', 'ink')
+# 床(古い木造校舎の板張り。継ぎ目は奥の消失点へ収束する)
+FL_Y0, VPX, VPY = 148, 192, 138
+R('bg', 0, FL_Y0, W, H - FL_Y0, 'wd1')
+DITH('bg', 0, FL_Y0, W, H - FL_Y0, None, 'wd0', 'hline')   # 板目
+for k in range(-13, 14):                                    # 板の継ぎ目
+    xb = VPX + k * 34
+    for yy in range(FL_Y0, H):
+        t = (yy - VPY) / float(H - VPY)
+        xx = int(VPX + (xb - VPX) * t + 0.5)
+        if 0 <= xx < W:
+            PXL('bg', xx, yy, 'wd0')
+            if xx + 1 < W:
+                PXL('bg', xx + 1, yy, 'wd2')                # 継ぎ目の右が光を拾う
+for yy in (178, 202, 228):                                  # 板の継ぎ手(控えめに)
+    for xx in range(0, W, 3):
+        PXL('bg', xx, yy, 'wd0')
+for i, yy in enumerate((170, 188, 210, 232)):               # 歩いて擦れた艶
+    for xx in range(0, W, 5):
+        if (xx + i * 3) % 15 < 6:
+            PXL('bg', xx, yy, 'wd2')
+for si, sx5 in enumerate(range(56, W - 48, 24)):            # 電球の映り込み(暖色)
+    PXL('bg', sx5, 176, 'y0' if si % 2 else 'o0')
+    PXL('bg', sx5 + 12, 196, 'o0' if si % 2 else 'y0')
+DI('bg', 0, 224, W, 8, 'wd0', 'ink')                        # 手前は沈む
+DI('bg', 0, 232, W, 8, 'ink', 'ink')
 
-# ── 壁を床側へ延長(赤線指示: 黒板を下まで)。壁と床の境目は見切り2段でくっきり ──
-R('bg', 0, 148, W, 16, 'q2')
-R('bg', 0, 164, W, 2, 'ink')
-R('bg', 0, 166, W, 2, 'q0')
+# ── 壁を床側へ延長(黒板は下まで)。境目は木の巾木でくっきり ──
+R('bg', 0, 148, W, 14, 'pl1')
+R('bg', 0, 162, W, 3, 'wd1')                                # 巾木
+R('bg', 0, 162, W, 1, 'wd2')
+R('bg', 0, 165, W, 2, 'ink')                                # 床との見切りの影
 
-# ─── 側壁(TOP・編集室と同じ台形) ───
+# ─── 側壁(木造校舎: 上が漆喰・下が板張りの腰壁) ───
+WAINSCOT_SEAMS = (0, 10, 19, 27, 34, 39, 43, 46)   # 奥ほど詰まる板の継ぎ目
 def side_wall(left):
     for i in range(47):
         xx = i if left else W - 1 - i
         t = i / 46.0
         ytop = int(2 + 12 * t + 0.5)
         ybot = int(234 - 66 * t + 0.5)
+        rail = int(ytop + (ybot - ytop) * 0.54 + 0.5)       # 腰壁の見切り桟
         for yy in range(ytop, ybot + 1):
             if yy <= ytop + 1:
-                c = 'ink'
+                c = 'ink'                                    # 回り縁(天井との見切り)
             elif yy <= ytop + 3:
-                c = 'q1'
+                c = 'wd0'
+            elif yy < rail - 2:
+                # 漆喰: 塗りムラを粗いディザで。ドット柄に見えないよう不規則に
+                base = 'pl1' if t > 0.5 else 'pl2'
+                if (xx * 5 + yy * 3) % 7 == 0:
+                    base = 'pl0' if t > 0.5 else 'pl1'
+                c = 'pl0' if (xx * 29 + yy * 17) % 53 < 2 else base
+            elif yy == rail - 2:
+                c = 'ink'                                    # 見切り桟の落ち影
+            elif yy == rail - 1:
+                c = 'wd3'                                    # 桟の天面(光を拾う)
+            elif yy <= rail + 1:
+                c = 'wd1'                                    # 桟の見付け
+            elif yy == rail + 2:
+                c = 'wd0'                                    # 桟の下の影
             elif yy >= ybot - 1:
-                c = 'q0'
-            elif yy == ybot - 2:
-                c = 'ink'
-            elif yy >= ybot - 5:
-                c = 'q1'
+                c = 'ink'                                    # 巾木の下の影
+            elif yy >= ybot - 4:
+                c = 'wd1'                                    # 巾木
+            elif yy == ybot - 5:
+                c = 'wd2'                                    # 巾木の天面
             else:
-                base = 'q1' if t > 0.55 else 'q2'
-                c = 'q0' if (xx * 13 + yy * 7) % 37 == 0 else base
+                c = 'wd1' if (xx * 7 + yy * 3) % 31 else 'wd0'   # 板張りの腰壁
             PXL('bg', xx, yy, c)
+        if i in WAINSCOT_SEAMS:                              # 腰壁の板の継ぎ目(実目地)
+            for yy in range(rail + 3, ybot - 5):
+                PXL('bg', xx, yy, 'ink')
+                nx = xx + (1 if left else -1)
+                if 0 <= nx < W:
+                    PXL('bg', nx, yy, 'wd2')                 # 目地の片側が光を拾う
     cx0 = 46 if left else W - 47
     R('bg', cx0, 13, 1, 156, 'ink')
-    R('bg', cx0 + (1 if left else -1), 14, 1, 154, 'q3')
+    R('bg', cx0 + (1 if left else -1), 14, 1, 154, 'wd1')
 side_wall(True)
 side_wall(False)
 
@@ -573,26 +599,24 @@ def sticky(x, y, w, h, base, hi, sh):
     for k in range(3):
         R('furniture', x + 2, y + 3 + k * 3, w - 5 - k, 1, sh)
 
-photo(249, 57, 32, 25, 'b0')
-EL('furniture', 258, 62, 270, 73, fill='b2', out='b1')        # 写真の中のおばけらしき影
-PXL('furniture', 262, 66, 'b5'); PXL('furniture', 266, 66, 'b5')
-photo(287, 57, 26, 22, 'q1')
-EL('furniture', 294, 61, 305, 71, fill='q4', out='q2')
-photo(293, 86, 27, 24, 'r0')
-EL('furniture', 300, 90, 312, 101, fill='r1', out='r2')
-sticky(249, 88, 18, 15, 'y2', 'ivory', 'y0')
-sticky(271, 90, 16, 13, 'm4', 'pnkc', 'm2')
-for k in range(9):                                             # 手書きの行
-    R('furniture', 249, 112 + k * 3, 36 - (k % 3) * 7, 1, 'gray1')
-for k in range(4):
-    R('furniture', 290, 138 + k * 3, 30 - (k % 2) * 6, 1, 'gray1')
+photo(259, 66, 30, 23, 'b0')                                   # 上段: 写真2枚
+EL('furniture', 267, 71, 279, 82, fill='b2', out='b1')         # 写真の中のおばけらしき影
+PXL('furniture', 271, 75, 'b5'); PXL('furniture', 275, 75, 'b5')
+photo(293, 66, 26, 20, 'q1')
+EL('furniture', 299, 70, 310, 79, fill='q4', out='q2')
+sticky(259, 93, 17, 14, 'y2', 'ivory', 'y0')                   # 中段: 付箋2枚+写真
+sticky(279, 94, 15, 12, 'm4', 'pnkc', 'm2')
+photo(297, 92, 24, 21, 'r0')
+EL('furniture', 303, 96, 314, 106, fill='r1', out='r2')
+for k in range(6):                                             # 下段: 手書きの行
+    R('furniture', 259, 118 + k * 3, 32 - (k % 3) * 6, 1, 'gray1')
 for k in range(5):                                             # 小さなグラフ
-    hgt = (k * 3 + 4) % 13
-    R('furniture', 292 + k * 5, 127 - hgt, 3, hgt, 'b3')
-    R('furniture', 292 + k * 5, 127 - hgt, 3, 1, 'b4')
-R('furniture', 291, 128, 27, 1, 'gray0')
-R('furniture', 246, 55, 4, 6, 'gray2')                         # ゼムクリップ
-R('furniture', 246, 55, 4, 1, 'wht'); PXL('furniture', 247, 60, 'gray0')
+    hgt = (k * 3 + 4) % 11
+    R('furniture', 298 + k * 5, 136 - hgt, 3, hgt, 'b3')
+    R('furniture', 298 + k * 5, 136 - hgt, 3, 1, 'b4')
+R('furniture', 297, 137, 27, 1, 'gray0')
+R('furniture', 254, 59, 4, 6, 'gray2')                         # ゼムクリップ
+R('furniture', 254, 59, 4, 1, 'wht'); PXL('furniture', 255, 64, 'gray0')
 
 # ─── 右の壁: スタジオ(TOPの部屋)へ戻る戸口。白色の光がもれる ───
 obj('スタジオへの戸口')
@@ -996,6 +1020,32 @@ for lname in ['bg', 'furniture', 'props']:
     apply_illum(lname)
 
 # ═══════ 空気感: ふちを落として視線を中央へ集める(ビネット) ═══════
+# ═══════ 文字がのる刷り面は、光を受けても暗いまま保つ(可読性は演出より優先) ═══════
+# 照明のあとに塗るので、ここで置いた色がそのまま残る。
+# 光の演出はカードの縁・枠・パネル面に残り、文字の下だけが暗い面になる。
+def _textbed(x, y, w, h):
+    for yy in range(y, y + h):
+        t = (yy - y) / max(1.0, h - 1)
+        base = 'n1' if t < 0.3 else ('n0' if t < 0.86 else 'ink')
+        for xx in range(x, x + w):
+            grain = (xx * 3 + yy * 5) % 11 == 0
+            PXL('furniture', xx, yy, ('n2' if t < 0.3 else 'n1') if grain else base)
+    R('furniture', x, y, w, 1, 'ink')            # 凹みの上辺(影)
+    R('furniture', x, y + h - 1, w, 1, 'n2')     # 底で拾う反射
+    PXL('furniture', x, y, 'ink')
+    PXL('furniture', x + w - 1, y + h - 1, 'n2')
+
+if 'MENU' in globals():                          # この面があるのは編集室だけ
+    _mx, _my, _mw, _mh = MENU
+    for _i in range(5):                          # 見出し1枚+カード4枚
+        _textbed(_mx + 5, _my + 6 + _i * 22 + 5, _mw - 11, 10)
+        if _i == 0:                              # 見出しの両端LEDは下地の上に描き直す
+            for _lx in (_mx + 5, _mx + _mw - 6):
+                PXL('furniture', _lx, _my + 14, 'cyn2')
+                PXL('furniture', _lx, _my + 15, 'cync')
+                PXL('furniture', _lx, _my + 16, 'cyn2')
+    _textbed(MARQ[0] + 5, MARQ[1] + 7, MARQ[2] - 10, MARQ[3] - 14)   # 電飾マーキーの凹み
+
 # 部屋ごとに VIG_C(中心) と VIG_S(強さ) を変えられる
 try:
     VIG_C

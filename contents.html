@@ -198,7 +198,7 @@
     box-sizing: border-box; text-align: left; white-space: nowrap;
     display: flex; align-items: center;
     font-family: 'DotGothic16', 'MS Gothic', monospace;
-    color: #b9b4d8; font-size: 6px; line-height: 1;
+    color: #ddd8f2; font-size: 6px; line-height: 1;
   }
   /* ▶はカード内に収めたいので、6pxの文字ではなく3pxのCSS三角にする */
   .mi .cur {
@@ -207,7 +207,7 @@
     border-left: 4px solid #f79db8;
     border-top: 3px solid transparent; border-bottom: 3px solid transparent;
   }
-  .mi.sel { color: #ffffff; }
+  .mi.sel { color: #ffffff; text-shadow: 0 0 3px rgba(236, 148, 190, .55); }
   .mi.sel .cur { visibility: visible; }
   .mi:hover, .mi:focus-visible { color: #ffffff; background: rgba(236, 148, 190, .12); outline: none; }
   /* 見出し「制作事例」: 選べない銘板。項目とはベースも文字色も変える */

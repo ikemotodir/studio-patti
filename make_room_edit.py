@@ -988,6 +988,32 @@ for lname in ['bg', 'furniture', 'props']:
     apply_illum(lname)
 
 # ═══════ 空気感: ふちを落として視線を中央へ集める(ビネット) ═══════
+# ═══════ 文字がのる刷り面は、光を受けても暗いまま保つ(可読性は演出より優先) ═══════
+# 照明のあとに塗るので、ここで置いた色がそのまま残る。
+# 光の演出はカードの縁・枠・パネル面に残り、文字の下だけが暗い面になる。
+def _textbed(x, y, w, h):
+    for yy in range(y, y + h):
+        t = (yy - y) / max(1.0, h - 1)
+        base = 'n1' if t < 0.3 else ('n0' if t < 0.86 else 'ink')
+        for xx in range(x, x + w):
+            grain = (xx * 3 + yy * 5) % 11 == 0
+            PXL('furniture', xx, yy, ('n2' if t < 0.3 else 'n1') if grain else base)
+    R('furniture', x, y, w, 1, 'ink')            # 凹みの上辺(影)
+    R('furniture', x, y + h - 1, w, 1, 'n2')     # 底で拾う反射
+    PXL('furniture', x, y, 'ink')
+    PXL('furniture', x + w - 1, y + h - 1, 'n2')
+
+if 'MENU' in globals():                          # この面があるのは編集室だけ
+    _mx, _my, _mw, _mh = MENU
+    for _i in range(5):                          # 見出し1枚+カード4枚
+        _textbed(_mx + 5, _my + 6 + _i * 22 + 5, _mw - 11, 10)
+        if _i == 0:                              # 見出しの両端LEDは下地の上に描き直す
+            for _lx in (_mx + 5, _mx + _mw - 6):
+                PXL('furniture', _lx, _my + 14, 'cyn2')
+                PXL('furniture', _lx, _my + 15, 'cync')
+                PXL('furniture', _lx, _my + 16, 'cyn2')
+    _textbed(MARQ[0] + 5, MARQ[1] + 7, MARQ[2] - 10, MARQ[3] - 14)   # 電飾マーキーの凹み
+
 # 部屋ごとに VIG_C(中心) と VIG_S(強さ) を変えられる
 try:
     VIG_C
