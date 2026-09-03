@@ -2,6 +2,19 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
+<script>
+// スマホ(縦画面の電話)はスマホ版へ。PC・タブレットはこのままPC版
+(function () {
+  try {
+    if (/[?&]pc=1(&|$)/.test(location.search) || sessionStorage.getItem('patti-pc')) return;
+    var ua = navigator.userAgent || '';
+    var phone = (navigator.userAgentData && navigator.userAgentData.mobile === true)
+             || /iPhone|iPod|Android.+Mobile|Windows Phone/i.test(ua);
+    var touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    if (phone && touch) location.replace('m.html' + location.hash);
+  } catch (e) {}
+})();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>STUDIO PATTI｜合同会社スタジオパッチ</title>
