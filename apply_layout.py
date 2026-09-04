@@ -151,14 +151,20 @@ def main():
     path = sys.argv[1] if len(sys.argv) > 1 else newest_layout()
     print("読み込み:", path)
     data = json.load(io.open(path, encoding="utf-8"))
+    os.environ["PATTI_LAYOUT"] = os.path.abspath(path)   # make_room_m.py が同じ layout.json を読む
     P = Patch()
     for room, items in data.items():
-        it = dict((o['id'], o) for o in items)
+        if not isinstance(items, list):
+            print("[%s] 配列ではないので飛ばします" % room)
+            continue
+        it = dict((o['id'], o) for o in items if isinstance(o, dict) and 'id' in o)
         print("[%s] %d 件" % (room, len(it)))
         if room == 'design':
             apply_design(P, it)
         elif room == 'edit':
             apply_edit(P, it)
+        elif room == 'mobile':
+            print("  (スマホ版は make_room_m.py が layout.json を直接読む)")
     P.save()
 
     print("絵を描き直しています…")
@@ -167,16 +173,24 @@ def main():
     for script, need_aseprite in (("build_design.py", False),
                                   ("make_room_edit.py", False),
                                   ("make_room_design.py", False),
+                                  ("make_room_m.py", False),
                                   ("make_aseprite_edit.py", True),
                                   ("make_aseprite_design.py", True)):
         r = subprocess.run([sys.executable, script], cwd=WEB, capture_output=True)
+        out = r.stdout.decode("utf-8", "replace")
         if r.returncode != 0:
-            msg = r.stderr.decode("utf-8", "replace")[-800:]
+            msg = (out + r.stderr.decode("utf-8", "replace"))[-800:]
             if need_aseprite:
                 print("  とばした", script, "(Aseprite が無い環境)")
                 continue
             sys.exit("失敗: %s\n%s" % (script, msg))
         print("  OK", script)
+        if "注意" in out:                      # 池本さんの配置での重なり・はみ出しは記録に残す
+            note = out[out.index("注意"):].rstrip()
+            for line in note.splitlines():
+                print("    " + line)
+            if os.environ.get("GITHUB_ACTIONS"):
+                print("::warning title=%s::%s" % (script, note.replace("\n", "%0A")))
     print("反映おわり。")
 
 

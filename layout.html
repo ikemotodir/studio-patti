@@ -80,6 +80,16 @@
     background: #ffd166; border: 1px solid #14101f; cursor: nwse-resize;
   }
   .box.chara i { display: none; }
+  /* スマホ版: 物は本物の絵で出す */
+  .box.img { border: 2px solid transparent; background-color: transparent;
+             background-repeat: no-repeat; background-size: 100% 100%; }
+  .box.img.chara { background-size: auto 100%; background-position: 0 0; }
+  .box.img:hover { border-color: #ffd166; }
+  .box.img.sel { border-color: #ec94be; background-color: rgba(236, 148, 190, .18); }
+  .box.img.hit { border-color: #ff6f6f; background-color: rgba(255, 111, 111, .25); }
+  .box.img i { display: none; }
+  .box.lock { cursor: ew-resize; }
+  .ref.up b { bottom: auto; top: -19px; }
   #side { flex: 1 1 340px; min-width: 320px; }
   #out {
     width: 100%; height: 340px; background: #0d0a16; color: #d6f7ff;
@@ -91,7 +101,7 @@
   #pub.ng { color: #ff9a9a; }
   #keybox { margin: 10px 0; padding: 12px; background: #2a1c2e; border: 1px solid #55467f; }
   #warn { font-size: 13px; margin: 6px 0 10px; color: #ff9a9a; line-height: 1.8; min-height: 18px; }
-  .box.hit { border-color: #ff6f6f; background: rgba(255, 111, 111, .30); }
+  .box.hit { border-color: #ff6f6f; background-color: rgba(255, 111, 111, .30); }
   .box.hit b { color: #ffd9d9; border-color: #ff6f6f; }
   .legend { font-size: 12px; color: #b7aede; margin: 8px 0 0; line-height: 1.9; }
   .legend span { display: inline-block; width: 22px; height: 10px; margin-right: 6px; vertical-align: -1px; }
@@ -100,9 +110,10 @@
 <body>
 
 <header>
-  <h1>配置ツール <span style="font-size:11px;color:#9a93c4">v5</span></h1>
+  <h1>配置ツール <span style="font-size:11px;color:#9a93c4">v8</span></h1>
   <button id="roomD" class="on" type="button">デザイン室</button>
   <button id="roomE" type="button">編集室</button>
+  <button id="roomM" type="button">スマホ版</button>
   <button id="zoomOut" type="button">－</button>
   <span id="zlabel">3倍</span>
   <button id="zoomIn" type="button">＋</button>
@@ -131,6 +142,7 @@
       枠をマウスでつかんで動かしてください。右下の四角をつかむと大きさを変えられます。<br>
       枠をえらんでから <b>矢印キー</b>で1ドットずつ、<b>Shift+矢印</b>で5ドットずつ動きます。<br>
       キャラクターは大きさを <b>[ ] キー</b>で変えられます。<br>
+      <b>「スマホ版」</b>を押すと、スマホで見たときの部屋(たて長)の配置を直せます。物は本物の絵で出ます。<br>
       置きおわったら緑の「サイトに反映する」を押せば、そのままサイトが変わります。
     </p>
     <p class="legend">
@@ -177,7 +189,16 @@ const REFS = {
   edit: [
     { name: '編集卓の天板', x: 40, y: 137, w: 304, h: 4 },
   ],
+  mobile: [
+    { name: '↑ テキストボックス（いちばん背の低い機種ではここまで上がります。この下は隠れます）',
+      x: 0, y: 292, w: 216, h: 188, fixed: true, up: true, cls: 'talk',
+      html: '<span style="color:#ffd166">パッチ</span> ここに会話が出ます<br>この四角の中は見えなくなります' },
+  ],
 };
+function refsFor() { return (room === 'mobile' ? [] : REFS.common).concat(REFS[room] || []); }
+const ROOM_NAMES = { design: 'デザイン室', edit: '編集室', mobile: 'スマホ版' };
+const ZOOMS = { design: 3, edit: 3, mobile: 2 };
+const VER = Date.now();
 
 // ── 部屋ごとの中身。x,y,w,h はドット絵の座標(384x240) ──
 const ROOMS = {
@@ -207,7 +228,36 @@ const ROOMS = {
       { id: 'patti', name: 'パッチ',     chara: true, x: 316, y: 136, w: 32, h: 48, s: 0.75 },
     ],
   },
+  mobile: {
+    bg: 'room_m_bare.png', w: 216, h: 480,
+    items: null,     // 部屋を組み立てるスクリプトと同じ数字を room_m.json から読む
+  },
 };
+let MOBILE_P = null;
+function loadMobile() {                      // 重ねて呼ばれても読むのは1回
+  if (ROOMS.mobile.items) return Promise.resolve();
+  if (!MOBILE_P) {
+    MOBILE_P = (async () => {
+      try {
+        const m = await (await fetch('room_m.json?v=' + Date.now(), { cache: 'no-store' })).json();
+        if (!m.tool) throw new Error('サイトのスマホ版がまだ新しくありません。1〜2分あとに開き直してください');
+        ROOMS.mobile.items = m.tool.map(o => Object.assign({}, o));
+      } catch (e) {
+        say('スマホ版の部屋が読めませんでした: ' + e.message, true);
+      } finally { MOBILE_P = null; }
+    })();
+  }
+  return MOBILE_P;
+}
+let PUB = null, RESET_ROOM = null, LOAD_SEQ = 0;
+async function loadPublished() {             // サイトに反映済みの配置(layout.json)。これを土台にする
+  try { PUB = await (await fetch('layout.json?v=' + Date.now(), { cache: 'no-store' })).json(); }
+  catch (e) { PUB = null; }
+}
+function applyPublished(list, r) {
+  if (!PUB || !Array.isArray(PUB[r])) return;
+  list.forEach(it => { const o = PUB[r].find(q => q.id === it.id); if (o) applySaved(it, o); });
+}
 
 let room = 'design';
 let items = [];
@@ -234,10 +284,7 @@ function applySnap(json) {
   items.forEach(it => {
     const o = d.find(q => q.id === it.id);
     if (!o) return;
-    it.x = o.x; it.y = o.y;
-    if (o.w != null) it.w = o.w;
-    if (o.h != null) it.h = o.h;
-    if (o.s != null) it.s = o.s;
+    applySaved(it, o);
   });
   quiet = true; render(); quiet = false;
 }
@@ -249,10 +296,35 @@ function updateHistBtns() {
 }
 
 const KEY = 'patti-layout-';
+let STALE = '';                              // サイトのほうが新しくて、このブラウザの古い配置を使わなかった部屋
+function baseStr(r) { return (PUB && Array.isArray(PUB[r])) ? JSON.stringify(PUB[r]) : ''; }
+function readSaved(r) {
+  let raw = null;
+  try { raw = localStorage.getItem(KEY + r); } catch (err) { return null; }
+  if (!raw) return null;
+  let sv;
+  try { sv = JSON.parse(raw); } catch (err) { return null; }
+  if (Array.isArray(sv)) sv = { base: null, d: sv };          // 古い形式
+  if (!sv || !Array.isArray(sv.d)) return null;
+  if (PUB && Array.isArray(PUB[r]) && sv.base !== baseStr(r)) {
+    STALE = r;                                                // サイトのほうが新しい → サイトを使う
+    return null;
+  }
+  return sv.d;
+}
+function applySaved(it, o) {
+  if (o.x != null) it.x = o.x;
+  if (o.y != null && !it.lockY) it.y = o.y;
+  if (!it.img) {
+    if (o.w != null) it.w = o.w;
+    if (o.h != null) it.h = o.h;
+  }
+  if (o.s != null) it.s = o.s;
+}
 function save() {
   try {
     const d = items.map(it => ({ id: it.id, x: it.x, y: it.y, w: it.w, h: it.h, s: it.s }));
-    localStorage.setItem(KEY + room, JSON.stringify(d));
+    localStorage.setItem(KEY + room, JSON.stringify({ base: baseStr(room), d: d }));
     const e = document.getElementById('saved');
     e.textContent = '保存しました';
     clearTimeout(save.t);
@@ -260,31 +332,24 @@ function save() {
   } catch (err) {}
 }
 function restore(list) {
-  try {
-    const raw = localStorage.getItem(KEY + room);
-    if (!raw) return list;
-    const d = JSON.parse(raw);
-    list.forEach(it => {
-      const o = d.find(q => q.id === it.id);
-      if (!o) return;
-      it.x = o.x; it.y = o.y;
-      if (o.w != null) it.w = o.w;
-      if (o.h != null) it.h = o.h;
-      if (o.s != null) it.s = o.s;
-    });
-  } catch (err) {}
+  const d = readSaved(room);
+  if (!d) return list;
+  list.forEach(it => {
+    const o = d.find(q => q.id === it.id);
+    if (o) applySaved(it, o);
+  });
   return list;
 }
 
 function build() {
   const R = ROOMS[room];
-  stage.style.width = (384 * Z) + 'px';
-  stage.style.height = (240 * Z) + 'px';
+  stage.style.width = ((R.w || 384) * Z) + 'px';
+  stage.style.height = ((R.h || 240) * Z) + 'px';
   stage.style.backgroundImage = 'url(' + R.bg + '?v=' + Date.now() + ')';
   [...stage.querySelectorAll('.box, .ref')].forEach(e => e.remove());
-  REFS.common.concat(REFS[room]).forEach(rf => {
+  refsFor().forEach(rf => {
     const d = document.createElement('div');
-    d.className = 'ref' + (rf.fixed ? ' fixed' : '') + (rf.top ? ' top' : '')
+    d.className = 'ref' + (rf.fixed ? ' fixed' : '') + (rf.top ? ' top' : '') + (rf.up ? ' up' : '')
                 + (rf.cls ? ' ' + rf.cls : '');
     d.style.left = (rf.x * Z) + 'px';
     d.style.top = (rf.y * Z) + 'px';
@@ -293,12 +358,15 @@ function build() {
     d.innerHTML = (rf.html ? '<div class="real">' + rf.html + '</div>' : '')
                 + '<b>' + rf.name + '</b>';
     stage.appendChild(d);
+    rf.el = d;
   });
   items.forEach(it => {
     const d = document.createElement('div');
     d.className = 'box' + (it.chara ? ' chara' : '');
     d.dataset.id = it.id;
     d.innerHTML = '<b>' + it.name + '</b><i></i>';
+    if (it.img) { d.classList.add('img'); d.style.backgroundImage = 'url(' + it.img + '?v=' + VER + ')'; }
+    if (it.lockY) d.classList.add('lock');
     stage.appendChild(d);
     it.el = d;
     d.addEventListener('pointerdown', e => startDrag(e, it, e.target.tagName === 'I'));
@@ -310,8 +378,21 @@ function overlaps(a, b) {
   return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 }
 
+function updateTalkRef() {                 // 床の物の足元がいちばん下の所 + 4 がテキストボックスの上端(最短の機種)
+  const rf = REFS.mobile[0];
+  let g = 288;
+  items.forEach(it => { if (['jukebox', 'post', 'mayu', 'patti'].includes(it.id)) g = Math.max(g, it.y + it.h); });
+  rf.y = g + 4; rf.h = 480 - rf.y;
+  if (rf.el) { rf.el.style.top = (rf.y * Z) + 'px'; rf.el.style.height = (rf.h * Z) + 'px'; }
+  return g;
+}
 function render() {
   const hidden = [];
+  const R = ROOMS[room], stW = R.w || 384, stH = R.h || 240;
+  if (room === 'mobile') {
+    const g = updateTalkRef();
+    if (g > 288) hidden.push('床の物を下げたぶん、背の低い機種では部屋が少し縮みます（足元 ' + g + '）');
+  }
   items.forEach(it => {
     const w = it.chara ? it.w * it.s : it.w;
     const h = it.chara ? it.h * it.s : it.h;
@@ -324,10 +405,16 @@ function render() {
     it.el.classList.toggle('sel', it === sel);
     // 隠れる枠にかぶっていないか
     const box = { x: x, y: y, w: w, h: h };
-    const bad = REFS.common.filter(rf => rf.fixed && overlaps(box, rf));
+    const bad = refsFor().filter(rf => rf.fixed && overlaps(box, rf));
     it.el.classList.toggle('hit', bad.length > 0);
     if (bad.length) hidden.push(it.name + ' が「' + bad[0].name.split('（')[0] + '」にかぶっています');
+    const extra = it.id === 'patti' ? (it.walk || 0) : 0;
+    if (x < 0 || y < 0 || x + w + extra > stW || y + h > stH) {
+      it.el.classList.add('hit');
+      hidden.push(it.name + ' が画面からはみ出します' + (extra ? '（歩く幅もふくめて）' : ''));
+    }
   });
+  if (STALE === room) hidden.unshift('サイトの配置のほうが新しかったので、そちらを出しています（このパソコンの古い配置は使いません）');
   document.getElementById('warn').innerHTML = hidden.length
     ? '⚠ ' + hidden.join('<br>⚠ ') : '';
   save();
@@ -339,7 +426,7 @@ function render() {
 }
 
 function dump() {
-  const L = ['【' + (room === 'design' ? 'デザイン室' : '編集室') + ' の配置】'];
+  const L = ['【' + ROOM_NAMES[room] + ' の配置】'];
   items.forEach(it => {
     if (it.chara) {
       L.push(it.name + ' : x=' + it.x + ' y=' + it.y + ' 大きさ=' + it.s.toFixed(2));
@@ -368,7 +455,7 @@ stage.addEventListener('pointermove', e => {
     it.h = Math.max(6, drag.oh + dy);
   } else {
     it.x = drag.ox + dx;
-    it.y = drag.oy + dy;
+    if (!it.lockY) it.y = drag.oy + dy;
   }
   render();
 });
@@ -380,8 +467,8 @@ document.addEventListener('keydown', e => {
   const step = e.shiftKey ? 5 : 1;
   if (e.key === 'ArrowLeft')  { sel.x -= step; }
   else if (e.key === 'ArrowRight') { sel.x += step; }
-  else if (e.key === 'ArrowUp')    { sel.y -= step; }
-  else if (e.key === 'ArrowDown')  { sel.y += step; }
+  else if (e.key === 'ArrowUp')    { if (!sel.lockY) sel.y -= step; }
+  else if (e.key === 'ArrowDown')  { if (!sel.lockY) sel.y += step; }
   else if (e.key === '[' && sel.chara) { sel.s = Math.max(0.4, +(sel.s - 0.02).toFixed(2)); }
   else if (e.key === ']' && sel.chara) { sel.s = Math.min(1.6, +(sel.s + 0.02).toFixed(2)); }
   else return;
@@ -390,14 +477,30 @@ document.addEventListener('keydown', e => {
   snap();
 });
 
-function load(name) {
+async function load(name) {
+  const seq = ++LOAD_SEQ;
+  if (!ROOMS[name].items) await loadMobile();
+  if (seq !== LOAD_SEQ) return;              // その間に別の部屋が押された
+  if (!ROOMS[name].items) return;
   room = name;
-  items = restore(clone(ROOMS[name].items));
+  Z = ZOOMS[name] || Z;
+  document.getElementById('zlabel').textContent = Z + '倍';
+  STALE = '';
+  const base = clone(ROOMS[name].items);
+  if (RESET_ROOM === name) {                 // 本当の初期配置(スマホ版は x0/y0/s0)
+    base.forEach(it => { if (it.x0 != null) { it.x = it.x0; it.y = it.y0; } if (it.s0 != null) it.s = it.s0; });
+    RESET_ROOM = null;
+    items = base;
+  } else {
+    applyPublished(base, name);              // サイトに反映済みの配置 → このブラウザで動かした配置
+    items = restore(base);
+  }
   sel = null;
   build();
   HIST = []; HPOS = -1; snap();
   document.getElementById('roomD').classList.toggle('on', name === 'design');
   document.getElementById('roomE').classList.toggle('on', name === 'edit');
+  document.getElementById('roomM').classList.toggle('on', name === 'mobile');
 }
 document.getElementById('undo').addEventListener('click', undo);
 document.getElementById('redo').addEventListener('click', redo);
@@ -409,15 +512,17 @@ document.addEventListener('keydown', e => {
 });
 document.getElementById('roomD').addEventListener('click', () => load('design'));
 document.getElementById('roomE').addEventListener('click', () => load('edit'));
+document.getElementById('roomM').addEventListener('click', () => load('mobile'));
 document.getElementById('reset').addEventListener('click', () => {
   try { localStorage.removeItem(KEY + room); } catch (e) {}
+  RESET_ROOM = room;
   load(room);
 });
 document.getElementById('zoomIn').addEventListener('click', () => {
-  Z = Math.min(6, Z + 1); document.getElementById('zlabel').textContent = Z + '倍'; build();
+  Z = Math.min(6, Z + 1); ZOOMS[room] = Z; document.getElementById('zlabel').textContent = Z + '倍'; build();
 });
 document.getElementById('zoomOut').addEventListener('click', () => {
-  Z = Math.max(2, Z - 1); document.getElementById('zlabel').textContent = Z + '倍'; build();
+  Z = Math.max(1, Z - 1); ZOOMS[room] = Z; document.getElementById('zlabel').textContent = Z + '倍'; build();
 });
 // ── サイトに反映する ──
 const REPO = 'ikemotodir/studio-patti';
@@ -427,24 +532,16 @@ function say(msg, ng) { pub.textContent = msg; pub.classList.toggle('ng', !!ng);
 
 function layoutAll() {
   const all = {};
-  ['design', 'edit'].forEach(r => {
+  ['design', 'edit', 'mobile'].forEach(r => {
+    if (!ROOMS[r].items) return;           // スマホ版がまだ読めていなければ、いま入っているものを残す(publish 側)
     let list = ROOMS[r].items.map(o => Object.assign({}, o));
     if (r === room) {
       list = items;
     } else {
-      try {
-        const raw = localStorage.getItem(KEY + r);
-        if (raw) {
-          const d = JSON.parse(raw);
-          list.forEach(it => {
-            const o = d.find(q => q.id === it.id);
-            if (o) { it.x = o.x; it.y = o.y;
-                     if (o.w != null) it.w = o.w;
-                     if (o.h != null) it.h = o.h;
-                     if (o.s != null) it.s = o.s; }
-          });
-        }
-      } catch (err) {}
+      const d = readSaved(r);
+      if (!d && !(PUB && Array.isArray(PUB[r]))) return;      // 触っておらず、サイトにも無い部屋は送らない
+      applyPublished(list, r);
+      if (d) list.forEach(it => { const o = d.find(q => q.id === it.id); if (o) applySaved(it, o); });
     }
     all[r] = list.map(it => {
       const o = { id: it.id, x: it.x, y: it.y, w: it.w, h: it.h };
@@ -469,21 +566,33 @@ async function publish() {
   const url = 'https://api.github.com/repos/' + REPO + '/contents/layout.json';
   const head = { Authorization: 'Bearer ' + key, Accept: 'application/vnd.github+json' };
   try {
-    let sha = null;
+    let sha = null, prev = null;
     const g = await fetch(url + '?ref=main&t=' + Date.now(), { headers: head, cache: 'no-store' });
-    if (g.ok) { sha = (await g.json()).sha; }
+    if (g.ok) {
+      const j = await g.json(); sha = j.sha;
+      try { prev = JSON.parse(new TextDecoder().decode(
+              Uint8Array.from(atob((j.content || '').replace(/\s/g, '')), c => c.charCodeAt(0)))); } catch (e) {}
+    }
     else if (g.status === 401 || g.status === 403) {
       localStorage.removeItem(KEYK);
       document.getElementById('keybox').style.display = 'block';
       say('鍵がちがうようです。もう一度貼ってください。', true);
       btn.disabled = false; return;
     }
-    const body = { message: '配置ツールから配置を保存', content: b64(JSON.stringify(layoutAll(), null, 1)) };
+    if (prev) PUB = prev;                    // 送る土台は GitHub にある今の配置(タブを開いた時のものではなく)
+    const all = layoutAll();
+    ['design', 'edit', 'mobile'].forEach(r => {          // 送らない部屋は GitHub にある今のまま
+      if (!all[r] && prev && Array.isArray(prev[r])) all[r] = prev[r];
+    });
+    const body = { message: '配置ツールから配置を保存', content: b64(JSON.stringify(all, null, 1)) };
     if (sha) body.sha = sha;
     const r = await fetch(url, { method: 'PUT', headers: head, body: JSON.stringify(body) });
     if (!r.ok) throw new Error('GitHub ' + r.status + ' ' + (await r.text()).slice(0, 160));
+    PUB = all;                               // これがサイトの新しい配置
+    ['design', 'edit', 'mobile'].forEach(r => { if (r !== room) { try { localStorage.removeItem(KEY + r); } catch (e) {} } });
+    save();
     say('送りました！ 1〜2分でサイトが変わります。');
-    setTimeout(() => say('反映されたか見る → design.html / contents.html を開き直してください。'), 9000);
+    setTimeout(() => say('反映されたか見る → design.html / contents.html / スマホは m.html を開き直してください。'), 9000);
   } catch (e) {
     say('うまくいきませんでした: ' + e.message, true);
   }
@@ -519,7 +628,11 @@ document.getElementById('copy').addEventListener('click', () => {
     () => document.execCommand('copy'));
 });
 
-load('design');
+(async () => {
+  await loadPublished();                 // サイトに反映済みの配置を土台にする(ブラウザを変えても現状から始まる)
+  await load('design');
+  loadMobile();                          // 反映のときスマホ版も一緒に送るため先に読んでおく
+})();
 </script>
 </body>
 </html>

@@ -593,6 +593,7 @@ const pEl = document.getElementById('patti');
 const p = new Player(pEl);
 const mp = new Player(document.getElementById('mayu'));
 let WALK_MIN_X = 126, WALK_MAX_X = 136, WALK_SPEED = 18;
+let PATTI_TOP = 240, PSC = 0.75;             // 置き場所と大きさは room_m.json から
 let x = 131, facing = 1;
 function reveal() {                                   // 座標とコマの両方がそろってから出す
   if (!META || !p.h) return;
@@ -602,10 +603,11 @@ function reveal() {                                   // 座標とコマの両�
 function place() {
   const xi = Math.round(x);
   pEl.style.left = xi + 'px';
-  pEl.style.top = (GROUND_Y - p.h) + 'px';
-  pEl.style.transform = facing === 1 ? 'scale(.75)' : 'scale(.75) scaleX(-1)';
+  pEl.style.top = PATTI_TOP + 'px';
+  pEl.style.transform = facing === 1 ? 'scale(' + PSC + ')' : 'scale(' + PSC + ') scaleX(-1)';
   const sh = document.getElementById('pshadow');
-  sh.style.left = (xi + 7) + 'px'; sh.style.top = (GROUND_Y - 4) + 'px';
+  sh.style.left = (xi + 7) + 'px'; sh.style.top = (PATTI_TOP + (p.h || 48) - 4) + 'px';
+  sh.style.transform = 'scale(' + (PSC / 0.75) + ')';           // 影も同じ倍率で
 }
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const rand = (a, b) => a + Math.random() * (b - a);
@@ -753,15 +755,23 @@ function placeAll(m) {
   setPos('jukehalo', [J[0] - 12, J[1] - 12]);
   GROUND_Y = m.ground;
   fitStage();
-  // マユちゃん(左で絵本を読んでいる)
+  // マユちゃん(左で絵本を読んでいる)。置き場所と大きさは配置ツールの数字(room_m.json)
   const my = document.getElementById('mayu');
-  my.style.left = '60px'; my.style.top = (GROUND_Y - 58) + 'px';
+  const [mx, myy, msc] = m.mayu || [60, GROUND_Y - 58, 0.75];
+  my.style.left = mx + 'px'; my.style.top = myy + 'px'; my.style.transform = 'scale(' + msc + ')';
   const ms = document.getElementById('mshadow');
-  ms.style.left = '76px'; ms.style.top = (GROUND_Y - 5) + 'px';
+  ms.style.left = (mx + 15) + 'px'; ms.style.top = (myy + 58 - 5) + 'px';
+  ms.style.transform = 'scale(' + (msc / 0.75) + ')';          // 影も同じ倍率で
+  // パッチ(置いた所から右へ少し歩く。右端からは出ない)
+  const [px0, py0, psc] = m.patti || [126, GROUND_Y - 48, 0.75];
+  const walk = m.walk || 10;
+  PATTI_TOP = py0; PSC = psc;
+  WALK_MIN_X = px0; WALK_MAX_X = Math.max(px0, Math.min(px0 + walk, 216 - 36 * (1 + psc) / 2));
+  x = px0 + walk / 2;
   my.addEventListener('click', () => sayFor('マユちゃんだよ！ボクの大切なお友達なんだ！<br>いつも一緒に絵本を読んでるの'));
 
   makeHot('book', H.book, 'それは絵本『おばけのパッチ』！<br>ボクが主役の絵本、ここで読めるよ！',
-          () => openDetail('book'), { label: '絵本『おばけのパッチ』を読む', style: '--gw:170%;--gh:170%' });
+          () => openDetail('book'), { label: '絵本『おばけのパッチ』を読む', style: '--gw:130%;--gh:125%' });
   makeHot('gallery', H.gallery, 'ギャラリーのかべ！<br>ボクの絵がいっぱいあるよ！',
           () => openDetail('gallery'), { label: 'ギャラリー', style: '--gw:106%;--gh:112%;--gi:.6' });
   makeHot('post', H.post, '赤いポスト！<br>お手紙（お問い合わせ）はここからどうぞ！',
