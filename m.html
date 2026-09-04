@@ -19,7 +19,7 @@
 <style>
   :root {
     --topH: 48px;
-    --talkH: 92px;
+    --talkH: 76px;
     --font: 'DotGothic16', 'MS Gothic', monospace;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -67,22 +67,24 @@
   #menu button:active { background: rgba(252, 200, 0, .14); color: #fcc800; }
   #menu .pc { color: #b7aede; font-size: 13px; padding: 12px 18px 14px; }
 
-  /* ─── 部屋(ドット絵のステージ) ─── */
-  #stagewrap {
-    flex: 1 1 auto; min-height: 0;
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden;
+  /* ─── 部屋(ドット絵のステージ)。上端はバーの直下、床は画面の下端まで ─── */
+  #roomarea {
+    flex: 1 1 auto; min-height: 0; position: relative; overflow: hidden;
+    background: #0a0722;                       /* 万一の隙間も黒にしない */
   }
-  #stagebox { position: relative; }
+  #stagebox { position: absolute; top: 0; left: 50%; transform: translateX(-50%); }
   #stage {
     position: absolute; left: 0; top: 0;
-    width: 216px; height: 372px;
+    width: 216px; height: 480px;
     transform-origin: 0 0;
     image-rendering: pixelated;
     overflow: hidden;
   }
   #stage img, #stage div, #stage canvas { image-rendering: pixelated; }
-  #room { position: absolute; left: 0; top: 0; width: 216px; height: 372px; }
+  #room { position: absolute; left: 0; top: 0; width: 216px; height: 480px; }
+  /* 二人は位置が決まるまで出さない(開いた瞬間に左上へ出るのを防ぐ) */
+  #patti, #mayu, #pshadow, #mshadow { visibility: hidden; }
+  #stage.ready #patti, #stage.ready #mayu, #stage.ready #pshadow, #stage.ready #mshadow { visibility: visible; }
 
   /* 重なり順(レイヤー事故防止) */
   #room { z-index: 1; }
@@ -173,12 +175,13 @@
   }
   #mshadow { position: absolute; width: 46px; height: 6px; border-radius: 50%; background: rgba(64,24,108,.5); pointer-events: none; }
 
-  /* ─── テキストボックス(本物の文字サイズ。ドット絵と一緒に縮めない) ─── */
+  /* ─── テキストボックス(床の上に重ねる。本物の文字サイズ) ─── */
   #talk {
-    flex: none; height: var(--talkH); margin: 0 10px 8px;
+    position: absolute; left: 8px; right: 8px; bottom: 6px; z-index: 10;
+    height: var(--talkH); margin: 0;
     background: rgba(8, 6, 40, .96); border: 2px solid #e8e4f4; border-radius: 4px;
     box-shadow: inset 0 0 0 1px #2a2560;
-    padding: 10px 26px 10px 12px; position: relative;
+    padding: 8px 26px 8px 12px;
     font-size: 14px; line-height: 1.6; color: #f2eefc;
   }
   #talk .name { color: #fcc800; margin-right: 6px; }
@@ -279,7 +282,7 @@
     </div>
   </div>
 
-  <div id="stagewrap">
+  <div id="roomarea">
     <div id="stagebox">
       <div id="stage">
         <img id="room" src="room_m.png" alt="パッチくんの部屋">
@@ -300,11 +303,10 @@
         <div id="patti" role="img" aria-label="パッチくん"></div>
       </div>
     </div>
-  </div>
-
-  <div id="talk">
-    <span class="name">パッチ</span><span id="talktext">ここはスタジオパッチのホームページだよ！気になるところをタップしてね！</span>
-    <span class="cursor" aria-hidden="true"></span>
+    <div id="talk">
+      <span class="name">パッチ</span><span id="talktext">ここはスタジオパッチのホームページだよ！気になるところをタップしてね！</span>
+      <span class="cursor" aria-hidden="true"></span>
+    </div>
   </div>
 </div>
 
@@ -331,15 +333,18 @@ const TALK_DEFAULT = 'ここはスタジオパッチのホームページだよ�
 let META = null, BOOK = null, GALLERY = { items: [] }, CONTACT = { endpoint: '', fields: {} };
 
 // ── ステージを画面に収める(横いっぱい、または上下に収まる方) ──
+let GROUND_Y = 288;
 function fitStage() {
-  const top = document.getElementById('top').offsetHeight;
-  const talk = document.getElementById('talk').offsetHeight + 8;
-  const vw = document.documentElement.clientWidth;
-  const vh = window.innerHeight;
-  const s = Math.max(0.5, Math.min(vw / 216, (vh - top - talk - 8) / 372));
+  const area = document.getElementById('roomarea');
+  const vw = area.clientWidth, roomH = area.clientHeight;
+  const talkPx = document.getElementById('talk').offsetHeight + 6 + 2;   // 箱 + 下の余白 + 足元の余白
+  let s = vw / 216;                                    // 基本は横幅いっぱい
+  const sFit = (roomH - talkPx) / (GROUND_Y + 4);      // 足元(影まで)がテキストボックスより上に来る上限
+  if (sFit < s) s = sFit;                              // 背の低い画面だけ少し縮める
+  s = Math.max(0.5, s);
   stage.style.transform = 'scale(' + s + ')';
   stagebox.style.width = (216 * s) + 'px';
-  stagebox.style.height = (372 * s) + 'px';
+  stagebox.style.height = (480 * s) + 'px';
 }
 window.addEventListener('resize', fitStage);
 window.addEventListener('orientationchange', () => setTimeout(fitStage, 200));
@@ -587,8 +592,13 @@ class Player {
 const pEl = document.getElementById('patti');
 const p = new Player(pEl);
 const mp = new Player(document.getElementById('mayu'));
-let GROUND_Y = 300, WALK_MIN_X = 124, WALK_MAX_X = 140, WALK_SPEED = 18;
+let WALK_MIN_X = 124, WALK_MAX_X = 140, WALK_SPEED = 18;
 let x = 132, facing = 1;
+function reveal() {                                   // 座標とコマの両方がそろってから出す
+  if (!META || !p.h) return;
+  place();
+  stage.classList.add('ready');
+}
 function place() {
   const xi = Math.round(x);
   pEl.style.left = xi + 'px';
@@ -737,6 +747,7 @@ function placeAll(m) {
   setPos('jukeglow', J);
   setPos('jukehalo', [J[0] - 12, J[1] - 12]);
   GROUND_Y = m.ground;
+  fitStage();
   // マユちゃん(左で絵本を読んでいる)
   const my = document.getElementById('mayu');
   my.style.left = '60px'; my.style.top = (GROUND_Y - 58) + 'px';
@@ -762,7 +773,7 @@ function placeAll(m) {
   makeHot('clock', H.clock, 'かけ時計！<br>いま見てる人の時間を指してるんだ', null, { label: 'かけ時計', style: '--gi:.5' });
 }
 
-fetch('room_m.json', NOCACHE).then(r => r.json()).then(m => { META = m; placeAll(m); }).catch(e => console.error(e));
+fetch('room_m.json', NOCACHE).then(r => r.json()).then(m => { META = m; placeAll(m); reveal(); }).catch(e => console.error(e));
 fetch('book.json', NOCACHE).then(r => r.json()).then(j => BOOK = j).catch(() => {});
 fetch('gallery.json', NOCACHE).then(r => r.json()).then(j => GALLERY = j).catch(() => {});
 fetch('contact.json', NOCACHE).then(r => r.json()).then(j => CONTACT = j).catch(() => {});
@@ -770,7 +781,7 @@ Promise.all([
   fetch('patti.json', NOCACHE).then(r => r.json()),
   fetch('mayu_shaded.json', NOCACHE).then(r => r.json()),
 ]).then(([pd, md]) => {
-  p.load(pd); mp.load(md); place(); requestAnimationFrame(loop); behave(); mayuBehave(); speopBehave();
+  p.load(pd); mp.load(md); reveal(); requestAnimationFrame(loop); behave(); mayuBehave(); speopBehave();
 }).catch(e => console.error(e));
 if (location.hash && BUILDERS[location.hash.slice(1)]) setTimeout(() => openDetail(location.hash.slice(1)), 300);
 </script>

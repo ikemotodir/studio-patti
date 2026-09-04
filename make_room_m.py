@@ -19,7 +19,7 @@ from PIL import Image, ImageDraw
 
 WEB = os.path.dirname(os.path.abspath(__file__))
 OBJ = os.path.join(WEB, "room_layers", "objects")
-W, H = 216, 372
+W, H = 216, 480
 
 P = {
  'ink':  (4, 2, 26),
@@ -81,22 +81,22 @@ R(0, 8, W, 2, 'q0')
 for x in range(4, W, 24):
     PXL(x, 3, 'r1'); PXL(x + 1, 3, 'r1')
 # 奥壁: 上が明るく、下へ多段で落ちる
-WALL0, WALL1 = 10, 236
-R(0, WALL0, W, 34, 'n3')
-DI(0, 30, W, 6, 'n4', 'n3', 1)
-DI(0, 44, W, 14, 'n3', 'n2')
-R(0, 58, W, 98, 'n2')
-DI(0, 156, W, 14, 'n2', 'n1')
-R(0, 170, W, 66, 'n1')
-DI(0, 220, W, 16, 'n1', 'n0')
-R(0, 236, W, 4, 'ink')                               # 壁と床の見切り
-R(0, 240, W, 2, 'q0')
+WALL0, WALL1 = 10, 228
+R(0, WALL0, W, 30, 'n3')
+DI(0, 26, W, 6, 'n4', 'n3', 1)
+DI(0, 40, W, 12, 'n3', 'n2')
+R(0, 52, W, 96, 'n2')
+DI(0, 148, W, 12, 'n2', 'n1')
+R(0, 160, W, 68, 'n1')
+DI(0, 212, W, 16, 'n1', 'n0')
+R(0, 228, W, 4, 'ink')                               # 壁と床の見切り
+R(0, 232, W, 2, 'q0')
 
 # 床: 手前ほど広がる板。継ぎ目はマゼンタに光る(PC版と同じ流儀)
-FL0 = 242
+FL0 = 234
 R(0, FL0, W, H - FL0, 'q1')
 R(0, FL0, W, 3, 'q0')
-SEAMS = [254, 270, 288, 308, 330, 354]
+SEAMS = [246, 262, 280, 300, 322, 346, 372, 400, 430, 462]
 for i, y in enumerate(SEAMS):
     R(0, y, W, 1, 'm0')
     for x in range(0, W, 16):
@@ -115,15 +115,15 @@ for bi in range(len(SEAMS) - 1):                     # 板ごとのトーン差
             for xx in range(W):
                 if (xx + yy + bi) % 6 == 0:
                     PXL(xx, yy, 'q2')
-for x, y in [(30, 262), (150, 276), (90, 298), (180, 316), (60, 340), (140, 360)]:
+for x, y in [(30, 254), (150, 268), (90, 290), (180, 308), (60, 332), (140, 356), (40, 386), (170, 416), (100, 448)]:
     R(x, y, 3, 1, 'q0')
-for rx in range(66, 150, 7):                         # モニタの光の床への映り込み
+for rx in range(66, 150, 7):                         # モニタの光の床への映り込み(壁ぎわ)
     R(rx, FL0 + 1, 1, 5 - (rx // 7) % 3, 'b1')
     R(rx + 1, FL0 + 1, 1, 2, 'b1')
 for sx in range(24, W - 16, 24):
-    PXL(sx, 266, 'm1'); PXL(sx + 12, 284, 'm0')
-DI(0, 354, W, 8, 'q1', 'q0')
-DI(0, 362, W, 10, 'q0', 'ink')
+    PXL(sx, 258, 'm1'); PXL(sx + 12, 276, 'm0')
+DI(0, 462, W, 8, 'q1', 'q0')
+DI(0, 470, W, 10, 'q0', 'ink')
 
 # ═══════════ 戸口(正面から見た平らな入口。光が中からもれる) ═══════════
 def door(x, y, w, h, warm):
@@ -145,7 +145,7 @@ def door(x, y, w, h, warm):
     R(x, y + h + 2, w, 1, 'ink')
 
 
-DOOR_Y, DOOR_H = 164, 72
+DOOR_Y, DOOR_H = 156, 66
 door(4, DOOR_Y, 30, DOOR_H, True)
 door(182, DOOR_Y, 30, DOOR_H, False)
 
@@ -177,27 +177,28 @@ gm.save(os.path.join(WEB, "garland_m.png"))
 paste(gm.crop((0, 0, GW, 26)), 0, 4)
 GARLAND_Y = 4
 
-gal = sprite("props__016_"); paste(gal, 8, 46);          HOT['gallery'] = (8, 46, gal.size[0], gal.size[1])
-wbg = sprite("bg__022_");    paste(wbg, 138, 106)
-win = sprite("window__001_"); paste(win, 116, 40);       HOT['window'] = (116, 40, win.size[0], win.size[1])
-clk = sprite("furniture__009_"); paste(clk, 8, 118);     HOT['clock'] = (8, 118, clk.size[0], clk.size[1])
-spk = sprite("props__017_"); paste(spk, 52, 110);        HOT['spook'] = (52, 110, spk.size[0], spk.size[1])
-sbg = sprite("bg__027_");    paste(sbg, 132, 124)
-shf = sprite("furniture__006_"); paste(shf, 130, 120)
-bks = sprite("furniture__007_"); paste(bks, 132, 104)
-ehn = sprite("furniture__008_"); paste(ehn, 154, 128);   HOT['book'] = (154, 128, ehn.size[0], ehn.size[1])
+gal = sprite("props__016_"); paste(gal, 8, 42);          HOT['gallery'] = (8, 42, gal.size[0], gal.size[1])
+wbg = sprite("bg__022_");    paste(wbg, 138, 102)
+win = sprite("window__001_"); paste(win, 116, 36);       HOT['window'] = (116, 36, win.size[0], win.size[1])
+clk = sprite("furniture__009_"); paste(clk, 8, 112);     HOT['clock'] = (8, 112, clk.size[0], clk.size[1])
+spk = sprite("props__017_"); paste(spk, 52, 104);        HOT['spook'] = (52, 104, spk.size[0], spk.size[1])
+sbg = sprite("bg__027_");    paste(sbg, 132, 118)
+shf = sprite("furniture__006_"); paste(shf, 130, 114)
+bks = sprite("furniture__007_"); paste(bks, 132, 98)
+ehn = sprite("furniture__008_"); paste(ehn, 154, 122);   HOT['book'] = (154, 122, ehn.size[0], ehn.size[1])
 # カウンター: 両端の70pxを残して真ん中を詰める(端の造作を切らない)
 ctr = sprite("furniture__010_")
-paste(ctr.crop((0, 0, 70, ctr.size[1])), 38, 206)
-paste(ctr.crop((ctr.size[0] - 70, 0, ctr.size[0], ctr.size[1])), 108, 206)
-mbg = sprite("bg__021_");    paste(mbg, 48, 156)
-mon = sprite("furniture__013_"); paste(mon, 58, 164);    HOT['company'] = (58, 164, mon.size[0], mon.size[1])
-kbd = sprite("furniture__014_"); paste(kbd, 98, 207)
-glb = sprite("furniture__011_"); paste(glb, 44, 182)
-pen = sprite("props__026_");    paste(pen, 150, 191)
-plt = sprite("furniture__012_"); paste(plt, 160, 194)
-jbx = sprite("furniture__019_"); paste(jbx, 10, 228);   HOT['jukebox'] = (10, 228, jbx.size[0], jbx.size[1])
-pst = sprite("props__018_");    paste(pst, 172, 226);   HOT['post'] = (172, 226, pst.size[0], pst.size[1])
+paste(ctr.crop((0, 0, 70, ctr.size[1])), 38, 200)
+paste(ctr.crop((ctr.size[0] - 70, 0, ctr.size[0], ctr.size[1])), 108, 200)
+mbg = sprite("bg__021_");    paste(mbg, 48, 150)
+mon = sprite("furniture__013_"); paste(mon, 58, 158);    HOT['company'] = (58, 158, mon.size[0], mon.size[1])
+kbd = sprite("furniture__014_"); paste(kbd, 98, 201)
+glb = sprite("furniture__011_"); paste(glb, 44, 176)
+pen = sprite("props__026_");    paste(pen, 150, 185)
+plt = sprite("furniture__012_"); paste(plt, 160, 188)
+GROUND = 288
+jbx = sprite("furniture__019_"); paste(jbx, 10, GROUND - jbx.size[1]);   HOT['jukebox'] = (10, GROUND - jbx.size[1], jbx.size[0], jbx.size[1])
+pst = sprite("props__018_");    paste(pst, 172, GROUND - pst.size[1]);   HOT['post'] = (172, GROUND - pst.size[1], pst.size[0], pst.size[1])
 HOT['doorL'] = (4, DOOR_Y, 30, DOOR_H)
 HOT['doorR'] = (182, DOOR_Y, 30, DOOR_H)
 
@@ -210,7 +211,7 @@ px = im.load()
 for yy in range(H):
     for xx in range(W):
         dx = abs(xx - W / 2.0) / (W / 2.0)
-        dy = abs(yy - H * 0.48) / (H * 0.52)
+        dy = abs(yy - 180.0) / 200.0
         dd = (dx ** 2.3 + dy ** 2.3) ** 0.5
         n = 2 if dd > 1.06 else (1 if dd > 0.93 else (1 if dd > 0.84 and (xx + yy) % 2 == 0 else 0))
         if n:
@@ -220,9 +221,9 @@ for yy in range(H):
 
 im.convert("RGB").save(os.path.join(WEB, "room_m.png"))
 meta = {
-    "w": W, "h": H, "ground": 300, "garland_y": GARLAND_Y,
-    "screen": [62, 168, 92, 28],                 # COMPANYモニタの画面の内側
-    "globe": [42, 180], "clock": [8, 118], "window": [116, 40],
+    "w": W, "h": H, "ground": GROUND, "garland_y": GARLAND_Y,
+    "screen": [62, 162, 92, 28],                 # COMPANYモニタの画面の内側
+    "globe": [42, 174], "clock": [8, 112], "window": [116, 36],
     "hot": {k: list(v) for k, v in HOT.items()},
 }
 json.dump(meta, io.open(os.path.join(WEB, "room_m.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
