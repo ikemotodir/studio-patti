@@ -70,7 +70,7 @@
   /* ─── 部屋(ドット絵のステージ)。上端はバーの直下、床は画面の下端まで ─── */
   #roomarea {
     flex: 1 1 auto; min-height: 0; position: relative; overflow: hidden;
-    background: #0a0722;                       /* 万一の隙間も黒にしない */
+    background: #000;                          /* 機種の都合で両脇が空くときは黒 */
   }
   #stagebox { position: absolute; top: 0; left: 50%; transform: translateX(-50%); }
   #stage {
@@ -112,23 +112,23 @@
   #speop { position: absolute; left: -30px; top: 18px; width: 24px; height: 18px; background-image: url(speop.png); background-repeat: no-repeat; }
   #winbars { position: absolute; width: 93px; height: 69px; pointer-events: none; }
   #globespin {
-    position: absolute; width: 24px; height: 28px;
-    background-image: url(globe_spin.png); background-size: 144px 28px;
+    position: absolute; width: 19px; height: 24px;
+    background-image: url(globe_spin_m.png); background-size: 114px 24px;
     animation: globespinanim 2.4s steps(6) infinite; pointer-events: none;
   }
-  @keyframes globespinanim { from { background-position: 0 0; } to { background-position: -144px 0; } }
+  @keyframes globespinanim { from { background-position: 0 0; } to { background-position: -114px 0; } }
   #clockhands { position: absolute; width: 38px; height: 38px; pointer-events: none; }
   #pcidle { position: absolute; pointer-events: none; }
 
   /* 戸口からもれる光(呼吸する) */
   #doorGlowL, #doorGlowR {
-    position: absolute; width: 96px; height: 150px; pointer-events: none;
+    position: absolute; width: 84px; height: 108px; pointer-events: none;
     mix-blend-mode: screen; animation: doorbreath 4.6s ease-in-out infinite;
   }
-  #doorGlowL { left: -28px; top: 150px;
-    background: radial-gradient(closest-side at 50% 62%, rgba(255,214,130,.5) 0%, rgba(255,186,80,.24) 45%, rgba(255,186,80,0) 78%); }
-  #doorGlowR { left: 148px; top: 150px; animation-delay: 2.3s;
-    background: radial-gradient(closest-side at 50% 62%, rgba(255,188,222,.48) 0%, rgba(232,140,186,.22) 45%, rgba(232,140,186,0) 78%); }
+  #doorGlowL {
+    background: radial-gradient(closest-side at 50% 50%, rgba(255,214,130,.5) 0%, rgba(255,186,80,.24) 45%, rgba(255,186,80,0) 78%); }
+  #doorGlowR { animation-delay: 2.3s;
+    background: radial-gradient(closest-side at 50% 50%, rgba(255,188,222,.48) 0%, rgba(232,140,186,.22) 45%, rgba(232,140,186,0) 78%); }
   @keyframes doorbreath { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
 
   /* ジュークボックス */
@@ -592,8 +592,8 @@ class Player {
 const pEl = document.getElementById('patti');
 const p = new Player(pEl);
 const mp = new Player(document.getElementById('mayu'));
-let WALK_MIN_X = 124, WALK_MAX_X = 140, WALK_SPEED = 18;
-let x = 132, facing = 1;
+let WALK_MIN_X = 126, WALK_MAX_X = 136, WALK_SPEED = 18;
+let x = 131, facing = 1;
 function reveal() {                                   // 座標とコマの両方がそろってから出す
   if (!META || !p.h) return;
   place();
@@ -739,7 +739,12 @@ function placeAll(m) {
   document.getElementById('garland').style.top = m.garland_y + 'px';
   setPos('winbars', m.window);
   setPos('winclip', [m.window[0] + 7, m.window[1] + 7]);
-  setPos('globespin', m.globe);
+  setPos('globespin', m.globe, e => { if (m.globe_size) { e.style.width = m.globe_size[0] + 'px'; e.style.height = m.globe_size[1] + 'px'; } });
+  [['doorGlowL', H.doorL], ['doorGlowR', H.doorR]].forEach(([id, dr]) => {
+    const e = document.getElementById(id);
+    e.style.left = Math.round(dr[0] + dr[2] / 2 - e.offsetWidth / 2) + 'px';
+    e.style.top = Math.round(dr[1] + dr[3] / 2 - e.offsetHeight / 2) + 'px';
+  });
   setPos('clockhands', [m.clock[0] - 3, m.clock[1] - 3]);
   setPos('pcidle', m.screen, e => { e.style.width = m.screen[2] + 'px'; e.style.height = m.screen[3] + 'px'; });
   const J = H.jukebox;
