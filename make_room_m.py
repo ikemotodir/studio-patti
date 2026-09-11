@@ -412,6 +412,8 @@ for pid, spimg in (('ehon', ehon), ('books', books), ('plant', plant), ('plank',
     mark('本棚:' + pid, sx + ox, sy + oy, spimg.size[0], spimg.size[1])
 # 絵本の当たり判定は指で押せる大きさに(棚板と隙間ぶん広げる。絵は変えない)
 HOT['book'] = (sx - 2, sy + SHELF_PARTS['ehon'][1] - 5, SHELF_PARTS['books'][0] + 2, SHELF_H + 5)
+# 絵本の札そのもの(押しているあいだ、ここに本物の表紙を出す)
+EHON = (sx + SHELF_PARTS['ehon'][0], sy + SHELF_PARTS['ehon'][1], ehon.size[0], ehon.size[1])
 # 戸口+看板(壁の物より手前、カウンターより奥。配置ツールの並び順と同じ)
 for key in ('doorL', 'doorR'):
     ux, uy = POS[key]
@@ -530,7 +532,7 @@ for k in ORDER:
 meta = {
     "w": W, "h": H, "ground": GROUND, "garland_y": GARLAND_Y,
     "screen": SCREEN,                            # COMPANYモニタの画面の内側
-    "globe": list(GLOBE[:2]), "globe_size": list(GLOBE[2:]),
+    "globe": list(GLOBE[:2]), "globe_size": list(GLOBE[2:]), "ehon": list(EHON),
     "clock": list(HOT['clock'][:2]), "window": list(HOT['window'][:2]),
     "signs": {"L": list(SIGN['doorL']), "R": list(SIGN['doorR'])},
     "mayu": [POS['mayu'][0], POS['mayu'][1], SCALE['mayu']],

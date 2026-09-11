@@ -88,7 +88,7 @@
 
   /* 重なり順(レイヤー事故防止) */
   #room { z-index: 1; }
-  #winclip, #winbars, #garland, #globespin, #clockhands, #pcidle, #jukeglow, #jukehalo, #doorGlowL, #doorGlowR { z-index: 2; }
+  #winclip, #winbars, #garland, #globespin, #clockhands, #pcidle, #jukeglow, #jukehalo, #doorGlowL, #doorGlowR, #bookcover { z-index: 2; }
   .hs, #jukebox { z-index: 3; }
   #mshadow, #mayu, #pshadow, #patti { z-index: 4; }
 
@@ -118,6 +118,12 @@
   }
   @keyframes globespinanim { from { background-position: 0 0; } to { background-position: -114px 0; } }
   #clockhands { position: absolute; width: 38px; height: 38px; pointer-events: none; }
+  /* 絵本: ふだんは「PICTURE BOOK」の札。指で押しているあいだ本物の表紙になる */
+  #stage #bookcover {
+    position: absolute; image-rendering: auto;     /* 手描きの線なので なめらかに出す */
+    pointer-events: none; opacity: 0; transition: opacity .16s ease;
+  }
+  #stage #bookcover.on { opacity: 1; }
   #pcidle { position: absolute; pointer-events: none; }
 
   /* 戸口からもれる光(呼吸する) */
@@ -274,8 +280,8 @@
     <button id="menubtn" type="button" aria-label="メニュー" aria-expanded="false">☰</button>
     <div id="menu" role="menu">
       <button data-k="company">COMPANY <small>会社概要</small></button>
-      <button data-k="chdesign">CHARACTER DESIGN <small>準備中</small></button>
-      <button data-k="contents">CONTENTS CREATIVE <small>準備中</small></button>
+      <button data-k="chdesign">CHARACTER DESIGN <small>デザイン室</small></button>
+      <button data-k="contents">CONTENTS CREATIVE <small>編集室</small></button>
       <button data-k="spook">Patti the Spook <small>準備中</small></button>
       <button data-k="contact">CONTACT US <small>お問い合わせ</small></button>
       <div class="pc"><a id="pclink" href="index.html?pc=1" style="color:#7ee0eb">PC版で見る →</a></div>
@@ -291,6 +297,7 @@
         <div id="garland" aria-hidden="true"></div>
         <div id="globespin" aria-hidden="true"></div>
         <canvas id="clockhands" width="38" height="38" aria-hidden="true"></canvas>
+        <img id="bookcover" src="ehon_cover.png" alt="" aria-hidden="true">
         <canvas id="pcidle" width="92" height="28" aria-hidden="true"></canvas>
         <div id="doorGlowL" aria-hidden="true"></div>
         <div id="doorGlowR" aria-hidden="true"></div>
@@ -356,6 +363,14 @@ function setTalk(t) {
   document.querySelector('#talk .name').style.display = '';
   talktext.innerHTML = t;
 }
+let _going = false;
+function enterRoom(page, name) {                 // 部屋へ入る(ひとこと言ってからページを移る)
+  if (_going) return;
+  _going = true;
+  clearTimeout(window._tz);
+  setTalk(name + 'へ ごあんない！<br>スマホは よこ向きにすると見やすいよ！');
+  setTimeout(() => { location.href = page; }, 950);
+}
 function tease(name) {
   setTalk('「' + name + '」のページは いま準備中！<br>たのしみに待っててね！');
   clearTimeout(window._tz);
@@ -378,8 +393,8 @@ menubtn.addEventListener('click', () => {
 });
 const NAV_ACT = {
   company:  () => { sayFor('会社概要をひらくよ！'); window.open(COMPANY_URL, '_blank', 'noopener'); },
-  chdesign: () => tease('CHARACTER DESIGN'),
-  contents: () => tease('CONTENTS CREATIVE'),
+  chdesign: () => enterRoom('design.html', 'デザイン室'),
+  contents: () => enterRoom('contents.html', '編集室'),
   spook:    () => tease('Patti the Spook'),
   contact:  () => openDetail('post'),
 };
@@ -770,18 +785,29 @@ function placeAll(m) {
   x = px0 + walk / 2;
   my.addEventListener('click', () => sayFor('マユちゃんだよ！ボクの大切なお友達なんだ！<br>いつも一緒に絵本を読んでるの'));
 
-  makeHot('book', H.book, 'それは絵本『おばけのパッチ』！<br>ボクが主役の絵本、ここで読めるよ！',
+  const bookBtn = makeHot('book', H.book, 'それは絵本『おばけのパッチ』！<br>ボクが主役の絵本、ここで読めるよ！',
           () => openDetail('book'), { label: '絵本『おばけのパッチ』を読む', style: '--gw:130%;--gh:125%' });
+  // 札を押している(またはカーソルを乗せている)あいだだけ、本物の表紙にする
+  const bcov = document.getElementById('bookcover');
+  if (bcov && m.ehon) {
+    bcov.style.left = m.ehon[0] + 'px'; bcov.style.top = m.ehon[1] + 'px';
+    bcov.style.width = m.ehon[2] + 'px'; bcov.style.height = m.ehon[3] + 'px';
+    const peek = on => bcov.classList.toggle('on', on);
+    bookBtn.addEventListener('pointerdown', () => peek(true));
+    bookBtn.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') peek(true); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev =>
+      bookBtn.addEventListener(ev, () => peek(false)));
+  }
   makeHot('gallery', H.gallery, 'ギャラリーのかべ！<br>ボクの絵がいっぱいあるよ！',
           () => openDetail('gallery'), { label: 'ギャラリー', style: '--gw:106%;--gh:112%;--gi:.6' });
   makeHot('post', H.post, '赤いポスト！<br>お手紙（お問い合わせ）はここからどうぞ！',
           () => openDetail('post'), { label: 'お問い合わせ（ポスト）', style: '--gw:148%;--gh:148%;--gi:.78' });
   makeHot('company', H.company, 'スタジオパッチの会社案内が見られる<br>パソコンだよ！ひらくね！',
           () => window.open(COMPANY_URL, '_blank', 'noopener'), { label: 'COMPANY（会社概要をひらく）', nobg: true });
-  makeHot('doorL', H.doorL, 'デザイン室！キャラクターが生まれる部屋だよ！<br>（いま準備中…もうすぐ開くよ！）',
-          null, { label: 'デザイン室（準備中）', style: '--gi:.4' });
-  makeHot('doorR', H.doorR, '編集室！アニメーションを創ってる部屋だよ！<br>（いま準備中…もうすぐ開くよ！）',
-          null, { label: '編集室（準備中）', style: '--gi:.4' });
+  makeHot('doorL', H.doorL, 'デザイン室！キャラクターが生まれる部屋だよ！<br>（入ってみてね！）',
+          () => enterRoom('design.html', 'デザイン室'), { label: 'デザイン室へ入る', style: '--gi:.4' });
+  makeHot('doorR', H.doorR, '編集室！アニメーションを創ってる部屋だよ！<br>（入ってみてね！）',
+          () => enterRoom('contents.html', '編集室'), { label: '編集室へ入る', style: '--gi:.4' });
   makeHot('spook', H.spook, '『おばけのパッチ』の世界への入口！<br>大きな月の絵だよ！（いま準備中）',
           null, { label: 'Patti the Spook（準備中）', style: '--gw:114%;--gh:126%;--gi:.7' });
   makeHot('window', H.window, 'まどの外は夜！<br>たまにおばけが飛んでいくよ', null, { label: 'まど', style: '--gi:.3' });
