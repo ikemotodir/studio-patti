@@ -1,0 +1,219 @@
+{
+ "w": 216,
+ "h": 480,
+ "F_ref": 290,
+ "F_min": 231,
+ "depth_ref": 60,
+ "depth_min": 54,
+ "lower": {
+  "img": "edit_m_lower.png",
+  "top_ref": 202,
+  "h": 337
+ },
+ "top": {
+  "marquee": {
+   "img": "props_em/marquee.png",
+   "x": 81,
+   "y": -20,
+   "w": 53,
+   "h": 70,
+   "yc": -38
+  },
+  "screen": {
+   "img": "props_em/screen.png",
+   "x": 10,
+   "y": 63,
+   "w": 196,
+   "h": 107,
+   "yc": 36
+  }
+ },
+ "screen_inner": [
+  12,
+  7,
+  172,
+  93
+ ],
+ "marquee_text": [
+  4,
+  50.15,
+  45,
+  12
+ ],
+ "marquee_blink": {
+  "img": "marquee_blink_m.png",
+  "dy": 44,
+  "w": 53,
+  "h": 24
+ },
+ "menu": {
+  "hdr": [
+   46,
+   232,
+   112,
+   14
+  ],
+  "items": [
+   [
+    46,
+    250,
+    54,
+    16
+   ],
+   [
+    104,
+    250,
+    54,
+    16
+   ],
+   [
+    46,
+    270,
+    54,
+    16
+   ],
+   [
+    104,
+    270,
+    54,
+    16
+   ]
+  ]
+ },
+ "buttons": [
+  [
+   167,
+   223,
+   21,
+   21
+  ],
+  [
+   191,
+   223,
+   21,
+   21
+  ],
+  [
+   167,
+   250,
+   21,
+   21
+  ],
+  [
+   191,
+   250,
+   21,
+   21
+  ]
+ ],
+ "door": [
+  7,
+  226,
+  26,
+  62
+ ],
+ "mayu": [
+  46,
+  278,
+  0.75
+ ],
+ "patti": [
+  150,
+  302,
+  0.75
+ ],
+ "custom": false,
+ "tool": [
+  {
+   "id": "marquee",
+   "name": "電飾の表示板",
+   "x": 81,
+   "y": -20,
+   "x0": 81,
+   "y0": -20,
+   "w": 53,
+   "h": 70,
+   "img": "props_em/marquee.png",
+   "cord": 44
+  },
+  {
+   "id": "screen",
+   "name": "大スクリーン",
+   "x": 10,
+   "y": 63,
+   "x0": 10,
+   "y0": 63,
+   "w": 196,
+   "h": 107,
+   "img": "props_em/screen.png"
+  },
+  {
+   "id": "menu",
+   "name": "メニュー（制作事例）",
+   "x": 42,
+   "y": 228,
+   "x0": 42,
+   "y0": 228,
+   "w": 120,
+   "h": 62,
+   "img": "props_em/menu.png",
+   "floor": true
+  },
+  {
+   "id": "number",
+   "name": "数字ボタン",
+   "x": 163,
+   "y": 206,
+   "x0": 163,
+   "y0": 206,
+   "w": 53,
+   "h": 84,
+   "img": "props_em/number.png",
+   "floor": true
+  },
+  {
+   "id": "door",
+   "name": "スタジオの看板とトビラ（横にだけ動きます）",
+   "x": 0,
+   "y": 206,
+   "x0": 0,
+   "y0": 206,
+   "w": 40,
+   "h": 84,
+   "img": "props_em/door.png",
+   "lockY": true,
+   "floor": true
+  },
+  {
+   "id": "mayu",
+   "name": "マユちゃん",
+   "x": 46,
+   "y": 278,
+   "x0": 46,
+   "y0": 278,
+   "w": 30,
+   "h": 72,
+   "img": "mayu_frontright_shaded.png",
+   "chara": true,
+   "s": 0.75,
+   "s0": 0.75,
+   "floor": true
+  },
+  {
+   "id": "patti",
+   "name": "パッチ",
+   "x": 150,
+   "y": 302,
+   "x0": 150,
+   "y0": 302,
+   "w": 32,
+   "h": 48,
+   "img": "patti_front_shaded.png",
+   "chara": true,
+   "s": 0.75,
+   "s0": 0.75,
+   "floor": true
+  }
+ ],
+ "v": "15f688f640"
+}

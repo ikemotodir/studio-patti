@@ -19,6 +19,7 @@
        / props_m/*.png / room_m.json
 """
 import glob
+import hashlib
 import io
 import json
 import math
@@ -543,6 +544,11 @@ meta = {
     "custom": CUSTOM,
     "tool": tool,
 }
+# 絵の版(絵が変わったら変わる)。ページは画像に ?v= を付けて、配置を変えた直後も古い絵を出さない
+_h = hashlib.md5()
+for f in ("room_m.png", "winbars_m.png"):
+    _h.update(open(os.path.join(WEB, f), "rb").read())
+meta["v"] = _h.hexdigest()[:10]
 json.dump(meta, io.open(os.path.join(WEB, "room_m.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 print("room_m.png", im.size, "/ room_m_bare.png / garland_m.png / winbars_m.png / globe_spin_m.png / props_m / room_m.json",
       "(重なり %d 件)" % len(bad))

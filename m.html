@@ -82,6 +82,7 @@
   }
   #stage img, #stage div, #stage canvas { image-rendering: pixelated; }
   #room { position: absolute; left: 0; top: 0; width: 216px; height: 480px; }
+  #room:not([src]) { visibility: hidden; }        /* 絵の版が決まるまで(代わりの文字を出さない) */
   /* 二人は位置が決まるまで出さない(開いた瞬間に左上へ出るのを防ぐ) */
   #patti, #mayu, #pshadow, #mshadow { visibility: hidden; }
   #stage.ready #patti, #stage.ready #mayu, #stage.ready #pshadow, #stage.ready #mshadow { visibility: visible; }
@@ -291,9 +292,9 @@
   <div id="roomarea">
     <div id="stagebox">
       <div id="stage">
-        <img id="room" src="room_m.png" alt="パッチくんの部屋">
+        <img id="room" alt="パッチくんの部屋">
         <div id="winclip" aria-hidden="true"><div id="bonbon"></div><div id="speop"></div></div>
-        <img id="winbars" src="winbars_m.png" alt="" aria-hidden="true">
+        <img id="winbars" alt="" aria-hidden="true">
         <div id="garland" aria-hidden="true"></div>
         <div id="globespin" aria-hidden="true"></div>
         <canvas id="clockhands" width="38" height="38" aria-hidden="true"></canvas>
@@ -397,7 +398,7 @@ menubtn.addEventListener('click', () => {
 const NAV_ACT = {
   company:  () => { sayFor('会社概要をひらくよ！'); window.open(COMPANY_URL, '_blank', 'noopener'); },
   chdesign: () => enterRoom('design_m.html', 'デザイン室'),
-  contents: () => enterRoom('contents.html', '編集室'),
+  contents: () => enterRoom('contents_m.html', '編集室'),
   spook:    () => tease('Patti the Spook'),
   contact:  () => openDetail('post'),
 };
@@ -810,14 +811,19 @@ function placeAll(m) {
   makeHot('doorL', H.doorL, 'デザイン室！キャラクターが生まれる部屋だよ！<br>（入ってみてね！）',
           () => enterRoom('design_m.html', 'デザイン室'), { label: 'デザイン室へ入る', style: '--gi:.4' });
   makeHot('doorR', H.doorR, '編集室！アニメーションを創ってる部屋だよ！<br>（入ってみてね！）',
-          () => enterRoom('contents.html', '編集室'), { label: '編集室へ入る', style: '--gi:.4' });
+          () => enterRoom('contents_m.html', '編集室'), { label: '編集室へ入る', style: '--gi:.4' });
   makeHot('spook', H.spook, '『おばけのパッチ』の世界への入口！<br>大きな月の絵だよ！（いま準備中）',
           null, { label: 'Patti the Spook（準備中）', style: '--gw:114%;--gh:126%;--gi:.7' });
   makeHot('window', H.window, 'まどの外は夜！<br>たまにおばけが飛んでいくよ', null, { label: 'まど', style: '--gi:.3' });
   makeHot('clock', H.clock, 'かけ時計！<br>いま見てる人の時間を指してるんだ', null, { label: 'かけ時計', style: '--gi:.5' });
 }
 
-fetch('room_m.json', NOCACHE).then(r => r.json()).then(m => { META = m; placeAll(m); reveal(); }).catch(e => console.error(e));
+fetch('room_m.json', NOCACHE).then(r => r.json()).then(m => {
+  const V = m.v ? '?v=' + m.v : '';               // 絵の版。配置を変えた直後も古い絵を出さない
+  document.getElementById('room').src = 'room_m.png' + V;
+  document.getElementById('winbars').src = 'winbars_m.png' + V;
+  META = m; placeAll(m); reveal();
+}).catch(e => { console.error(e); document.getElementById('room').src = 'room_m.png'; });
 fetch('book.json', NOCACHE).then(r => r.json()).then(j => BOOK = j).catch(() => {});
 fetch('gallery.json', NOCACHE).then(r => r.json()).then(j => GALLERY = j).catch(() => {});
 fetch('contact.json', NOCACHE).then(r => r.json()).then(j => CONTACT = j).catch(() => {});

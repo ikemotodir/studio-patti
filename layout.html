@@ -114,11 +114,12 @@
 <body>
 
 <header>
-  <h1>配置ツール <span style="font-size:11px;color:#9a93c4">v10</span></h1>
+  <h1>配置ツール <span style="font-size:11px;color:#9a93c4">v11</span></h1>
   <button id="roomD" class="on" type="button">デザイン室</button>
   <button id="roomE" type="button">編集室</button>
   <button id="roomM" type="button">スマホ版</button>
   <button id="roomDM" type="button">スマホ版デザイン室</button>
+  <button id="roomEM" type="button">スマホ版編集室</button>
   <button id="zoomOut" type="button">－</button>
   <span id="zlabel">3倍</span>
   <button id="zoomIn" type="button">＋</button>
@@ -147,8 +148,9 @@
       枠をマウスでつかんで動かしてください。右下の四角をつかむと大きさを変えられます。<br>
       枠をえらんでから <b>矢印キー</b>で1ドットずつ、<b>Shift+矢印</b>で5ドットずつ動きます。<br>
       キャラクターは大きさを <b>[ ] キー</b>で変えられます。<br>
-      <b>「スマホ版」「スマホ版デザイン室」</b>を押すと、スマホで見たときの部屋(たて長)の配置を直せます。物は本物の絵で出ます。<br>
+      <b>「スマホ版」「スマホ版デザイン室」「スマホ版編集室」</b>を押すと、スマホで見たときの部屋(たて長)の配置を直せます。物は本物の絵で出ます。<br>
       スマホ版デザイン室は<b>背の高い画面の見え方</b>で置きます。画面が短いスマホでは、黒板の上の紙の間隔が自動で詰まり、データまとめ・トビラ・二人・床がいっしょに上へ寄ります。<br>
+      スマホ版編集室も同じです。画面が短いスマホでは、表示板とスクリーンが上へ詰まり、線から下（メニュー・数字ボタン・トビラ・二人・床）がいっしょに上へ寄ります。<br>
       置きおわったら緑の「サイトに反映する」を押せば、そのままサイトが変わります。
     </p>
     <p class="legend">
@@ -205,12 +207,16 @@ const REFS = {
     { name: '↓ 黒板の下1/3（データまとめ）から下は、スマホの高さに合わせて上下します', x: 2, y: 204, w: 212, h: 100,
       up: true, lowerZone: true },
   ],
+  edit_m: [
+    { name: '↓ この線から下（メニュー・数字ボタン・トビラ・二人・床）は、スマホの高さに合わせて上下します', x: 2, y: 202, w: 212, h: 88,
+      up: true, lowerZone: true },
+  ],
 };
-const PHONE_ROOMS = ['mobile', 'design_m'];            // スマホ(たて長)の部屋
-const GROUND_IDS = { mobile: ['jukebox', 'post', 'mayu', 'patti'], design_m: ['mayu', 'patti'] };
+const PHONE_ROOMS = ['mobile', 'design_m', 'edit_m'];            // スマホ(たて長)の部屋
+const GROUND_IDS = { mobile: ['jukebox', 'post', 'mayu', 'patti'], design_m: ['mayu', 'patti'], edit_m: ['mayu', 'patti'] };
 function refsFor() { return (PHONE_ROOMS.includes(room) ? [] : REFS.common).concat(REFS[room] || []); }
-const ROOM_NAMES = { design: 'デザイン室', edit: '編集室', mobile: 'スマホ版', design_m: 'スマホ版デザイン室' };
-const ZOOMS = { design: 3, edit: 3, mobile: 2, design_m: 2 };
+const ROOM_NAMES = { design: 'デザイン室', edit: '編集室', mobile: 'スマホ版', design_m: 'スマホ版デザイン室', edit_m: 'スマホ版編集室' };
+const ZOOMS = { design: 3, edit: 3, mobile: 2, design_m: 2, edit_m: 2 };
 const VER = Date.now();
 
 // ── 部屋ごとの中身。x,y,w,h はドット絵の座標(384x240) ──
@@ -249,6 +255,10 @@ const ROOMS = {
     bg: 'room_design_m_bare.png', w: 216, h: 480, json: 'room_design_m.json',
     items: null,     // 同じく room_design_m.json から読む
   },
+  edit_m: {
+    bg: 'room_edit_m_bare.png', w: 216, h: 480, json: 'room_edit_m.json',
+    items: null,     // 同じく room_edit_m.json から読む
+  },
 };
 const ROOM_P = {};
 function loadRoomJson(name) {                // 重ねて呼ばれても読むのは1回
@@ -264,6 +274,10 @@ function loadRoomJson(name) {                // 重ねて呼ばれても読む�
           const bd = REFS.design_m.find(r => r.board), lz = REFS.design_m.find(r => r.lowerZone);
           bd.h = m.F_ref - m.tray_h - bd.y;
           lz.y = m.lower.top_ref; lz.h = m.F_ref - m.tray_h - lz.y;
+        }
+        if (name === 'edit_m' && m.lower) {              // 「上下する所」の線(床の線の高さも覚えておく)
+          const lz = REFS.edit_m.find(r => r.lowerZone);
+          lz.y = m.lower.top_ref; lz.h = m.F_ref - lz.y; lz.F = m.F_ref;
         }
       } catch (e) {
         say(ROOM_NAMES[name] + 'の部屋が読めませんでした: ' + e.message, true);
@@ -424,6 +438,14 @@ function render() {
     const g = updateTalkRef();
     if (g > 288) hidden.push('床の物を下げたぶん、背の低い機種では部屋が少し縮みます（足元 ' + g + '）');
   }
+  if (room === 'edit_m') {                     // 線はメニュー・数字ボタン・トビラのいちばん上に合わせて動く
+    const lz = REFS.edit_m.find(r => r.lowerZone);
+    const fy = items.filter(it => it.floor && !it.chara).map(it => it.y);
+    if (fy.length && lz.F) {
+      lz.y = Math.min.apply(null, fy) - 4; lz.h = lz.F - lz.y;
+      if (lz.el) { lz.el.style.top = (lz.y * Z) + 'px'; lz.el.style.height = (lz.h * Z) + 'px'; }
+    }
+  }
   items.forEach(it => {
     const w = it.chara ? it.w * it.s : it.w;
     const h = it.chara ? it.h * it.s : it.h;
@@ -439,6 +461,14 @@ function render() {
     const bad = refsFor().filter(rf => rf.fixed && overlaps(box, rf));
     it.el.classList.toggle('hit', bad.length > 0);
     if (bad.length) hidden.push(it.name + ' が「' + bad[0].name.split('（')[0] + '」にかぶっています');
+    if (room === 'edit_m' && !it.floor) {       // 表示板・スクリーンが「上下する所」に入ると、背の低いスマホで重なる
+      const lz = REFS.edit_m.find(r => r.lowerZone);
+      const vy = y + (it.cord || 0);                        // 表示板はひもを除いた所
+      if (y + h > lz.y + 2 && vy < lz.y + lz.h) {
+        it.el.classList.add('hit');
+        hidden.push(it.name + ' が線より下に入っています（背の低いスマホで下の物と重なります）');
+      }
+    }
     if (it.inBoard) {
       const bd = REFS.design_m.find(r => r.board), lz = REFS.design_m.find(r => r.lowerZone);
       if (x < bd.x - 1 || y < bd.y - 2 || x + w > bd.x + bd.w + 1 || y + h > bd.y + bd.h + 1) {
@@ -450,7 +480,7 @@ function render() {
       }
     }
     const extra = it.id === 'patti' ? (it.walk || 0) : 0;
-    if (x < 0 || y < 0 || x + w + extra > stW || y + h > stH) {
+    if (x < 0 || y + (it.cord || 0) < 0 || x + w + extra > stW || y + h > stH) {   // ひもは上へはみ出してよい
       it.el.classList.add('hit');
       hidden.push(it.name + ' が画面からはみ出します' + (extra ? '（歩く幅もふくめて）' : ''));
     }
@@ -543,6 +573,7 @@ async function load(name) {
   document.getElementById('roomE').classList.toggle('on', name === 'edit');
   document.getElementById('roomM').classList.toggle('on', name === 'mobile');
   document.getElementById('roomDM').classList.toggle('on', name === 'design_m');
+  document.getElementById('roomEM').classList.toggle('on', name === 'edit_m');
 }
 document.getElementById('undo').addEventListener('click', undo);
 document.getElementById('redo').addEventListener('click', redo);
@@ -556,6 +587,7 @@ document.getElementById('roomD').addEventListener('click', () => load('design'))
 document.getElementById('roomE').addEventListener('click', () => load('edit'));
 document.getElementById('roomM').addEventListener('click', () => load('mobile'));
 document.getElementById('roomDM').addEventListener('click', () => load('design_m'));
+document.getElementById('roomEM').addEventListener('click', () => load('edit_m'));
 document.getElementById('reset').addEventListener('click', () => {
   try { localStorage.removeItem(KEY + room); } catch (e) {}
   RESET_ROOM = room;
@@ -573,7 +605,7 @@ const KEYK = 'patti-gh-key';
 const pub = document.getElementById('pub');
 function say(msg, ng) { pub.textContent = msg; pub.classList.toggle('ng', !!ng); }
 
-const ALL_ROOMS = ['design', 'edit', 'mobile', 'design_m'];
+const ALL_ROOMS = ['design', 'edit', 'mobile', 'design_m', 'edit_m'];
 function layoutAll() {
   const all = {};
   ALL_ROOMS.forEach(r => {
@@ -636,7 +668,7 @@ async function publish() {
     ALL_ROOMS.forEach(r => { if (r !== room) { try { localStorage.removeItem(KEY + r); } catch (e) {} } });
     save();
     say('送りました！ 1〜2分でサイトが変わります。');
-    setTimeout(() => say('反映されたか見る → design.html / contents.html / スマホは m.html・design_m.html を開き直してください。'), 9000);
+    setTimeout(() => say('反映されたか見る → design.html / contents.html / スマホは m.html・design_m.html・contents_m.html を開き直してください。'), 9000);
   } catch (e) {
     say('うまくいきませんでした: ' + e.message, true);
   }

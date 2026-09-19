@@ -18,6 +18,7 @@
        / design_garland_m.png / props_dm/*.png / room_design_m.json
 """
 import glob
+import hashlib
 import io
 import json
 import math
@@ -769,6 +770,11 @@ meta = {
     "patti": [POS['patti'][0], POS['patti'][1], SCALE['patti']],
     "custom": CUSTOM, "tool": tool,
 }
+# 絵の版(絵が変わったら変わる)。ページは画像に ?v= を付けて、配置を変えた直後も古い絵を出さない
+_h = hashlib.md5()
+for f in ["room_design_m.png", "design_m_lower.png"] + [papers[k]["img"] for k in sorted(papers)]:
+    _h.update(open(os.path.join(WEB, f), "rb").read())
+meta["v"] = _h.hexdigest()[:10]
 json.dump(meta, io.open(os.path.join(WEB, "room_design_m.json"), "w", encoding="utf-8"),
           ensure_ascii=False, indent=1)
 print("room_design_m.png / design_m_lower.png(高さ %d) / room_design_m_bare.png / room_design_m.json  (重なり %d 件)"

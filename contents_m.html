@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<title>CONTENTS CREATIVE｜STUDIO PATTI</title>
+<meta name="description" content="スタジオパッチの編集室。3DCGアニメーション・クラフトアニメーション・絵本・メタバースの作品が見られます。">
+<meta name="theme-color" content="#05030f">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="canonical" href="https://studiopatti.jp/contents.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="STUDIO PATTI">
+<meta property="og:title" content="CONTENTS CREATIVE｜STUDIO PATTI">
+<meta property="og:description" content="編集室へようこそ。パネルをえらんで、作品を見てみてね。">
+<meta property="og:url" content="https://studiopatti.jp/contents.html">
+<meta property="og:image" content="https://studiopatti.jp/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root {
+    --topH: 48px;
+    --talkH: 76px;
+    --font: 'DotGothic16', 'MS Gothic', monospace;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: #05030f; color: #f2eefc;
+    font-family: var(--font);
+    -webkit-text-size-adjust: 100%;
+  }
+  #app {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    height: 100vh; height: 100dvh;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* ─── 上のバー(スマホ版TOPと同じ。項目は☰の中) ─── */
+  #top {
+    flex: none; height: var(--topH);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 12px 0 14px;
+    background: rgba(8, 6, 40, .96); border-bottom: 1px solid #2a2560;
+    position: relative; z-index: 20;
+  }
+  #top .brand img { height: 22px; width: auto; display: block; image-rendering: auto; }
+  #menubtn {
+    width: 44px; height: 40px; border: 1px solid #3a3470; border-radius: 4px;
+    background: transparent; color: #ffffff; font-size: 22px; line-height: 1; cursor: pointer;
+    font-family: var(--font);
+  }
+  #menubtn.on { background: #fcc800; color: #1c1640; border-color: #fcc800; }
+  #menu {
+    position: absolute; left: 0; right: 0; top: var(--topH);
+    background: rgba(8, 6, 40, .97); border-bottom: 2px solid #e8e4f4;
+    display: none; flex-direction: column; z-index: 19;
+  }
+  #menu.on { display: flex; }
+  #menu button {
+    border: 0; border-top: 1px solid #05041c; box-shadow: inset 0 1px 0 rgba(118, 110, 200, .3);
+    background: transparent; color: #ffffff; text-align: left;
+    font-family: var(--font); font-size: 16px; padding: 15px 18px; cursor: pointer;
+  }
+  #menu button small { color: #b7aede; font-size: 12px; margin-left: 10px; }
+  #menu button.here { color: #fcc800; }
+  #menu button:active { background: rgba(252, 200, 0, .14); color: #fcc800; }
+  #menu .pc { color: #b7aede; font-size: 13px; padding: 12px 18px 14px; }
+
+  /* ─── 部屋。上端はバーの直下、床は画面の下端まで ─── */
+  #roomarea {
+    flex: 1 1 auto; min-height: 0; position: relative; overflow: hidden;
+    background: #05030f;                       /* 機種によって両わきが空くときは黒 */
+  }
+  #stagebox { position: absolute; top: 0; left: 50%; transform: translateX(-50%); }
+  #stage {
+    position: absolute; left: 0; top: 0;
+    width: 216px; height: 480px;
+    transform-origin: 0 0;
+    image-rendering: pixelated;
+    overflow: hidden;
+  }
+  #stage img, #stage div, #stage canvas { image-rendering: pixelated; }
+  #room { position: absolute; left: 0; top: 0; width: 216px; height: 480px; }
+  #room:not([src]) { visibility: hidden; }        /* 絵の版が決まるまで(代わりの文字を出さない) */
+  #lower { position: absolute; left: 0; width: 216px; }
+  .spr { position: absolute; pointer-events: none; }
+  /* 二人は位置が決まるまで出さない(開いた瞬間に左上へ出るのを防ぐ) */
+  #mayu, #mshadow, #pattifloat, #pshadow { visibility: hidden; }
+  #stage.ready #mayu, #stage.ready #mshadow, #stage.ready #pattifloat, #stage.ready #pshadow { visibility: visible; }
+
+  /* 重なり順(レイヤー事故防止) */
+  #room, #lower { z-index: 1; }
+  #doorGlow, #marqblink { z-index: 2; }
+  .spr { z-index: 2; }
+  #marqblink { z-index: 3; }
+  #screenbox { z-index: 3; }
+  .hs, .mi, .nb, #mihdr, #catname { z-index: 4; }
+  #mshadow, #mayu, #pshadow, #pattifloat { z-index: 5; }
+
+  /* 戸口からもれる白い光(呼吸する) */
+  #doorGlow {
+    position: absolute; pointer-events: none; mix-blend-mode: screen;
+    animation: doorbreath 4.6s ease-in-out infinite;
+    background: radial-gradient(closest-side at 50% 60%,
+      rgba(236, 234, 252, .46) 0%, rgba(206, 202, 232, .22) 45%, rgba(206, 202, 232, 0) 78%);
+  }
+  @keyframes doorbreath { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+  /* 電飾の表示板の電球がぐるりと流れる(4コマ) */
+  #marqblink {
+    position: absolute; pointer-events: none;
+    animation: marqblink 1.0s steps(1) infinite;
+  }
+  @keyframes marqblink {
+    0%, 24.9% { background-position: 0 0; }
+    25%, 49.9% { background-position: -53px 0; }
+    50%, 74.9% { background-position: -106px 0; }
+    75%, 100% { background-position: -159px 0; }
+  }
+
+  /* ─── 大スクリーン ─── */
+  #screenbox { position: absolute; overflow: hidden; }
+  #scrwait { position: absolute; inset: 0; }
+  #wstars { position: absolute; left: 0; top: 0; }
+  #wtext {
+    position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-family: var(--font); color: #8b9ad6; font-size: 7px; line-height: 1.8; text-align: center;
+  }
+  #thumbbox { position: absolute; inset: 0; display: none; cursor: pointer; }
+  #stage #thumbimg { width: 100%; height: 100%; object-fit: cover; image-rendering: auto; display: block; }
+  #thumbbox.fit #thumbimg { object-fit: contain; background: #05030f; }
+  #playbig {
+    position: absolute; left: 50%; top: 50%; width: 34px; height: 34px;
+    transform: translate(-50%, -50%);
+    border: 2px solid #f2eefc; border-radius: 50%;
+    background: rgba(8, 6, 40, .78); cursor: pointer; padding: 0;
+    animation: playbreath 1.8s ease-in-out infinite;
+  }
+  @keyframes playbreath { 0%, 100% { box-shadow: 0 0 0 0 rgba(236, 148, 190, 0); } 50% { box-shadow: 0 0 6px 2px rgba(236, 148, 190, .55); } }
+  #playbig::after {
+    content: ''; position: absolute; left: 55%; top: 50%;
+    transform: translate(-50%, -50%);
+    border-left: 12px solid #f2eefc;
+    border-top: 8px solid transparent; border-bottom: 8px solid transparent;
+  }
+  #playbig:active { background: rgba(236, 148, 190, .55); }
+
+  /* ─── メニュー(見出し+2列×2段・▶で選ぶ) ─── */
+  .mi {
+    position: absolute; border: 0; background: transparent; cursor: pointer; padding: 0 1px 0 7px;
+    text-align: left; white-space: nowrap; display: flex; align-items: center;
+    font-family: var(--font); color: #ddd8f2; font-size: 6.5px; line-height: 1;
+  }
+  .mi .cur {
+    position: absolute; left: 1px; top: 50%; margin-top: -3px;
+    width: 0; height: 0; visibility: hidden;
+    border-left: 4px solid #f79db8;
+    border-top: 3px solid transparent; border-bottom: 3px solid transparent;
+  }
+  .mi.sel { color: #ffffff; text-shadow: 0 0 3px rgba(236, 148, 190, .55); background: rgba(236, 148, 190, .10); }
+  .mi.sel .cur { visibility: visible; }
+  .mi:active { background: rgba(236, 148, 190, .2); }
+  #mihdr {
+    position: absolute; display: flex; align-items: center; justify-content: center;
+    font-family: var(--font); color: #7ee0eb; font-size: 7px; letter-spacing: 2px;
+    text-shadow: 0 0 3px rgba(126, 224, 235, .45); pointer-events: none;
+  }
+  /* 電飾の表示板の文字 */
+  #catname {
+    position: absolute; display: flex; align-items: center; justify-content: center;
+    font-family: var(--font); color: #fff6e0; font-size: 6px; line-height: 1; text-align: center; white-space: nowrap;
+    text-shadow: 0 0 3px rgba(255, 232, 176, .55); pointer-events: none;
+  }
+  /* 数字ボタン */
+  .nb { position: absolute; border: 0; background: transparent; cursor: pointer; padding: 0; border-radius: 50%; }
+  .nb::after {
+    content: ''; position: absolute; inset: -3px; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 212, 232, .55), rgba(255, 212, 232, 0) 78%);
+    mix-blend-mode: screen; opacity: 0; transition: opacity .15s ease;
+  }
+  .nb:not(.off)::after { animation: nbreath 3.2s ease-in-out infinite; }
+  .nb.on::after { animation: none; opacity: 1; }
+  @keyframes nbreath { 0%, 100% { opacity: 0; } 50% { opacity: .38; } }
+  .nb.off { cursor: default; }
+  .nb.off::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: rgba(10, 6, 30, .62); }
+
+  /* ─── 触れる場所(トビラ) ─── */
+  .hs { position: absolute; display: block; border: 0; background: transparent; padding: 0; cursor: pointer; }
+  .hs::after {
+    content: ''; position: absolute; left: 50%; top: 50%;
+    width: 150%; height: 150%; transform: translate(-50%, -50%); border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(244,240,255,.6) 0%, rgba(214,208,240,.35) 34%, rgba(180,172,220,.14) 60%, rgba(180,172,220,0) 100%);
+    mix-blend-mode: screen; pointer-events: none; opacity: 0; transition: opacity .25s ease;
+  }
+  .hs.lit::after { opacity: .5; }
+
+  /* ─── 二人(マユはスクリーンを見に来た・パッチは正面でふわふわ) ─── */
+  #mayu {
+    position: absolute; width: 30px; height: 72px;
+    background-image: url(mayu_frontright_shaded.png);
+    background-repeat: no-repeat; background-size: 360px 72px;
+    transform-origin: 50% 100%; cursor: pointer;
+    animation: mayuchar 1.2s steps(12) infinite;
+  }
+  @keyframes mayuchar { from { background-position: 0 0; } to { background-position: -360px 0; } }
+  #mshadow, #pshadow {
+    position: absolute; height: 5px; border-radius: 50%; background: rgba(40, 10, 60, .5); pointer-events: none;
+  }
+  #pattifloat {
+    position: absolute; width: 32px; height: 48px;
+    animation: pattifloat 3.1s ease-in-out infinite;
+  }
+  @keyframes pattifloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+  #patti {
+    position: absolute; left: 0; top: 0; width: 32px; height: 48px;
+    background-image: url(patti_front_shaded.png);
+    background-repeat: no-repeat; background-size: 384px 48px;
+    transform-origin: 50% 100%; cursor: pointer;
+    animation: pattichar 1.2s steps(12) infinite;
+  }
+  @keyframes pattichar { from { background-position: 0 0; } to { background-position: -384px 0; } }
+
+  /* ─── テキストボックス(床の上に重ねる。本物の文字サイズ) ─── */
+  #talk {
+    position: absolute; left: 8px; right: 8px; bottom: 6px; z-index: 10;
+    height: var(--talkH); margin: 0;
+    background: rgba(8, 6, 40, .96); border: 2px solid #e8e4f4; border-radius: 4px;
+    box-shadow: inset 0 0 0 1px #2a2560;
+    padding: 7px 26px 7px 12px;
+    font-size: 14px; line-height: 1.45; color: #f2eefc;   /* 3行でも枠の内側に収まる行間 */
+  }
+  #talk .name { color: #fcc800; margin-right: 6px; }
+  #talk .cursor {
+    position: absolute; right: 9px; bottom: 8px; width: 0; height: 0;
+    border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #f2eefc;
+    animation: tbc 1s steps(1) infinite;
+  }
+  @keyframes tbc { 0%,50% { opacity: 1; } 50.01%,100% { opacity: 0; } }
+
+  /* ─── 作品のポップアップ(動画・画像) ─── */
+  #vpop, #ipop {
+    position: fixed; inset: 0; z-index: 70; display: none;
+    flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+    background: rgba(6, 4, 20, .94);
+    padding: calc(12px + env(safe-area-inset-top)) 8px calc(12px + env(safe-area-inset-bottom));
+  }
+  #vpop.on, #ipop.on { display: flex; }
+  .pclose {
+    align-self: flex-end; border: 2px solid #e8e4f4; background: rgba(8, 6, 40, .92); border-radius: 3px;
+    color: #f2eefc; font-family: var(--font); font-size: 15px; padding: 8px 14px; cursor: pointer;
+  }
+  #vpwrap { width: 100%; aspect-ratio: 16 / 9; border: 2px solid #e8e4f4; background: #000; }
+  #vpframe { width: 100%; height: 100%; border: 0; display: block; }
+  #ipwrap { position: relative; width: 100%; flex: 0 1 auto; display: flex; align-items: center; justify-content: center; }
+  #ipimg { max-width: 100%; max-height: 70vh; object-fit: contain; display: block; border: 2px solid #e8e4f4; background: #05030f; }
+  #ipbar { display: flex; align-items: center; gap: 18px; }
+  .ipnav {
+    width: 56px; height: 44px; border: 2px solid #e8e4f4; border-radius: 3px;
+    background: rgba(8, 6, 40, .88); color: #f2eefc; cursor: pointer;
+    font-family: var(--font); font-size: 18px; padding: 0;
+  }
+  .ipnav { position: relative; font-size: 0; }
+  .ipnav::after {                                   /* 文字の◀▶は小さく見えるので三角を描く */
+    content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    border-top: 9px solid transparent; border-bottom: 9px solid transparent;
+  }
+  #ipprev::after { border-right: 13px solid #f2eefc; margin-left: -1px; }
+  #ipnext::after { border-left: 13px solid #f2eefc; margin-left: 1px; }
+  .ipnav:active { background: rgba(236, 148, 190, .55); }
+  #ipnum { font-size: 15px; color: #cfc9e6; min-width: 60px; text-align: center; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #doorGlow, #marqblink, #pattifloat, #patti, #mayu, #talk .cursor, .nb::after, #playbig { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="top">
+    <a class="brand" href="m.html" aria-label="STUDIO PATTI（スタジオへもどる）"><img src="nav_logo.png" alt="STUDIO PATTI"></a>
+    <button id="menubtn" type="button" aria-label="メニュー" aria-expanded="false">☰</button>
+    <div id="menu" role="menu">
+      <button data-k="company">COMPANY <small>会社概要</small></button>
+      <button data-k="chdesign">CHARACTER DESIGN <small>デザイン室</small></button>
+      <button data-k="contents" class="here">CONTENTS CREATIVE <small>いまいる部屋</small></button>
+      <button data-k="spook">Patti the Spook <small>準備中</small></button>
+      <button data-k="contact">CONTACT US <small>お問い合わせ</small></button>
+      <button data-k="studio">STUDIO <small>スタジオへもどる</small></button>
+      <div class="pc"><a id="pclink" href="contents.html?pc=1" style="color:#7ee0eb">PC版で見る →</a></div>
+    </div>
+  </div>
+
+  <div id="roomarea">
+    <div id="stagebox">
+      <div id="stage">
+        <img id="room" alt="編集室">
+        <img id="lower" src="" alt="" aria-hidden="true">
+        <div id="doorGlow" aria-hidden="true"></div>
+        <div id="marqblink" aria-hidden="true"></div>
+        <div id="catname" aria-live="polite"></div>
+        <div id="screenbox">
+          <div id="scrwait">
+            <canvas id="wstars" width="172" height="93" aria-hidden="true"></canvas>
+            <div id="wtext">メニューをえらんで<br>すうじをおしてね</div>
+          </div>
+          <div id="thumbbox" role="button" aria-label="この作品を見る">
+            <img id="thumbimg" src="" alt="作品のサムネイル">
+            <button id="playbig" type="button" aria-label="この作品をさいせいする"></button>
+          </div>
+        </div>
+        <div id="mshadow" aria-hidden="true"></div>
+        <div id="mayu" role="img" aria-label="作品を見に来たマユちゃん"></div>
+        <div id="pshadow" aria-hidden="true"></div>
+        <div id="pattifloat"><div id="patti" role="img" aria-label="パッチくん"></div></div>
+      </div>
+    </div>
+    <div id="talk">
+      <span class="name">パッチ</span><span id="talktext">ここは編集室だよ！<br>メニューをえらんで、すうじをおしてね！</span>
+      <span class="cursor" aria-hidden="true"></span>
+    </div>
+  </div>
+</div>
+
+<div id="vpop" role="dialog" aria-label="作品のさいせい">
+  <button class="pclose" id="vpclose" type="button">× とじる</button>
+  <div id="vpwrap"><iframe id="vpframe" title="作品のさいせい画面" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>
+</div>
+<div id="ipop" role="dialog" aria-label="作品を見る">
+  <button class="pclose" id="ipclose" type="button">× とじる</button>
+  <div id="ipwrap"><img id="ipimg" src="" alt="作品の画像"></div>
+  <div id="ipbar">
+    <button id="ipprev" class="ipnav" type="button" aria-label="前へ">◀</button>
+    <div id="ipnum"></div>
+    <button id="ipnext" class="ipnav" type="button" aria-label="次へ">▶</button>
+  </div>
+</div>
+
+<script>
+const COMPANY_URL = 'https://canva.link/5xu274fv1b00091';
+const NOCACHE = { cache: 'no-store' };
+const stage = document.getElementById('stage');
+const stagebox = document.getElementById('stagebox');
+const talktext = document.getElementById('talktext');
+const TALK_DEFAULT = 'ここは編集室だよ！<br>メニューをえらんで、すうじをおしてね！';
+let M = null;                                   // 部屋の数字(room_edit_m.json)
+let L = { s: 1, F: 0, d: 0 };                   // いまの画面での 倍率・床の線・奥行き
+
+// ── ステージを画面に収める(デザイン室と同じ作り) ──
+// 横は必ずいっぱい。画面の高さに合わせて床の線 F を上下させ、二人がテキストボックスに被らないようにする。
+function fitStage() {
+  const area = document.getElementById('roomarea');
+  const vw = area.clientWidth, roomH = area.clientHeight;
+  const talkPx = document.getElementById('talk').offsetHeight + 6 + 2;
+  let s = vw / 216;
+  let F = 0, d = 0;
+  if (M) {
+    const gAvail = Math.floor((roomH - talkPx) / s - 4);
+    F = Math.min(M.F_ref, gAvail - M.depth_ref); d = M.depth_ref;
+    if (F < M.F_min) { F = M.F_min; d = Math.min(M.depth_ref, Math.max(M.depth_min, gAvail - F)); }
+    if (F + d > gAvail) {
+      s = (roomH - talkPx) / (M.F_min + M.depth_min + 4);
+      F = M.F_min; d = M.depth_min;
+    }
+  }
+  s = Math.max(0.5, s);
+  stage.style.transform = 'scale(' + s + ')';
+  stagebox.style.width = (216 * s) + 'px';
+  stagebox.style.height = (480 * s) + 'px';
+  if (M && (F !== L.F || d !== L.d)) { L = { s, F, d }; placeDynamic(); }
+  L.s = s;
+}
+window.addEventListener('resize', fitStage);
+window.addEventListener('orientationchange', () => setTimeout(fitStage, 200));
+if (window.visualViewport) window.visualViewport.addEventListener('resize', fitStage);
+// 画面の高さが変わったとき(ツールバーの出し入れ・回転など)、合図が来なくても部屋の枠の大きさを見て追従する
+if (window.ResizeObserver) new ResizeObserver(() => fitStage()).observe(document.getElementById('roomarea'));
+fitStage();
+
+// ── 吹き出し ──
+function setTalk(t) { talktext.innerHTML = t; }
+function sayFor(t, ms) {
+  setTalk(t);
+  clearTimeout(window._tz);
+  window._tz = setTimeout(() => setTalk(TALK_DEFAULT), ms || 5200);
+}
+function tease(name) { sayFor('「' + name + '」は いま準備中！<br>たのしみに待っててね！', 3400); }
+let _going = false;
+function goTo(page, text) {
+  if (_going) return;
+  _going = true;
+  clearTimeout(window._tz);
+  setTalk(text);
+  setTimeout(() => { location.href = page; }, 700);
+}
+function goStudio() { goTo('m.html', 'スタジオにもどるよ！'); }
+
+// ── メニュー(☰) ──
+const menubtn = document.getElementById('menubtn');
+const menu = document.getElementById('menu');
+function closeMenu() { menu.classList.remove('on'); menubtn.classList.remove('on'); menubtn.setAttribute('aria-expanded', 'false'); }
+menubtn.addEventListener('click', () => {
+  const on = !menu.classList.contains('on');
+  menu.classList.toggle('on', on); menubtn.classList.toggle('on', on);
+  menubtn.setAttribute('aria-expanded', on ? 'true' : 'false');
+});
+const NAV_ACT = {
+  company:  () => { sayFor('会社概要をひらくよ！'); window.open(COMPANY_URL, '_blank', 'noopener'); },
+  chdesign: () => goTo('design_m.html', 'デザイン室へ ごあんない！'),
+  contents: () => sayFor('いまいるのが、この編集室だよ！'),
+  spook:    () => tease('Patti the Spook'),
+  contact:  () => goTo('m.html#post', 'お問い合わせのポストへ案内するね！'),
+  studio:   () => goStudio(),
+};
+document.querySelectorAll('#menu button').forEach(b => {
+  b.addEventListener('click', () => { closeMenu(); NAV_ACT[b.dataset.k](); });
+});
+document.getElementById('pclink').addEventListener('click', () => {
+  try { sessionStorage.setItem('patti-pc', '1'); } catch (e) {}
+});
+
+function place(el, r) {
+  el.style.left = r[0] + 'px'; el.style.top = r[1] + 'px';
+  el.style.width = r[2] + 'px'; el.style.height = r[3] + 'px';
+}
+
+// ─────────────────────────────────────────────
+// 作品(PC版の編集室と同じ中身)
+// ─────────────────────────────────────────────
+const MK = n => 'meta:' + n;
+const HEAD_NAME = '制作事例';
+const CATS = [
+  { name: 'アニメーション', items: [{t:'v',id:'1029119982'}, {t:'v',id:'1166566557'}, {t:'y',id:'Y3UOLaso-MI'}, {t:'v',id:'1084182206'}] },
+  { name: '絵本', items: ['book'] },
+  { name: 'メタバース', items: [MK(0), MK(1), MK(2), MK(3)] },
+  { name: '実写映像', items: [{t:'y',id:'a6ickLwrHRE'}, {t:'y',id:'RBAMbSCEbSQ'}, {t:'y',id:'XKyWWychUZA'}, {t:'y',id:'bomW6K3pvsY'}] },
+];
+let META = null, BOOK = null;
+fetch('metaverse.json', NOCACHE).then(r => r.json()).then(j => { META = j; }).catch(() => {});
+fetch('book.json', NOCACHE).then(r => r.json()).then(j => { BOOK = j; }).catch(() => {});
+let cat = 0, num = -1;
+const EL = {};
+const catname = document.getElementById('catname');
+const thumbbox = document.getElementById('thumbbox');
+const thumbimg = document.getElementById('thumbimg');
+const scrwait = document.getElementById('scrwait');
+
+function selectCat(i, quiet) {
+  cat = i;
+  EL.mi.forEach((b, k) => b.classList.toggle('sel', k === i));
+  catname.textContent = CATS[i].name;
+  EL.nb.forEach((b, j) => b.classList.toggle('off', !CATS[i].items[j]));
+  stopScreen();
+  if (!quiet) sayFor('「' + CATS[i].name + '」だよ！<br>右のすうじで作品がえらべるよ！');
+}
+function stopScreen() {
+  num = -1;
+  thumbbox.style.display = 'none';
+  scrwait.style.display = 'block';
+  EL.nb.forEach(b => b.classList.remove('on'));
+}
+let SHOW = { kind: '', list: [], idx: 0, video: null };
+function selectNum(j) {
+  const item = CATS[cat].items[j];
+  if (item === undefined) { sayFor('この番号はいま準備中だよ！', 2600); return; }
+  num = j;
+  EL.nb.forEach((b, k) => b.classList.toggle('on', k === j));
+  scrwait.style.display = 'none';
+  if (typeof item === 'string' && item.startsWith('meta:')) {
+    const gi = parseInt(item.slice(5), 10);
+    if (!META || !META[gi]) { tease(CATS[cat].name); return; }
+    showThumb('images', META[gi].files);
+  } else if (item === 'book') {
+    if (!BOOK) { tease(CATS[cat].name); return; }
+    showThumb('images', BOOK.pages.map(pg => pg.img));
+  } else {
+    showThumb('video', ['thumbs/' + item.t + item.id + '.jpg'], item);
+  }
+  sayFor((j + 1) + 'ばんの作品だよ！<br>スクリーンをタッチしてね！');
+}
+function showThumb(kind, list, video) {
+  SHOW = { kind: kind, list: list, idx: 0, video: video || null };
+  thumbimg.src = list[0];
+  thumbbox.classList.toggle('fit', kind === 'images');
+  thumbbox.style.display = 'block';
+}
+
+// ─── ポップアップ(動画・画像) ───
+const vpop = document.getElementById('vpop'), vpframe = document.getElementById('vpframe');
+const ipop = document.getElementById('ipop'), ipimg = document.getElementById('ipimg');
+function popupURL(t, id) {
+  return t === 'v'
+    ? 'https://player.vimeo.com/video/' + id + '?autoplay=1&title=0&byline=0&portrait=0&dnt=1'
+    : 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0&playsinline=1';
+}
+function openShow() {
+  if (SHOW.kind === 'video') { vpframe.src = popupURL(SHOW.video.t, SHOW.video.id); vpop.classList.add('on'); }
+  else if (SHOW.kind === 'images') { SHOW.idx = 0; drawImagePop(); ipop.classList.add('on'); }
+}
+thumbbox.addEventListener('click', openShow);
+function drawImagePop() {
+  const n = SHOW.list.length;
+  SHOW.idx = (SHOW.idx + n) % n;
+  ipimg.src = SHOW.list[SHOW.idx];
+  document.getElementById('ipnum').textContent = (SHOW.idx + 1) + ' / ' + n;
+  document.getElementById('ipbar').style.visibility = n > 1 ? 'visible' : 'hidden';
+}
+document.getElementById('ipprev').addEventListener('click', () => { SHOW.idx -= 1; drawImagePop(); });
+document.getElementById('ipnext').addEventListener('click', () => { SHOW.idx += 1; drawImagePop(); });
+let sx0 = null;                                   // 左右にスワイプしてもめくれる
+ipimg.addEventListener('touchstart', e => { sx0 = e.touches[0].clientX; }, { passive: true });
+ipimg.addEventListener('touchend', e => {
+  if (sx0 === null) return;
+  const dx = e.changedTouches[0].clientX - sx0; sx0 = null;
+  if (Math.abs(dx) > 40) { SHOW.idx += dx < 0 ? 1 : -1; drawImagePop(); }
+});
+function closeIpop() { ipop.classList.remove('on'); }
+function closeVpop() { vpop.classList.remove('on'); vpframe.src = 'about:blank'; }
+document.getElementById('ipclose').addEventListener('click', closeIpop);
+document.getElementById('vpclose').addEventListener('click', closeVpop);
+ipop.addEventListener('click', e => { if (e.target === ipop) closeIpop(); });
+vpop.addEventListener('click', e => { if (e.target === vpop) closeVpop(); });
+
+// ─────────────────────────────────────────────
+// 部屋を置く
+// ─────────────────────────────────────────────
+function placeAll(m) {
+  M = m;
+  const V = m.v ? '?v=' + m.v : '';                 // 絵の版。配置を変えた直後も古い絵を出さない
+  document.getElementById('room').src = 'room_edit_m.png' + V;
+  const lower = document.getElementById('lower');
+  lower.src = m.lower.img + V; lower.style.height = m.lower.h + 'px';
+  EL.top = {};
+  Object.keys(m.top).forEach(k => {
+    const p = m.top[k], img = document.createElement('img');
+    img.className = 'spr'; img.src = p.img + V; img.alt = ''; img.setAttribute('aria-hidden', 'true');
+    img.style.width = p.w + 'px'; img.style.height = p.h + 'px';
+    stage.insertBefore(img, document.getElementById('doorGlow'));
+    EL.top[k] = img;
+  });
+  const mb = document.getElementById('marqblink');
+  mb.style.width = m.marquee_blink.w + 'px'; mb.style.height = m.marquee_blink.h + 'px';
+  mb.style.backgroundImage = 'url(' + m.marquee_blink.img + V + ')';
+  mb.style.backgroundSize = (m.marquee_blink.w * 4) + 'px ' + m.marquee_blink.h + 'px';
+  // メニュー: 見出し + 項目4つ
+  const hdr = document.createElement('div');
+  hdr.id = 'mihdr'; hdr.textContent = HEAD_NAME;
+  stage.appendChild(hdr); EL.hdr = hdr;
+  EL.mi = CATS.map((c, i) => {
+    const b = document.createElement('button');
+    b.className = 'mi'; b.type = 'button';
+    b.innerHTML = '<span class="cur"></span>' + c.name;
+    b.setAttribute('aria-label', c.name);
+    b.addEventListener('click', () => selectCat(i));
+    stage.appendChild(b);
+    return b;
+  });
+  EL.nb = [0, 1, 2, 3].map(j => {
+    const b = document.createElement('button');
+    b.className = 'nb'; b.type = 'button';
+    b.setAttribute('aria-label', (j + 1) + 'ばんの作品');
+    b.addEventListener('click', () => selectNum(j));
+    stage.appendChild(b);
+    return b;
+  });
+  const door = document.createElement('button');
+  door.className = 'hs'; door.type = 'button';
+  door.setAttribute('aria-label', 'スタジオ（トップページ）にもどる');
+  door.addEventListener('click', () => { door.classList.add('lit'); goStudio(); });
+  stage.appendChild(door); EL.door = door;
+  const mayu = document.getElementById('mayu');
+  mayu.style.transform = 'scale(' + m.mayu[2] + ')';
+  mayu.addEventListener('click', () => sayFor('マユちゃんも作品を見に来たんだって！<br>いっしょに見よう！'));
+  const patti = document.getElementById('patti');
+  patti.style.transform = 'scale(' + m.patti[2] + ')';
+  patti.addEventListener('click', () => sayFor('ここでボクたちの作品が上映されるんだ！<br>ゆっくり見ていってね！'));
+
+  selectCat(0, true);
+  setTalk(TALK_DEFAULT);
+  L = { s: 1, F: -1, d: -1 };
+  fitStage();
+  stars();
+  stage.classList.add('ready');
+}
+
+// 画面の高さに合わせて置き直す(F: 床の線 / d: 床の線から足元まで)
+function placeDynamic() {
+  const m = M, F = L.F, d = L.d, dF = F - m.F_ref;
+  const t = m.F_ref > m.F_min ? Math.max(0, Math.min(1, (F - m.F_min) / (m.F_ref - m.F_min))) : 1;
+  document.getElementById('lower').style.top = (m.lower.top_ref + dF) + 'px';
+  const pos = {};
+  Object.keys(m.top).forEach(k => {
+    const p = m.top[k], y = Math.round(p.yc + (p.y - p.yc) * t);
+    place(EL.top[k], [p.x, y, p.w, p.h]);
+    pos[k] = [p.x, y];
+  });
+  const si = m.screen_inner, sp = pos.screen;
+  place(document.getElementById('screenbox'), [sp[0] + si[0], sp[1] + si[1], si[2], si[3]]);
+  const mt = m.marquee_text, mp = pos.marquee;
+  place(catname, [mp[0] + mt[0], mp[1] + mt[1], mt[2], mt[3]]);
+  place(document.getElementById('marqblink'), [mp[0], mp[1] + m.marquee_blink.dy, m.marquee_blink.w, m.marquee_blink.h]);
+  const sh = r => [r[0], r[1] + dF, r[2], r[3]];
+  place(EL.hdr, sh(m.menu.hdr));
+  EL.mi.forEach((b, i) => place(b, sh(m.menu.items[i])));
+  EL.nb.forEach((b, j) => place(b, sh(m.buttons[j])));
+  const dr = sh(m.door);
+  place(EL.door, dr);
+  const gw = 72, gh = 104;
+  place(document.getElementById('doorGlow'), [Math.round(dr[0] + dr[2] / 2 - gw / 2), Math.round(dr[1] + dr[3] * 0.6 - gh * 0.6), gw, gh]);
+  const dy = dF + (d - m.depth_ref);                 // 二人のずらし量
+  const [mx, my] = m.mayu, ms = m.mayu[2];
+  const mayu = document.getElementById('mayu');
+  mayu.style.left = mx + 'px'; mayu.style.top = (my + dy) + 'px';
+  const mw = Math.round(24 * ms);
+  place(document.getElementById('mshadow'), [Math.round(mx + 15 - mw / 2), my + dy + 72 - 3, mw, 5]);
+  const [px, py] = m.patti, ps = m.patti[2];
+  const pf = document.getElementById('pattifloat');
+  pf.style.left = px + 'px'; pf.style.top = (py + dy) + 'px';
+  const pw = Math.round(26 * ps);
+  place(document.getElementById('pshadow'), [Math.round(px + 16 - pw / 2), py + dy + 48 - 3, pw, 5]);
+}
+
+// ── 待機中のスクリーン: 星がまたたく(PC版と同じシアン系) ──
+function stars() {
+  const cv = document.getElementById('wstars'), g = cv.getContext('2d');
+  const SW = 172, SH = 93, TONE = ['#1c5a74', '#2ca4ba', '#7ee0eb', '#d6faff'];
+  const st = [];
+  for (let i = 0; i < 46; i++) {
+    const yy = Math.random() < 0.8 ? Math.floor(Math.random() * 42) : Math.floor(Math.random() * SH);
+    st.push({ x: Math.floor(Math.random() * SW), y: yy, sp: 0.6 + Math.random() * 1.8, ph: Math.random() * 6.28 });
+  }
+  const draw = (t) => {
+    g.fillStyle = '#00012b'; g.fillRect(0, 0, SW, SH);
+    for (const s of st) {
+      const k = (Math.sin(t / 1000 * s.sp + s.ph) + 1) / 2;
+      g.fillStyle = TONE[Math.min(3, Math.floor(k * 4))];
+      g.fillRect(s.x, s.y, 1, 1);
+    }
+  };
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { draw(0); return; }
+  let prev = 0;
+  const tick = (t) => { requestAnimationFrame(tick); if (document.hidden || t - prev < 1000 / 12) return; prev = t; draw(t); };
+  requestAnimationFrame(tick);
+}
+
+fetch('room_edit_m.json', NOCACHE).then(r => r.json()).then(placeAll)
+  .catch(e => { console.error(e); document.getElementById('room').src = 'room_edit_m.png'; });
+</script>
+</body>
+</html>

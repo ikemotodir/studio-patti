@@ -83,6 +83,7 @@
   }
   #stage img, #stage div, #stage canvas { image-rendering: pixelated; }
   #room { position: absolute; left: 0; top: 0; width: 216px; height: 480px; }
+  #room:not([src]) { visibility: hidden; }        /* 絵の版が決まるまで(代わりの文字を出さない) */
   /* 二人と紙は、位置が決まるまで出さない(開いた瞬間に左上へ出るのを防ぐ) */
   #mayu, #mshadow, #pattifloat, #pshadow { visibility: hidden; }
   #stage.ready #mayu, #stage.ready #mshadow, #stage.ready #pattifloat, #stage.ready #pshadow { visibility: visible; }
@@ -301,7 +302,7 @@
   <div id="roomarea">
     <div id="stagebox">
       <div id="stage">
-        <img id="room" src="room_design_m.png" alt="デザイン室">
+        <img id="room" alt="デザイン室">
         <img id="lower" src="" alt="" aria-hidden="true">
         <canvas id="chalk" width="216" height="480" aria-hidden="true"></canvas>
         <div id="garblink" aria-hidden="true"></div>
@@ -402,7 +403,7 @@ menubtn.addEventListener('click', () => {
 const NAV_ACT = {
   company:  () => { sayFor('会社概要をひらくよ！'); window.open(COMPANY_URL, '_blank', 'noopener'); },
   chdesign: () => sayFor('いまいるのが、このデザイン室だよ！'),
-  contents: () => goTo('contents.html', '編集室へ ごあんない！<br>スマホは よこ向きにすると見やすいよ！'),
+  contents: () => goTo('contents_m.html', '編集室へ ごあんない！'),
   spook:    () => tease('Patti the Spook'),
   contact:  () => goTo('m.html#post', 'お問い合わせのポストへ案内するね！'),
   studio:   () => goStudio(),
@@ -456,18 +457,20 @@ const EL = {};                                    // 紙の絵(img)と文字・�
 
 function placeAll(m) {
   M = m;
+  const V = m.v ? '?v=' + m.v : '';                 // 絵の版。配置を変えた直後も古い絵を出さない
+  document.getElementById('room').src = 'room_design_m.png' + V;
   const gb = document.getElementById('garblink');
   gb.style.top = m.garland_y + 'px'; gb.style.height = m.garland_h + 'px';
   gb.style.backgroundSize = (216 * 3) + 'px ' + m.garland_h + 'px';
   const lower = document.getElementById('lower');
-  lower.src = m.lower.img;
+  lower.src = m.lower.img + V;
   lower.style.height = m.lower.h + 'px';
 
   Object.keys(m.papers).forEach(k => {
     const p = PAPERS[k], d = m.papers[k];
     if (!p) return;
     const img = document.createElement('img');
-    img.className = 'ppimg'; img.src = d.img; img.alt = ''; img.setAttribute('aria-hidden', 'true');
+    img.className = 'ppimg'; img.src = d.img + V; img.alt = ''; img.setAttribute('aria-hidden', 'true');
     img.style.width = d.w + 'px'; img.style.height = d.h + 'px';
     stage.appendChild(img);
     const b = document.createElement('button');
@@ -623,7 +626,8 @@ function closeDataPop() { dpop.classList.remove('on'); }
 document.getElementById('dpclose').addEventListener('click', closeDataPop);
 dpop.addEventListener('click', e => { if (e.target === dpop) closeDataPop(); });
 
-fetch('room_design_m.json', NOCACHE).then(r => r.json()).then(placeAll).catch(e => console.error(e));
+fetch('room_design_m.json', NOCACHE).then(r => r.json()).then(placeAll)
+  .catch(e => { console.error(e); document.getElementById('room').src = 'room_design_m.png'; });
 </script>
 </body>
 </html>
