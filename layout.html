@@ -84,6 +84,10 @@
   .box.img { border: 2px solid transparent; background-color: transparent;
              background-repeat: no-repeat; background-size: 100% 100%; }
   .box.img.chara { background-size: auto 100%; background-position: 0 0; }
+  /* 本番で左右反転して出すキャラ(パッチ)は、ここでも反転して見せる */
+  .box.flip { background-image: none !important; }
+  .box.flip u { position: absolute; inset: 0; background-repeat: no-repeat; background-size: auto 100%;
+               transform: scaleX(-1); pointer-events: none; }
   .box.img:hover { border-color: #ffd166; }
   .box.img.sel { border-color: #ec94be; background-color: rgba(236, 148, 190, .18); }
   .box.img.hit { border-color: #ff6f6f; background-color: rgba(255, 111, 111, .25); }
@@ -110,10 +114,11 @@
 <body>
 
 <header>
-  <h1>配置ツール <span style="font-size:11px;color:#9a93c4">v8</span></h1>
+  <h1>配置ツール <span style="font-size:11px;color:#9a93c4">v9</span></h1>
   <button id="roomD" class="on" type="button">デザイン室</button>
   <button id="roomE" type="button">編集室</button>
   <button id="roomM" type="button">スマホ版</button>
+  <button id="roomDM" type="button">スマホ版デザイン室</button>
   <button id="zoomOut" type="button">－</button>
   <span id="zlabel">3倍</span>
   <button id="zoomIn" type="button">＋</button>
@@ -142,7 +147,7 @@
       枠をマウスでつかんで動かしてください。右下の四角をつかむと大きさを変えられます。<br>
       枠をえらんでから <b>矢印キー</b>で1ドットずつ、<b>Shift+矢印</b>で5ドットずつ動きます。<br>
       キャラクターは大きさを <b>[ ] キー</b>で変えられます。<br>
-      <b>「スマホ版」</b>を押すと、スマホで見たときの部屋(たて長)の配置を直せます。物は本物の絵で出ます。<br>
+      <b>「スマホ版」「スマホ版デザイン室」</b>を押すと、スマホで見たときの部屋(たて長)の配置を直せます。物は本物の絵で出ます。<br>
       置きおわったら緑の「サイトに反映する」を押せば、そのままサイトが変わります。
     </p>
     <p class="legend">
@@ -194,10 +199,18 @@ const REFS = {
       x: 0, y: 292, w: 216, h: 188, fixed: true, up: true, cls: 'talk',
       html: '<span style="color:#ffd166">パッチ</span> ここに会話が出ます<br>この四角の中は見えなくなります' },
   ],
+  design_m: [
+    { name: '↑ テキストボックス（いちばん背の低い機種ではここまで上がります。この下は隠れます）',
+      x: 0, y: 292, w: 216, h: 188, fixed: true, up: true, cls: 'talk',
+      html: '<span style="color:#ffd166">パッチ</span> ここに会話が出ます<br>この四角の中は見えなくなります' },
+    { name: '黒板（紙はこの中に貼ります）', x: 4, y: 12, w: 168, h: 196, up: true },
+  ],
 };
-function refsFor() { return (room === 'mobile' ? [] : REFS.common).concat(REFS[room] || []); }
-const ROOM_NAMES = { design: 'デザイン室', edit: '編集室', mobile: 'スマホ版' };
-const ZOOMS = { design: 3, edit: 3, mobile: 2 };
+const PHONE_ROOMS = ['mobile', 'design_m'];            // スマホ(たて長)の部屋
+const GROUND_IDS = { mobile: ['jukebox', 'post', 'mayu', 'patti'], design_m: ['mayu', 'patti'] };
+function refsFor() { return (PHONE_ROOMS.includes(room) ? [] : REFS.common).concat(REFS[room] || []); }
+const ROOM_NAMES = { design: 'デザイン室', edit: '編集室', mobile: 'スマホ版', design_m: 'スマホ版デザイン室' };
+const ZOOMS = { design: 3, edit: 3, mobile: 2, design_m: 2 };
 const VER = Date.now();
 
 // ── 部屋ごとの中身。x,y,w,h はドット絵の座標(384x240) ──
@@ -229,26 +242,32 @@ const ROOMS = {
     ],
   },
   mobile: {
-    bg: 'room_m_bare.png', w: 216, h: 480,
+    bg: 'room_m_bare.png', w: 216, h: 480, json: 'room_m.json',
     items: null,     // 部屋を組み立てるスクリプトと同じ数字を room_m.json から読む
   },
+  design_m: {
+    bg: 'room_design_m_bare.png', w: 216, h: 480, json: 'room_design_m.json',
+    items: null,     // 同じく room_design_m.json から読む
+  },
 };
-let MOBILE_P = null;
-function loadMobile() {                      // 重ねて呼ばれても読むのは1回
-  if (ROOMS.mobile.items) return Promise.resolve();
-  if (!MOBILE_P) {
-    MOBILE_P = (async () => {
+const ROOM_P = {};
+function loadRoomJson(name) {                // 重ねて呼ばれても読むのは1回
+  const R = ROOMS[name];
+  if (!R.json || R.items) return Promise.resolve();
+  if (!ROOM_P[name]) {
+    ROOM_P[name] = (async () => {
       try {
-        const m = await (await fetch('room_m.json?v=' + Date.now(), { cache: 'no-store' })).json();
-        if (!m.tool) throw new Error('サイトのスマホ版がまだ新しくありません。1〜2分あとに開き直してください');
-        ROOMS.mobile.items = m.tool.map(o => Object.assign({}, o));
+        const m = await (await fetch(R.json + '?v=' + Date.now(), { cache: 'no-store' })).json();
+        if (!m.tool) throw new Error('サイトの' + ROOM_NAMES[name] + 'がまだ新しくありません。1〜2分あとに開き直してください');
+        R.items = m.tool.map(o => Object.assign({}, o));
       } catch (e) {
-        say('スマホ版の部屋が読めませんでした: ' + e.message, true);
-      } finally { MOBILE_P = null; }
+        say(ROOM_NAMES[name] + 'の部屋が読めませんでした: ' + e.message, true);
+      } finally { ROOM_P[name] = null; }
     })();
   }
-  return MOBILE_P;
+  return ROOM_P[name];
 }
+function loadMobile() { return Promise.all(PHONE_ROOMS.map(loadRoomJson)); }
 let PUB = null, RESET_ROOM = null, LOAD_SEQ = 0;
 async function loadPublished() {             // サイトに反映済みの配置(layout.json)。これを土台にする
   try { PUB = await (await fetch('layout.json?v=' + Date.now(), { cache: 'no-store' })).json(); }
@@ -366,6 +385,12 @@ function build() {
     d.dataset.id = it.id;
     d.innerHTML = '<b>' + it.name + '</b><i></i>';
     if (it.img) { d.classList.add('img'); d.style.backgroundImage = 'url(' + it.img + '?v=' + VER + ')'; }
+    if (it.img && room === 'design_m' && it.id === 'patti') {
+      d.classList.add('flip');
+      const u = document.createElement('u');
+      u.style.backgroundImage = 'url(' + it.img + '?v=' + VER + ')';
+      d.appendChild(u);
+    }
     if (it.lockY) d.classList.add('lock');
     stage.appendChild(d);
     it.el = d;
@@ -379,9 +404,9 @@ function overlaps(a, b) {
 }
 
 function updateTalkRef() {                 // 床の物の足元がいちばん下の所 + 4 がテキストボックスの上端(最短の機種)
-  const rf = REFS.mobile[0];
+  const rf = REFS[room][0];
   let g = 288;
-  items.forEach(it => { if (['jukebox', 'post', 'mayu', 'patti'].includes(it.id)) g = Math.max(g, it.y + it.h); });
+  items.forEach(it => { if ((GROUND_IDS[room] || []).includes(it.id)) g = Math.max(g, it.y + it.h); });
   rf.y = g + 4; rf.h = 480 - rf.y;
   if (rf.el) { rf.el.style.top = (rf.y * Z) + 'px'; rf.el.style.height = (rf.h * Z) + 'px'; }
   return g;
@@ -389,7 +414,7 @@ function updateTalkRef() {                 // 床の物の足元がいちばん�
 function render() {
   const hidden = [];
   const R = ROOMS[room], stW = R.w || 384, stH = R.h || 240;
-  if (room === 'mobile') {
+  if (PHONE_ROOMS.includes(room)) {
     const g = updateTalkRef();
     if (g > 288) hidden.push('床の物を下げたぶん、背の低い機種では部屋が少し縮みます（足元 ' + g + '）');
   }
@@ -408,6 +433,13 @@ function render() {
     const bad = refsFor().filter(rf => rf.fixed && overlaps(box, rf));
     it.el.classList.toggle('hit', bad.length > 0);
     if (bad.length) hidden.push(it.name + ' が「' + bad[0].name.split('（')[0] + '」にかぶっています');
+    if (it.inBoard) {
+      const bd = REFS.design_m[1];
+      if (x < bd.x - 1 || y < bd.y - 2 || x + w > bd.x + bd.w + 1 || y + h > bd.y + bd.h - 3) {
+        it.el.classList.add('hit');
+        hidden.push(it.name + ' が黒板からはみ出します（本番では黒板の中へ寄せます）');
+      }
+    }
     const extra = it.id === 'patti' ? (it.walk || 0) : 0;
     if (x < 0 || y < 0 || x + w + extra > stW || y + h > stH) {
       it.el.classList.add('hit');
@@ -479,7 +511,7 @@ document.addEventListener('keydown', e => {
 
 async function load(name) {
   const seq = ++LOAD_SEQ;
-  if (!ROOMS[name].items) await loadMobile();
+  if (!ROOMS[name].items) await loadRoomJson(name);
   if (seq !== LOAD_SEQ) return;              // その間に別の部屋が押された
   if (!ROOMS[name].items) return;
   room = name;
@@ -501,6 +533,7 @@ async function load(name) {
   document.getElementById('roomD').classList.toggle('on', name === 'design');
   document.getElementById('roomE').classList.toggle('on', name === 'edit');
   document.getElementById('roomM').classList.toggle('on', name === 'mobile');
+  document.getElementById('roomDM').classList.toggle('on', name === 'design_m');
 }
 document.getElementById('undo').addEventListener('click', undo);
 document.getElementById('redo').addEventListener('click', redo);
@@ -513,6 +546,7 @@ document.addEventListener('keydown', e => {
 document.getElementById('roomD').addEventListener('click', () => load('design'));
 document.getElementById('roomE').addEventListener('click', () => load('edit'));
 document.getElementById('roomM').addEventListener('click', () => load('mobile'));
+document.getElementById('roomDM').addEventListener('click', () => load('design_m'));
 document.getElementById('reset').addEventListener('click', () => {
   try { localStorage.removeItem(KEY + room); } catch (e) {}
   RESET_ROOM = room;
@@ -530,9 +564,10 @@ const KEYK = 'patti-gh-key';
 const pub = document.getElementById('pub');
 function say(msg, ng) { pub.textContent = msg; pub.classList.toggle('ng', !!ng); }
 
+const ALL_ROOMS = ['design', 'edit', 'mobile', 'design_m'];
 function layoutAll() {
   const all = {};
-  ['design', 'edit', 'mobile'].forEach(r => {
+  ALL_ROOMS.forEach(r => {
     if (!ROOMS[r].items) return;           // スマホ版がまだ読めていなければ、いま入っているものを残す(publish 側)
     let list = ROOMS[r].items.map(o => Object.assign({}, o));
     if (r === room) {
@@ -581,7 +616,7 @@ async function publish() {
     }
     if (prev) PUB = prev;                    // 送る土台は GitHub にある今の配置(タブを開いた時のものではなく)
     const all = layoutAll();
-    ['design', 'edit', 'mobile'].forEach(r => {          // 送らない部屋は GitHub にある今のまま
+    ALL_ROOMS.forEach(r => {                             // 送らない部屋は GitHub にある今のまま
       if (!all[r] && prev && Array.isArray(prev[r])) all[r] = prev[r];
     });
     const body = { message: '配置ツールから配置を保存', content: b64(JSON.stringify(all, null, 1)) };
@@ -589,10 +624,10 @@ async function publish() {
     const r = await fetch(url, { method: 'PUT', headers: head, body: JSON.stringify(body) });
     if (!r.ok) throw new Error('GitHub ' + r.status + ' ' + (await r.text()).slice(0, 160));
     PUB = all;                               // これがサイトの新しい配置
-    ['design', 'edit', 'mobile'].forEach(r => { if (r !== room) { try { localStorage.removeItem(KEY + r); } catch (e) {} } });
+    ALL_ROOMS.forEach(r => { if (r !== room) { try { localStorage.removeItem(KEY + r); } catch (e) {} } });
     save();
     say('送りました！ 1〜2分でサイトが変わります。');
-    setTimeout(() => say('反映されたか見る → design.html / contents.html / スマホは m.html を開き直してください。'), 9000);
+    setTimeout(() => say('反映されたか見る → design.html / contents.html / スマホは m.html・design_m.html を開き直してください。'), 9000);
   } catch (e) {
     say('うまくいきませんでした: ' + e.message, true);
   }
@@ -631,7 +666,7 @@ document.getElementById('copy').addEventListener('click', () => {
 (async () => {
   await loadPublished();                 // サイトに反映済みの配置を土台にする(ブラウザを変えても現状から始まる)
   await load('design');
-  loadMobile();                          // 反映のときスマホ版も一緒に送るため先に読んでおく
+  loadMobile();                          // 反映のときスマホの部屋も一緒に送るため先に読んでおく
 })();
 </script>
 </body>

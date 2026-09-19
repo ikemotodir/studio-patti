@@ -165,6 +165,8 @@ def main():
             apply_edit(P, it)
         elif room == 'mobile':
             print("  (スマホ版は make_room_m.py が layout.json を直接読む)")
+        elif room == 'design_m':
+            print("  (スマホ版デザイン室は make_room_design_m.py が layout.json を直接読む)")
     P.save()
 
     print("絵を描き直しています…")
@@ -174,6 +176,7 @@ def main():
                                   ("make_room_edit.py", False),
                                   ("make_room_design.py", False),
                                   ("make_room_m.py", False),
+                                  ("make_room_design_m.py", False),
                                   ("make_aseprite_edit.py", True),
                                   ("make_aseprite_design.py", True)):
         r = subprocess.run([sys.executable, script], cwd=WEB, capture_output=True)

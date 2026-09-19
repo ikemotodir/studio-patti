@@ -368,8 +368,9 @@ function enterRoom(page, name) {                 // 部屋へ入る(ひとこと
   if (_going) return;
   _going = true;
   clearTimeout(window._tz);
-  setTalk(name + 'へ ごあんない！<br>スマホは よこ向きにすると見やすいよ！');
-  setTimeout(() => { location.href = page; }, 950);
+  const tall = /_m\.html/.test(page);             // スマホ用の部屋はそのまま。PC用の部屋は横向きをすすめる
+  setTalk(name + 'へ ごあんない！<br>' + (tall ? 'ドアをあけるね…' : 'スマホは よこ向きにすると見やすいよ！'));
+  setTimeout(() => { location.href = page; }, tall ? 500 : 950);
 }
 function tease(name) {
   setTalk('「' + name + '」のページは いま準備中！<br>たのしみに待っててね！');
@@ -393,7 +394,7 @@ menubtn.addEventListener('click', () => {
 });
 const NAV_ACT = {
   company:  () => { sayFor('会社概要をひらくよ！'); window.open(COMPANY_URL, '_blank', 'noopener'); },
-  chdesign: () => enterRoom('design.html', 'デザイン室'),
+  chdesign: () => enterRoom('design_m.html', 'デザイン室'),
   contents: () => enterRoom('contents.html', '編集室'),
   spook:    () => tease('Patti the Spook'),
   contact:  () => openDetail('post'),
@@ -805,7 +806,7 @@ function placeAll(m) {
   makeHot('company', H.company, 'スタジオパッチの会社案内が見られる<br>パソコンだよ！ひらくね！',
           () => window.open(COMPANY_URL, '_blank', 'noopener'), { label: 'COMPANY（会社概要をひらく）', nobg: true });
   makeHot('doorL', H.doorL, 'デザイン室！キャラクターが生まれる部屋だよ！<br>（入ってみてね！）',
-          () => enterRoom('design.html', 'デザイン室'), { label: 'デザイン室へ入る', style: '--gi:.4' });
+          () => enterRoom('design_m.html', 'デザイン室'), { label: 'デザイン室へ入る', style: '--gi:.4' });
   makeHot('doorR', H.doorR, '編集室！アニメーションを創ってる部屋だよ！<br>（入ってみてね！）',
           () => enterRoom('contents.html', '編集室'), { label: '編集室へ入る', style: '--gi:.4' });
   makeHot('spook', H.spook, '『おばけのパッチ』の世界への入口！<br>大きな月の絵だよ！（いま準備中）',

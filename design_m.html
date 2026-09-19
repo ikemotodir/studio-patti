@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap" rel="stylesheet">
+<title>CHARACTER DESIGN｜STUDIO PATTI</title>
+<meta name="description" content="スタジオパッチのデザイン室。キャラクターのデザインと設計、世界観、物語、キャラクターに関する資料が見られます。">
+<meta name="theme-color" content="#05030f">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="canonical" href="https://studiopatti.jp/design.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="STUDIO PATTI">
+<meta property="og:title" content="CHARACTER DESIGN｜STUDIO PATTI">
+<meta property="og:description" content="デザイン室へようこそ。黒板に貼ってある紙をさわってみてね。">
+<meta property="og:url" content="https://studiopatti.jp/design.html">
+<meta property="og:image" content="https://studiopatti.jp/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root {
+    --topH: 48px;
+    --talkH: 76px;
+    --font: 'DotGothic16', 'MS Gothic', monospace;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: #05030f; color: #f2eefc;
+    font-family: var(--font);
+    -webkit-text-size-adjust: 100%;
+  }
+  #app {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    height: 100vh; height: 100dvh;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* ─── 上のバー(スマホ版TOPと同じ。項目は☰の中) ─── */
+  #top {
+    flex: none; height: var(--topH);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 12px 0 14px;
+    background: rgba(8, 6, 40, .96); border-bottom: 1px solid #2a2560;
+    position: relative; z-index: 20;
+  }
+  #top .brand img { height: 22px; width: auto; display: block; image-rendering: auto; }
+  #menubtn {
+    width: 44px; height: 40px; border: 1px solid #3a3470; border-radius: 4px;
+    background: transparent; color: #ffffff; font-size: 22px; line-height: 1; cursor: pointer;
+    font-family: var(--font);
+  }
+  #menubtn.on { background: #fcc800; color: #1c1640; border-color: #fcc800; }
+  #menu {
+    position: absolute; left: 0; right: 0; top: var(--topH);
+    background: rgba(8, 6, 40, .97); border-bottom: 2px solid #e8e4f4;
+    display: none; flex-direction: column; z-index: 19;
+  }
+  #menu.on { display: flex; }
+  #menu button {
+    border: 0; border-top: 1px solid #05041c; box-shadow: inset 0 1px 0 rgba(118, 110, 200, .3);
+    background: transparent; color: #ffffff; text-align: left;
+    font-family: var(--font); font-size: 16px; padding: 15px 18px; cursor: pointer;
+  }
+  #menu button small { color: #b7aede; font-size: 12px; margin-left: 10px; }
+  #menu button.here { color: #fcc800; }
+  #menu button:active { background: rgba(252, 200, 0, .14); color: #fcc800; }
+  #menu .pc { color: #b7aede; font-size: 13px; padding: 12px 18px 14px; }
+
+  /* ─── 部屋。上端はバーの直下、床は画面の下端まで ─── */
+  #roomarea {
+    flex: 1 1 auto; min-height: 0; position: relative; overflow: hidden;
+    background: #05030f;                       /* 機種によって両わきが空くときは黒 */
+  }
+  #stagebox { position: absolute; top: 0; left: 50%; transform: translateX(-50%); }
+  #stage {
+    position: absolute; left: 0; top: 0;
+    width: 216px; height: 480px;
+    transform-origin: 0 0;
+    image-rendering: pixelated;
+    overflow: hidden;
+  }
+  #stage img, #stage div, #stage canvas { image-rendering: pixelated; }
+  #room { position: absolute; left: 0; top: 0; width: 216px; height: 480px; }
+  /* 二人と紙は、位置が決まるまで出さない(開いた瞬間に左上へ出るのを防ぐ) */
+  #mayu, #mshadow, #pattifloat, #pshadow { visibility: hidden; }
+  #stage.ready #mayu, #stage.ready #mshadow, #stage.ready #pattifloat, #stage.ready #pshadow { visibility: visible; }
+
+  /* 重なり順(レイヤー事故防止) */
+  #room { z-index: 1; }
+  #garblink, #doorGlow, #motes { z-index: 2; }
+  .hs, .pp, #ppstory { z-index: 4; }
+  #mshadow, #mayu, #pshadow, #pattifloat { z-index: 5; }
+
+  /* 天井の電球がまたたく(3コマ) */
+  #garblink {
+    position: absolute; left: 0; width: 216px; pointer-events: none;
+    background-image: url(design_garland_m.png);
+    animation: garblink 1.35s steps(1) infinite;
+  }
+  @keyframes garblink {
+    0%, 33.2%   { background-position: 0 0; }
+    33.3%, 66.5% { background-position: -216px 0; }
+    66.6%, 100% { background-position: -432px 0; }
+  }
+  /* 戸口からもれる白い光(呼吸する) */
+  #doorGlow {
+    position: absolute; pointer-events: none; mix-blend-mode: screen;
+    animation: doorbreath 4.6s ease-in-out infinite;
+    background: radial-gradient(closest-side at 50% 60%,
+      rgba(236, 234, 252, .46) 0%, rgba(206, 202, 232, .22) 45%, rgba(206, 202, 232, 0) 78%);
+  }
+  @keyframes doorbreath { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+  #motes { position: absolute; left: 0; top: 0; width: 216px; height: 480px; pointer-events: none; }
+
+  /* ─── 黒板に貼ってある紙(そのままボタン) ─── */
+  .pp {
+    position: absolute; border: 0; background: transparent; padding: 0 2px;
+    cursor: pointer; color: #fff;
+    font-family: var(--font); font-size: 7px; line-height: 1.45; text-align: center;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pp::after {
+    content: ''; position: absolute; left: 50%; top: 50%;
+    width: 132%; height: 168%;
+    transform: translate(-50%, -50%); border-radius: 50%;
+    background: radial-gradient(closest-side,
+      rgba(255, 226, 158, .62) 0%, rgba(255, 206, 120, .34) 40%, rgba(255, 196, 100, 0) 100%);
+    mix-blend-mode: screen; pointer-events: none;
+    opacity: 0; transition: opacity .18s ease;
+  }
+  .pp.lit::after { opacity: 1; }
+  /* 紙の上の文字: 白抜き+濃い縁取りで、紙の地に負けないようにする */
+  .pp span {
+    display: block; white-space: nowrap; color: #ffffff;
+    text-shadow: 1px 0 0 #2a1436, -1px 0 0 #2a1436, 0 1px 0 #2a1436, 0 -1px 0 #2a1436;
+  }
+  /* 「押せる」と分かるように、紙のふちを常時ほんのり光らせて呼吸させる */
+  .pp::before {
+    content: ''; position: absolute; inset: -1px;
+    border: 1px solid rgba(255, 232, 168, .55);
+    animation: tapbreath 2.4s ease-in-out infinite; pointer-events: none;
+  }
+  @keyframes tapbreath { 0%, 100% { opacity: .35; } 50% { opacity: .95; } }
+  #ppdatatitle { color: #dcecdf; font-size: 7px; }
+  #ppdatatitle::after { width: 116%; height: 190%; }
+  #ppdatatitle span { color: #dcecdf; text-shadow: none; }
+  /* Spooks GS: 紙の内側に実画像をそのまま(なめらかに)出す */
+  #spooksimg {
+    position: absolute; left: 2px; top: 2px;
+    width: calc(100% - 4px); height: calc(100% - 4px);
+    object-fit: cover; display: block; pointer-events: none;
+  }
+  #stage #spooksimg { image-rendering: auto; }
+  /* Story is King: 黒板の上の標語。他と違うフォント */
+  #ppstory {
+    position: absolute; display: flex; align-items: center; justify-content: center;
+    font-family: 'Press Start 2P', 'DotGothic16', monospace;
+    font-size: 6.5px; letter-spacing: .3px; color: #3a3446;
+    border: 0; background: transparent; padding: 0; cursor: pointer; white-space: nowrap;
+  }
+
+  /* ─── 触れる場所(戸口・窓・マユちゃん) ─── */
+  .hs { position: absolute; display: block; border: 0; background: transparent; padding: 0; cursor: pointer; }
+  .hs::after {
+    content: ''; position: absolute; left: 50%; top: 50%;
+    width: var(--gw, 150%); height: var(--gh, 150%);
+    transform: translate(-50%, -50%); border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(244,240,255,.6) 0%, rgba(214,208,240,.35) 34%, rgba(180,172,220,.14) 60%, rgba(180,172,220,0) 100%);
+    mix-blend-mode: screen; pointer-events: none; opacity: 0; transition: opacity .25s ease;
+  }
+  .hs.lit::after { opacity: var(--gi, 1); }
+
+  /* ─── 二人(マユは右向き / パッチは左向き。PC版と同じ絵) ─── */
+  #mayu {
+    position: absolute; width: 30px; height: 72px;
+    background-image: url(mayu_right_shaded.png);
+    background-repeat: no-repeat; background-size: 360px 72px;
+    transform-origin: 50% 100%;
+    animation: mayuchar 1.2s steps(12) infinite;
+  }
+  @keyframes mayuchar { from { background-position: 0 0; } to { background-position: -360px 0; } }
+  #mshadow, #pshadow {
+    position: absolute; height: 5px; border-radius: 50%; background: rgba(40, 18, 10, .45);
+    pointer-events: none;
+  }
+  #pattifloat {
+    position: absolute; width: 32px; height: 48px; pointer-events: none;
+    animation: pattifloat 3.1s ease-in-out infinite;
+  }
+  @keyframes pattifloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+  #patti {
+    position: absolute; left: 0; top: 0; width: 32px; height: 48px;
+    background-image: url(patti_right_shaded.png);
+    background-repeat: no-repeat; background-size: 384px 48px;
+    transform-origin: 50% 100%;
+    animation: pattichar 1.2s steps(12) infinite;
+  }
+  @keyframes pattichar { from { background-position: 0 0; } to { background-position: -384px 0; } }
+
+  /* ─── テキストボックス(床の上に重ねる。本物の文字サイズ) ─── */
+  #talk {
+    position: absolute; left: 8px; right: 8px; bottom: 6px; z-index: 10;
+    height: var(--talkH); margin: 0;
+    background: rgba(8, 6, 40, .96); border: 2px solid #e8e4f4; border-radius: 4px;
+    box-shadow: inset 0 0 0 1px #2a2560;
+    padding: 7px 26px 7px 12px;
+    font-size: 14px; line-height: 1.45; color: #f2eefc;   /* 3行でも枠の内側に収まる行間 */
+  }
+  #talk .name { color: #fcc800; margin-right: 6px; }
+  #talk .cursor {
+    position: absolute; right: 9px; bottom: 8px; width: 0; height: 0;
+    border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #f2eefc;
+    animation: tbc 1s steps(1) infinite;
+  }
+  @keyframes tbc { 0%,50% { opacity: 1; } 50.01%,100% { opacity: 0; } }
+
+  /* ─── Spooks GS の拡大 ─── */
+  #lightbox {
+    position: fixed; inset: 0; z-index: 60; display: none;
+    flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    background: rgba(6, 4, 20, .95); padding: 16px 10px;
+    padding-top: calc(16px + env(safe-area-inset-top));
+  }
+  #lightbox.on { display: flex; }
+  #lightbox img { max-width: 100%; max-height: 76vh; border: 2px solid #e8e4f4; background: #fff; image-rendering: auto; }
+  #lightbox .cap { font-size: 14px; color: #f2eefc; }
+
+  /* ─── データの資料(模造紙を拡大したイメージ・縦に読む) ─── */
+  #dpop {
+    position: fixed; inset: 0; z-index: 70; display: none;
+    background: rgba(6, 4, 20, .9);
+    padding: calc(10px + env(safe-area-inset-top)) 8px calc(10px + env(safe-area-inset-bottom));
+    flex-direction: column;
+  }
+  #dpop.on { display: flex; }
+  #dpclose {
+    flex: none; align-self: flex-end; margin-bottom: 8px;
+    border: 2px solid #e8e4f4; background: rgba(8, 6, 40, .92); border-radius: 3px;
+    color: #f2eefc; font-family: var(--font); font-size: 15px; padding: 8px 14px; cursor: pointer;
+  }
+  #dpsheet {
+    flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    background: #efe8d6; color: #241c30;
+    border: 3px solid #cdbfa0;
+    padding: 0 14px 20px;
+    font-family: var(--font);
+  }
+  #dpsheet h2 {
+    font-size: 20px; margin: 0 -14px 12px; letter-spacing: 2px;
+    padding: 12px 10px 10px; text-align: center;
+    background: #241c30; color: #f6f1e2; border-bottom: 4px solid #9c2b4e;
+  }
+  #dpsheet .lead { font-size: 14px; line-height: 1.7; margin: 8px 0 4px; }
+  #dpsheet .note {
+    font-size: 13px; line-height: 1.7; margin: 8px 0 14px;
+    background: #fdf7e6; border-left: 4px solid #d8a13a; padding: 8px 10px;
+  }
+  #dpsheet h3 {
+    font-size: 15px; line-height: 1.5; margin: 18px 0 6px; padding: 4px 8px;
+    background: #241c30; color: #efe8d6; display: inline-block;
+  }
+  #dpsheet ul { list-style: none; margin: 0; padding: 0; }
+  #dpsheet li { border-bottom: 1px dashed #bdb098; padding: 10px 2px; }
+  #dpsheet .fig {
+    font-size: 22px; line-height: 1.3; color: #9c2b4e; font-weight: bold;
+    white-space: nowrap; display: flex; align-items: baseline; gap: 8px;
+  }
+  #dpsheet .say { font-size: 15px; line-height: 1.65; font-weight: bold; margin-top: 4px; }
+  #dpsheet .src { font-size: 14px; line-height: 1.6; color: #5c5140; margin-top: 6px; }
+  #dpsheet .src a { color: #3d5a8c; }
+  #dpsheet .rec { color: #b8860b; font-size: 17px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #garblink, #doorGlow, .pp::before, #pattifloat, #patti, #mayu, #talk .cursor { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="top">
+    <a class="brand" href="m.html" aria-label="STUDIO PATTI（スタジオへもどる）"><img src="nav_logo.png" alt="STUDIO PATTI"></a>
+    <button id="menubtn" type="button" aria-label="メニュー" aria-expanded="false">☰</button>
+    <div id="menu" role="menu">
+      <button data-k="company">COMPANY <small>会社概要</small></button>
+      <button data-k="chdesign" class="here">CHARACTER DESIGN <small>いまいる部屋</small></button>
+      <button data-k="contents">CONTENTS CREATIVE <small>編集室</small></button>
+      <button data-k="spook">Patti the Spook <small>準備中</small></button>
+      <button data-k="contact">CONTACT US <small>お問い合わせ</small></button>
+      <button data-k="studio">STUDIO <small>スタジオへもどる</small></button>
+      <div class="pc"><a id="pclink" href="design.html?pc=1" style="color:#7ee0eb">PC版で見る →</a></div>
+    </div>
+  </div>
+
+  <div id="roomarea">
+    <div id="stagebox">
+      <div id="stage">
+        <img id="room" src="room_design_m.png" alt="デザイン室">
+        <div id="garblink" aria-hidden="true"></div>
+        <div id="doorGlow" aria-hidden="true"></div>
+        <canvas id="motes" width="216" height="480" aria-hidden="true"></canvas>
+        <div id="mshadow" aria-hidden="true"></div>
+        <div id="mayu" role="img" aria-label="マユちゃん"></div>
+        <div id="pshadow" aria-hidden="true"></div>
+        <div id="pattifloat" aria-hidden="true"><div id="patti" role="img" aria-label="パッチくん"></div></div>
+      </div>
+    </div>
+    <div id="talk">
+      <span class="name">パッチ</span><span id="talktext">ここはデザイン室！<br>黒板の紙をタップしてみてね！</span>
+      <span class="cursor" aria-hidden="true"></span>
+    </div>
+  </div>
+</div>
+
+<div id="lightbox" role="dialog" aria-label="拡大表示">
+  <img id="lbimg" src="" alt="Spooks GS（これまでデザインしたキャラクターたち）">
+  <div class="cap">タップでとじる</div>
+</div>
+<div id="dpop" role="dialog" aria-label="キャラクターに関するデータ">
+  <button id="dpclose" type="button">× とじる</button>
+  <div id="dpsheet"></div>
+</div>
+
+<script src="design_data.js"></script>
+<script>
+const COMPANY_URL = 'https://canva.link/5xu274fv1b00091';
+const NOCACHE = { cache: 'no-store' };
+const stage = document.getElementById('stage');
+const stagebox = document.getElementById('stagebox');
+const talktext = document.getElementById('talktext');
+const TALK_DEFAULT = 'ここはデザイン室！<br>黒板の紙をタップしてみてね！';
+let META = null;
+
+// ── ステージを画面に収める(横いっぱい。背の低い画面だけ足元を守って少し縮める) ──
+let GROUND_Y = 288;
+function fitStage() {
+  const area = document.getElementById('roomarea');
+  const vw = area.clientWidth, roomH = area.clientHeight;
+  const talkPx = document.getElementById('talk').offsetHeight + 6 + 2;
+  let s = vw / 216;
+  const sFit = (roomH - talkPx) / (GROUND_Y + 4);
+  if (sFit < s) s = sFit;
+  s = Math.max(0.5, s);
+  stage.style.transform = 'scale(' + s + ')';
+  stagebox.style.width = (216 * s) + 'px';
+  stagebox.style.height = (480 * s) + 'px';
+}
+window.addEventListener('resize', fitStage);
+window.addEventListener('orientationchange', () => setTimeout(fitStage, 200));
+if (window.visualViewport) window.visualViewport.addEventListener('resize', fitStage);
+fitStage();
+
+// ── 吹き出し ──
+function setTalk(t) { talktext.innerHTML = t; }
+function sayFor(t, ms) {
+  setTalk(t);
+  clearTimeout(window._tz);
+  window._tz = setTimeout(() => setTalk(TALK_DEFAULT), ms || 5200);
+}
+function tease(name) { sayFor('「' + name + '」は いま準備中！<br>たのしみに待っててね！', 3400); }
+let _going = false;
+function goTo(page, text) {                       // ひとこと言ってからページを移る
+  if (_going) return;
+  _going = true;
+  clearTimeout(window._tz);
+  setTalk(text);
+  setTimeout(() => { location.href = page; }, 700);
+}
+function goStudio() { goTo('m.html', 'スタジオにもどるよ！'); }
+
+// ── メニュー ──
+const menubtn = document.getElementById('menubtn');
+const menu = document.getElementById('menu');
+function closeMenu() { menu.classList.remove('on'); menubtn.classList.remove('on'); menubtn.setAttribute('aria-expanded', 'false'); }
+menubtn.addEventListener('click', () => {
+  const on = !menu.classList.contains('on');
+  menu.classList.toggle('on', on); menubtn.classList.toggle('on', on);
+  menubtn.setAttribute('aria-expanded', on ? 'true' : 'false');
+});
+const NAV_ACT = {
+  company:  () => { sayFor('会社概要をひらくよ！'); window.open(COMPANY_URL, '_blank', 'noopener'); },
+  chdesign: () => sayFor('いまいるのが、このデザイン室だよ！'),
+  contents: () => goTo('contents.html', '編集室へ ごあんない！<br>スマホは よこ向きにすると見やすいよ！'),
+  spook:    () => tease('Patti the Spook'),
+  contact:  () => goTo('m.html#post', 'お問い合わせのポストへ案内するね！'),
+  studio:   () => goStudio(),
+};
+document.querySelectorAll('#menu button').forEach(b => {
+  b.addEventListener('click', () => { closeMenu(); NAV_ACT[b.dataset.k](); });
+});
+document.getElementById('pclink').addEventListener('click', () => {
+  try { sessionStorage.setItem('patti-pc', '1'); } catch (e) {}
+});
+
+// ── タップで光って、パッチが話して、ひらく ──
+function light(el) {
+  el.classList.add('lit');
+  setTimeout(() => el.classList.remove('lit'), 900);
+}
+function place(el, r) {
+  el.style.left = r[0] + 'px'; el.style.top = r[1] + 'px';
+  el.style.width = r[2] + 'px'; el.style.height = r[3] + 'px';
+}
+function makeHot(r, label, text, act, style) {
+  const b = document.createElement('button');
+  b.className = 'hs'; b.type = 'button';
+  place(b, r);
+  if (style) b.style.cssText += style;
+  b.setAttribute('aria-label', label);
+  b.addEventListener('click', () => { light(b); if (text) sayFor(text); if (act) act(); });
+  stage.appendChild(b);
+  return b;
+}
+
+// 黒板の紙(PC版と同じ中身。スマホにはカーソルが無いので、タップで説明する)
+const PAPERS = {
+  design: { label: 'キャラクターデザインと設計', html: '<span>キャラクター<br>デザイン＆設計</span>',
+            talk: 'キャラクターをゼロからデザイン！<br>性格や生い立ちまで設計するんだ！' },
+  world:  { label: '世界観', html: '<span>世界観</span>',
+            talk: 'キャラクターが住む世界のルールを決めるよ！<br>世界観がそろうと、ぜんぶつながる！' },
+  tale:   { label: '物語', html: '<span>物語</span>',
+            talk: '物語を書くよ！<br>キャラクターは物語の中で心が動くんだ！' },
+  sketch: { label: 'おばけのラフスケッチ', html: '',
+            talk: 'ラフをたくさん描いて形をさがすよ！<br>ここで「らしさ」を見つけるんだ！' },
+  spooks: { label: 'Spooks GS（おばけたちの一覧）', html: '<img id="spooksimg" src="spooks_gs_paper.jpg" alt="">',
+            talk: 'これまでデザインしたキャラクターたち！<br>大きくして見せるね！', act: () => openLightbox('spooks_gs_full.jpg') },
+  datatitle: { label: 'キャラクターに関するデータ', html: '<span>データまとめ</span>', id: 'ppdatatitle',
+            talk: 'キャラクターに関するデータ！<br>企業や自治体になぜ効くのか、数字で！', act: () => openDataPop() },
+  datapanel: { label: 'キャラクターに関するデータの資料', html: '',
+            talk: 'キャラクターに関するデータ！<br>企業や自治体になぜ効くのか、数字で！', act: () => openDataPop() },
+};
+
+function placeAll(m) {
+  META = m;
+  GROUND_Y = m.ground;
+  fitStage();
+  const gb = document.getElementById('garblink');
+  gb.style.top = m.garland_y + 'px'; gb.style.height = m.garland_h + 'px';
+  gb.style.backgroundSize = (216 * 3) + 'px ' + m.garland_h + 'px';
+  // 戸口の光は戸口の中心に合わせる
+  const d = m.door, dg = document.getElementById('doorGlow');
+  const gw = 70, gh = 104;
+  place(dg, [Math.round(d[0] + d[2] / 2 - gw / 2), Math.round(d[1] + d[3] * 0.6 - gh * 0.6), gw, gh]);
+
+  // Story is King(標語)
+  const st = document.createElement('button');
+  st.id = 'ppstory'; st.type = 'button'; st.textContent = 'Story is King';
+  st.setAttribute('aria-label', 'Story is King（ストーリーこそが原点）');
+  place(st, m.papers.story);
+  st.addEventListener('click', () => sayFor('スタジオパッチが大切にしている合言葉！<br>「ストーリーこそが原点」ってこと！'));
+  stage.appendChild(st);
+
+  Object.keys(PAPERS).forEach(k => {
+    const p = PAPERS[k], r = m.papers[k];
+    if (!r) return;
+    const b = document.createElement('button');
+    b.className = 'pp'; b.type = 'button';
+    b.id = p.id || ('pp' + k);
+    b.innerHTML = p.html;
+    b.setAttribute('aria-label', p.label);
+    place(b, r);
+    b.addEventListener('click', () => { light(b); sayFor(p.talk); if (p.act) p.act(); });
+    stage.appendChild(b);
+  });
+
+  makeHot(m.door, 'スタジオ（トップページ）にもどる', null, goStudio, '--gi:.5');
+  makeHot(m.window, 'まど', 'まどの外は、夕やけの町だよ！', null, '--gi:.3');
+
+  // マユちゃん(右向き・立っている)
+  const [mx, my, ms] = m.mayu;
+  const mayu = document.getElementById('mayu');
+  mayu.style.left = mx + 'px'; mayu.style.top = my + 'px'; mayu.style.transform = 'scale(' + ms + ')';
+  const msh = document.getElementById('mshadow');
+  const mw = Math.round(24 * ms);
+  place(msh, [Math.round(mx + 15 - mw / 2), my + 72 - 3, mw, 5]);
+  mayu.style.pointerEvents = 'auto'; mayu.style.cursor = 'pointer';
+  mayu.addEventListener('click', () => sayFor('マユちゃん！<br>いつも黒板の絵をながめてるんだ'));
+  // パッチ(左向き・ふわりと浮いている)
+  const [px, py, ps] = m.patti;
+  const pf = document.getElementById('pattifloat');
+  pf.style.left = px + 'px'; pf.style.top = py + 'px';
+  document.getElementById('patti').style.transform = 'scale(' + ps + ') scaleX(-1)';
+  const psh = document.getElementById('pshadow');
+  const pw = Math.round(26 * ps);
+  place(psh, [Math.round(px + 16 - pw / 2), py + 48 - 3, pw, 5]);
+
+  motes(m);
+  stage.classList.add('ready');
+}
+
+// ── 光の中を舞うチリ(電球と戸口の近くだけ見える) ──
+function motes(m) {
+  const cv = document.getElementById('motes');
+  const g = cv.getContext('2d');
+  const d = m.door;
+  const LIGHTS = [[40, 20, 46], [108, 18, 46], [176, 20, 46], [d[0] + d[2] / 2, d[1] + d[3] / 2, 40]];
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ms = [];
+  for (let i = 0; i < 30; i++) {
+    ms.push({ x: Math.random() * 216, y: 14 + Math.random() * 200,
+              vx: (Math.random() - 0.5) * 3, vy: -1.4 - Math.random() * 2.2,
+              ph: Math.random() * Math.PI * 2, sp: 0.5 + Math.random() * 1.1 });
+  }
+  const draw = (dt, t) => {
+    g.clearRect(0, 0, 216, 480);
+    for (const q of ms) {
+      q.x += q.vx * dt; q.y += q.vy * dt;
+      if (q.y < 12) { q.y = 214; q.x = Math.random() * 216; }
+      if (q.x < -2) q.x = 218; else if (q.x > 218) q.x = -2;
+      let best = 0;
+      for (const L of LIGHTS) {
+        const dd = Math.hypot(q.x - L[0], q.y - L[1]);
+        if (dd < L[2]) best = Math.max(best, 1 - dd / L[2]);
+      }
+      if (best < 0.06) continue;
+      const a = best * (0.55 + 0.45 * Math.sin(t * q.sp + q.ph));
+      if (a < 0.12) continue;
+      g.fillStyle = 'rgba(255,232,180,' + (a * 0.9) + ')';
+      g.fillRect(Math.round(q.x), Math.round(q.y), 1, 1);
+    }
+  };
+  if (still) { draw(0, 0); return; }
+  let prev = 0, acc = 0;
+  const tick = (ts) => {
+    requestAnimationFrame(tick);
+    if (!prev) prev = ts;
+    const dt = Math.min(0.1, (ts - prev) / 1000); prev = ts;
+    if (document.hidden) return;
+    acc += dt;
+    if (acc < 1 / 14) return;
+    draw(acc, ts / 1000); acc = 0;
+  };
+  requestAnimationFrame(tick);
+}
+
+// ── Spooks GS の拡大 ──
+const lightbox = document.getElementById('lightbox');
+const lbimg = document.getElementById('lbimg');
+function openLightbox(src) { lbimg.src = src; lightbox.classList.add('on'); }
+lightbox.addEventListener('click', () => { lightbox.classList.remove('on'); lbimg.src = ''; });
+
+// ── データの資料 ──
+const dpop = document.getElementById('dpop');
+const dpsheet = document.getElementById('dpsheet');
+function openDataPop() {
+  if (!dpsheet.dataset.built) { dpsheet.innerHTML = designDataHTML(); dpsheet.dataset.built = '1'; }
+  dpop.classList.add('on'); dpsheet.scrollTop = 0;
+}
+function closeDataPop() { dpop.classList.remove('on'); }
+document.getElementById('dpclose').addEventListener('click', closeDataPop);
+dpop.addEventListener('click', e => { if (e.target === dpop) closeDataPop(); });
+
+fetch('room_design_m.json', NOCACHE).then(r => r.json()).then(placeAll).catch(e => console.error(e));
+</script>
+</body>
+</html>

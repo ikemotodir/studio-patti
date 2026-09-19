@@ -1,0 +1,336 @@
+{
+ "w": 216,
+ "h": 480,
+ "ground": 288,
+ "garland_y": 8,
+ "garland_h": 20,
+ "board": [
+  4,
+  12,
+  168,
+  196
+ ],
+ "floor": 216,
+ "papers": {
+  "story": [
+   24,
+   26,
+   128,
+   14
+  ],
+  "design": [
+   10,
+   46,
+   73,
+   40
+  ],
+  "world": [
+   8,
+   104,
+   80,
+   25
+  ],
+  "tale": [
+   12,
+   148,
+   52,
+   32
+  ],
+  "sketch": [
+   68,
+   151,
+   24,
+   27
+  ],
+  "spooks": [
+   96,
+   150,
+   70,
+   28
+  ],
+  "datatitle": [
+   103,
+   44,
+   56,
+   12
+  ],
+  "datapanel": [
+   94,
+   60,
+   74,
+   80
+  ]
+ },
+ "door": [
+  184,
+  156,
+  24,
+  58
+ ],
+ "window": [
+  180,
+  20,
+  32,
+  88
+ ],
+ "mayu": [
+  34,
+  216,
+  0.75
+ ],
+ "patti": [
+  136,
+  240,
+  0.75
+ ],
+ "placed": [
+  [
+   "story",
+   24,
+   26,
+   128,
+   14
+  ],
+  [
+   "design",
+   10,
+   46,
+   73,
+   40
+  ],
+  [
+   "world",
+   8,
+   104,
+   80,
+   25
+  ],
+  [
+   "tale",
+   12,
+   148,
+   52,
+   32
+  ],
+  [
+   "sketch",
+   68,
+   151,
+   24,
+   27
+  ],
+  [
+   "spooks",
+   96,
+   150,
+   70,
+   28
+  ],
+  [
+   "datatitle",
+   103,
+   44,
+   56,
+   12
+  ],
+  [
+   "datapanel",
+   94,
+   60,
+   74,
+   80
+  ],
+  [
+   "window",
+   180,
+   20,
+   32,
+   88
+  ],
+  [
+   "door:看板",
+   176,
+   136,
+   40,
+   15
+  ],
+  [
+   "door:戸口",
+   181,
+   152,
+   30,
+   64
+  ],
+  [
+   "黒板",
+   2,
+   12,
+   172,
+   201
+  ],
+  [
+   "mayu",
+   37,
+   234,
+   22,
+   54
+  ],
+  [
+   "patti",
+   140,
+   252,
+   24,
+   36
+  ]
+ ],
+ "custom": false,
+ "tool": [
+  {
+   "id": "story",
+   "name": "Story is King",
+   "x": 22,
+   "y": 25,
+   "x0": 22,
+   "y0": 25,
+   "w": 132,
+   "h": 15,
+   "img": "props_dm/story.png",
+   "inBoard": true
+  },
+  {
+   "id": "design",
+   "name": "キャラクターデザイン＆設計",
+   "x": 10,
+   "y": 46,
+   "x0": 10,
+   "y0": 46,
+   "w": 73,
+   "h": 40,
+   "img": "props_dm/design.png",
+   "inBoard": true
+  },
+  {
+   "id": "world",
+   "name": "世界観",
+   "x": 8,
+   "y": 104,
+   "x0": 8,
+   "y0": 104,
+   "w": 80,
+   "h": 25,
+   "img": "props_dm/world.png",
+   "inBoard": true
+  },
+  {
+   "id": "tale",
+   "name": "物語",
+   "x": 12,
+   "y": 148,
+   "x0": 12,
+   "y0": 148,
+   "w": 52,
+   "h": 32,
+   "img": "props_dm/tale.png",
+   "inBoard": true
+  },
+  {
+   "id": "sketch",
+   "name": "おばけのラフ絵",
+   "x": 68,
+   "y": 150,
+   "x0": 68,
+   "y0": 150,
+   "w": 24,
+   "h": 28,
+   "img": "props_dm/sketch.png",
+   "inBoard": true
+  },
+  {
+   "id": "spooks",
+   "name": "Spooks GS",
+   "x": 96,
+   "y": 150,
+   "x0": 96,
+   "y0": 150,
+   "w": 70,
+   "h": 28,
+   "img": "props_dm/spooks.png",
+   "inBoard": true
+  },
+  {
+   "id": "datatitle",
+   "name": "データまとめ(見出し)",
+   "x": 103,
+   "y": 44,
+   "x0": 103,
+   "y0": 44,
+   "w": 56,
+   "h": 12,
+   "img": "props_dm/datatitle.png",
+   "inBoard": true
+  },
+  {
+   "id": "datapanel",
+   "name": "データの模造紙",
+   "x": 92,
+   "y": 57,
+   "x0": 92,
+   "y0": 57,
+   "w": 76,
+   "h": 83,
+   "img": "props_dm/datapanel.png",
+   "inBoard": true
+  },
+  {
+   "id": "window",
+   "name": "まど",
+   "x": 180,
+   "y": 20,
+   "x0": 180,
+   "y0": 20,
+   "w": 32,
+   "h": 88,
+   "img": "props_dm/window.png"
+  },
+  {
+   "id": "door",
+   "name": "スタジオの看板と戸口（横にだけ動きます）",
+   "x": 176,
+   "y": 136,
+   "x0": 176,
+   "y0": 136,
+   "w": 40,
+   "h": 80,
+   "img": "props_dm/door.png",
+   "lockY": true
+  },
+  {
+   "id": "mayu",
+   "name": "マユちゃん",
+   "x": 34,
+   "y": 216,
+   "x0": 34,
+   "y0": 216,
+   "w": 30,
+   "h": 72,
+   "img": "mayu_right_shaded.png",
+   "chara": true,
+   "s": 0.75,
+   "s0": 0.75
+  },
+  {
+   "id": "patti",
+   "name": "パッチ",
+   "x": 136,
+   "y": 240,
+   "x0": 136,
+   "y0": 240,
+   "w": 32,
+   "h": 48,
+   "img": "patti_right_shaded.png",
+   "chara": true,
+   "s": 0.75,
+   "s0": 0.75
+  }
+ ]
+}
