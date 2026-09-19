@@ -114,7 +114,7 @@
 <body>
 
 <header>
-  <h1>配置ツール <span style="font-size:11px;color:#9a93c4">v9</span></h1>
+  <h1>配置ツール <span style="font-size:11px;color:#9a93c4">v10</span></h1>
   <button id="roomD" class="on" type="button">デザイン室</button>
   <button id="roomE" type="button">編集室</button>
   <button id="roomM" type="button">スマホ版</button>
@@ -148,6 +148,7 @@
       枠をえらんでから <b>矢印キー</b>で1ドットずつ、<b>Shift+矢印</b>で5ドットずつ動きます。<br>
       キャラクターは大きさを <b>[ ] キー</b>で変えられます。<br>
       <b>「スマホ版」「スマホ版デザイン室」</b>を押すと、スマホで見たときの部屋(たて長)の配置を直せます。物は本物の絵で出ます。<br>
+      スマホ版デザイン室は<b>背の高い画面の見え方</b>で置きます。画面が短いスマホでは、黒板の上の紙の間隔が自動で詰まり、データまとめ・トビラ・二人・床がいっしょに上へ寄ります。<br>
       置きおわったら緑の「サイトに反映する」を押せば、そのままサイトが変わります。
     </p>
     <p class="legend">
@@ -200,10 +201,9 @@ const REFS = {
       html: '<span style="color:#ffd166">パッチ</span> ここに会話が出ます<br>この四角の中は見えなくなります' },
   ],
   design_m: [
-    { name: '↑ テキストボックス（いちばん背の低い機種ではここまで上がります。この下は隠れます）',
-      x: 0, y: 292, w: 216, h: 188, fixed: true, up: true, cls: 'talk',
-      html: '<span style="color:#ffd166">パッチ</span> ここに会話が出ます<br>この四角の中は見えなくなります' },
-    { name: '黒板（紙はこの中に貼ります）', x: 4, y: 12, w: 168, h: 196, up: true },
+    { name: '黒板（紙はこの中に貼ります）', x: 4, y: 12, w: 168, h: 292, up: true, board: true },
+    { name: '↓ 黒板の下1/3（データまとめ）から下は、スマホの高さに合わせて上下します', x: 2, y: 204, w: 212, h: 100,
+      up: true, lowerZone: true },
   ],
 };
 const PHONE_ROOMS = ['mobile', 'design_m'];            // スマホ(たて長)の部屋
@@ -260,6 +260,11 @@ function loadRoomJson(name) {                // 重ねて呼ばれても読む�
         const m = await (await fetch(R.json + '?v=' + Date.now(), { cache: 'no-store' })).json();
         if (!m.tool) throw new Error('サイトの' + ROOM_NAMES[name] + 'がまだ新しくありません。1〜2分あとに開き直してください');
         R.items = m.tool.map(o => Object.assign({}, o));
+        if (name === 'design_m' && m.lower) {            // 黒板と「上下する所」の線を、組み立てた数字に合わせる
+          const bd = REFS.design_m.find(r => r.board), lz = REFS.design_m.find(r => r.lowerZone);
+          bd.h = m.F_ref - m.tray_h - bd.y;
+          lz.y = m.lower.top_ref; lz.h = m.F_ref - m.tray_h - lz.y;
+        }
       } catch (e) {
         say(ROOM_NAMES[name] + 'の部屋が読めませんでした: ' + e.message, true);
       } finally { ROOM_P[name] = null; }
@@ -405,6 +410,7 @@ function overlaps(a, b) {
 
 function updateTalkRef() {                 // 床の物の足元がいちばん下の所 + 4 がテキストボックスの上端(最短の機種)
   const rf = REFS[room][0];
+  if (!rf || rf.cls !== 'talk') return 0;
   let g = 288;
   items.forEach(it => { if ((GROUND_IDS[room] || []).includes(it.id)) g = Math.max(g, it.y + it.h); });
   rf.y = g + 4; rf.h = 480 - rf.y;
@@ -414,7 +420,7 @@ function updateTalkRef() {                 // 床の物の足元がいちばん�
 function render() {
   const hidden = [];
   const R = ROOMS[room], stW = R.w || 384, stH = R.h || 240;
-  if (PHONE_ROOMS.includes(room)) {
+  if (room === 'mobile') {
     const g = updateTalkRef();
     if (g > 288) hidden.push('床の物を下げたぶん、背の低い機種では部屋が少し縮みます（足元 ' + g + '）');
   }
@@ -434,10 +440,13 @@ function render() {
     it.el.classList.toggle('hit', bad.length > 0);
     if (bad.length) hidden.push(it.name + ' が「' + bad[0].name.split('（')[0] + '」にかぶっています');
     if (it.inBoard) {
-      const bd = REFS.design_m[1];
-      if (x < bd.x - 1 || y < bd.y - 2 || x + w > bd.x + bd.w + 1 || y + h > bd.y + bd.h - 3) {
+      const bd = REFS.design_m.find(r => r.board), lz = REFS.design_m.find(r => r.lowerZone);
+      if (x < bd.x - 1 || y < bd.y - 2 || x + w > bd.x + bd.w + 1 || y + h > bd.y + bd.h + 1) {
         it.el.classList.add('hit');
         hidden.push(it.name + ' が黒板からはみ出します（本番では黒板の中へ寄せます）');
+      } else if (!it.floor && y + h > lz.y + 2) {
+        it.el.classList.add('hit');
+        hidden.push(it.name + ' がデータまとめの場所に入っています（背の低いスマホで重なります）');
       }
     }
     const extra = it.id === 'patti' ? (it.walk || 0) : 0;

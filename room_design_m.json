@@ -1,71 +1,158 @@
 {
  "w": 216,
  "h": 480,
- "ground": 288,
- "garland_y": 8,
- "garland_h": 20,
+ "F_ref": 312,
+ "F_min": 233,
+ "depth_ref": 60,
+ "depth_min": 54,
  "board": [
   4,
   12,
-  168,
-  196
+  168
  ],
- "floor": 216,
- "papers": {
-  "story": [
-   24,
-   26,
-   128,
-   14
-  ],
-  "design": [
-   10,
-   46,
-   73,
-   40
-  ],
-  "world": [
-   8,
-   104,
-   80,
-   25
-  ],
-  "tale": [
-   12,
-   148,
-   52,
-   32
-  ],
-  "sketch": [
-   68,
-   151,
-   24,
-   27
-  ],
-  "spooks": [
-   96,
-   150,
-   70,
-   28
-  ],
-  "datatitle": [
-   103,
-   44,
-   56,
-   12
-  ],
-  "datapanel": [
-   94,
-   60,
-   74,
-   80
-  ]
+ "tray_h": 8,
+ "lower": {
+  "img": "design_m_lower.png",
+  "top_ref": 204,
+  "h": 355
  },
+ "garland_y": 8,
+ "garland_h": 20,
+ "papers": {
+  "story": {
+   "img": "props_dm/story.png",
+   "x": 10,
+   "y": 25,
+   "w": 132,
+   "h": 15,
+   "body": [
+    2,
+    1,
+    128,
+    14
+   ],
+   "anchor": "top",
+   "yc": 25
+  },
+  "design": {
+   "img": "props_dm/design.png",
+   "x": 6,
+   "y": 66,
+   "w": 73,
+   "h": 40,
+   "body": [
+    0,
+    0,
+    73,
+    40
+   ],
+   "anchor": "top",
+   "yc": 44
+  },
+  "world": {
+   "img": "props_dm/world.png",
+   "x": 6,
+   "y": 150,
+   "w": 80,
+   "h": 25,
+   "body": [
+    0,
+    0,
+    80,
+    25
+   ],
+   "anchor": "top",
+   "yc": 99
+  },
+  "tale": {
+   "img": "props_dm/tale.png",
+   "x": 104,
+   "y": 146,
+   "w": 52,
+   "h": 32,
+   "body": [
+    0,
+    0,
+    52,
+    32
+   ],
+   "anchor": "top",
+   "yc": 89
+  },
+  "sketch": {
+   "img": "props_dm/sketch.png",
+   "x": 146,
+   "y": 25,
+   "w": 24,
+   "h": 28,
+   "body": [
+    0,
+    1,
+    24,
+    27
+   ],
+   "anchor": "top",
+   "yc": 25
+  },
+  "spooks": {
+   "img": "props_dm/spooks.png",
+   "x": 96,
+   "y": 74,
+   "w": 70,
+   "h": 28,
+   "body": [
+    0,
+    0,
+    70,
+    28
+   ],
+   "anchor": "top",
+   "yc": 57
+  },
+  "datatitle": {
+   "img": "props_dm/datatitle.png",
+   "x": 60,
+   "y": 206,
+   "w": 56,
+   "h": 12,
+   "body": [
+    0,
+    0,
+    56,
+    12
+   ],
+   "anchor": "floor"
+  },
+  "datapanel": {
+   "img": "props_dm/datapanel.png",
+   "x": 49,
+   "y": 218,
+   "w": 76,
+   "h": 83,
+   "body": [
+    2,
+    3,
+    74,
+    80
+   ],
+   "anchor": "floor"
+  }
+ },
+ "arrows": [
+  [
+   "design",
+   "world"
+  ],
+  [
+   "world",
+   "tale"
+  ]
+ ],
  "door": [
-  184,
-  156,
-  24,
-  58
+  182,
+  240,
+  28,
+  70
  ],
  "window": [
   180,
@@ -74,123 +161,23 @@
   88
  ],
  "mayu": [
-  34,
-  216,
+  39,
+  300,
   0.75
  ],
  "patti": [
-  136,
-  240,
+  134,
+  324,
   0.75
- ],
- "placed": [
-  [
-   "story",
-   24,
-   26,
-   128,
-   14
-  ],
-  [
-   "design",
-   10,
-   46,
-   73,
-   40
-  ],
-  [
-   "world",
-   8,
-   104,
-   80,
-   25
-  ],
-  [
-   "tale",
-   12,
-   148,
-   52,
-   32
-  ],
-  [
-   "sketch",
-   68,
-   151,
-   24,
-   27
-  ],
-  [
-   "spooks",
-   96,
-   150,
-   70,
-   28
-  ],
-  [
-   "datatitle",
-   103,
-   44,
-   56,
-   12
-  ],
-  [
-   "datapanel",
-   94,
-   60,
-   74,
-   80
-  ],
-  [
-   "window",
-   180,
-   20,
-   32,
-   88
-  ],
-  [
-   "door:看板",
-   176,
-   136,
-   40,
-   15
-  ],
-  [
-   "door:戸口",
-   181,
-   152,
-   30,
-   64
-  ],
-  [
-   "黒板",
-   2,
-   12,
-   172,
-   201
-  ],
-  [
-   "mayu",
-   37,
-   234,
-   22,
-   54
-  ],
-  [
-   "patti",
-   140,
-   252,
-   24,
-   36
-  ]
  ],
  "custom": false,
  "tool": [
   {
    "id": "story",
    "name": "Story is King",
-   "x": 22,
+   "x": 10,
    "y": 25,
-   "x0": 22,
+   "x0": 10,
    "y0": 25,
    "w": 132,
    "h": 15,
@@ -200,10 +187,10 @@
   {
    "id": "design",
    "name": "キャラクターデザイン＆設計",
-   "x": 10,
-   "y": 46,
-   "x0": 10,
-   "y0": 46,
+   "x": 6,
+   "y": 66,
+   "x0": 6,
+   "y0": 66,
    "w": 73,
    "h": 40,
    "img": "props_dm/design.png",
@@ -212,10 +199,10 @@
   {
    "id": "world",
    "name": "世界観",
-   "x": 8,
-   "y": 104,
-   "x0": 8,
-   "y0": 104,
+   "x": 6,
+   "y": 150,
+   "x0": 6,
+   "y0": 150,
    "w": 80,
    "h": 25,
    "img": "props_dm/world.png",
@@ -224,10 +211,10 @@
   {
    "id": "tale",
    "name": "物語",
-   "x": 12,
-   "y": 148,
-   "x0": 12,
-   "y0": 148,
+   "x": 104,
+   "y": 146,
+   "x0": 104,
+   "y0": 146,
    "w": 52,
    "h": 32,
    "img": "props_dm/tale.png",
@@ -236,10 +223,10 @@
   {
    "id": "sketch",
    "name": "おばけのラフ絵",
-   "x": 68,
-   "y": 150,
-   "x0": 68,
-   "y0": 150,
+   "x": 146,
+   "y": 25,
+   "x0": 146,
+   "y0": 25,
    "w": 24,
    "h": 28,
    "img": "props_dm/sketch.png",
@@ -249,9 +236,9 @@
    "id": "spooks",
    "name": "Spooks GS",
    "x": 96,
-   "y": 150,
+   "y": 74,
    "x0": 96,
-   "y0": 150,
+   "y0": 74,
    "w": 70,
    "h": 28,
    "img": "props_dm/spooks.png",
@@ -260,26 +247,28 @@
   {
    "id": "datatitle",
    "name": "データまとめ(見出し)",
-   "x": 103,
-   "y": 44,
-   "x0": 103,
-   "y0": 44,
+   "x": 60,
+   "y": 206,
+   "x0": 60,
+   "y0": 206,
    "w": 56,
    "h": 12,
    "img": "props_dm/datatitle.png",
-   "inBoard": true
+   "inBoard": true,
+   "floor": true
   },
   {
    "id": "datapanel",
    "name": "データの模造紙",
-   "x": 92,
-   "y": 57,
-   "x0": 92,
-   "y0": 57,
+   "x": 49,
+   "y": 218,
+   "x0": 49,
+   "y0": 218,
    "w": 76,
    "h": 83,
    "img": "props_dm/datapanel.png",
-   "inBoard": true
+   "inBoard": true,
+   "floor": true
   },
   {
    "id": "window",
@@ -294,43 +283,46 @@
   },
   {
    "id": "door",
-   "name": "スタジオの看板と戸口（横にだけ動きます）",
+   "name": "スタジオの看板とトビラ（横にだけ動きます）",
    "x": 176,
-   "y": 136,
+   "y": 220,
    "x0": 176,
-   "y0": 136,
+   "y0": 220,
    "w": 40,
-   "h": 80,
+   "h": 92,
    "img": "props_dm/door.png",
-   "lockY": true
+   "lockY": true,
+   "floor": true
   },
   {
    "id": "mayu",
    "name": "マユちゃん",
-   "x": 34,
-   "y": 216,
-   "x0": 34,
-   "y0": 216,
+   "x": 39,
+   "y": 300,
+   "x0": 39,
+   "y0": 300,
    "w": 30,
    "h": 72,
    "img": "mayu_right_shaded.png",
    "chara": true,
    "s": 0.75,
-   "s0": 0.75
+   "s0": 0.75,
+   "floor": true
   },
   {
    "id": "patti",
    "name": "パッチ",
-   "x": 136,
-   "y": 240,
-   "x0": 136,
-   "y0": 240,
+   "x": 134,
+   "y": 324,
+   "x0": 134,
+   "y0": 324,
    "w": 32,
    "h": 48,
    "img": "patti_right_shaded.png",
    "chara": true,
    "s": 0.75,
-   "s0": 0.75
+   "s0": 0.75,
+   "floor": true
   }
  ]
 }

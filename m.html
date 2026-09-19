@@ -356,6 +356,8 @@ function fitStage() {
 window.addEventListener('resize', fitStage);
 window.addEventListener('orientationchange', () => setTimeout(fitStage, 200));
 if (window.visualViewport) window.visualViewport.addEventListener('resize', fitStage);
+// 画面の高さが変わったとき(ツールバーの出し入れ・回転など)、合図が来なくても部屋の枠の大きさを見て追従する
+if (window.ResizeObserver) new ResizeObserver(() => fitStage()).observe(document.getElementById('roomarea'));
 fitStage();
 
 // ── 吹き出し ──

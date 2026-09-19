@@ -88,9 +88,14 @@
   #stage.ready #mayu, #stage.ready #mshadow, #stage.ready #pattifloat, #stage.ready #pshadow { visibility: visible; }
 
   /* 重なり順(レイヤー事故防止) */
-  #room { z-index: 1; }
-  #garblink, #doorGlow, #motes { z-index: 2; }
+  #room, #lower { z-index: 1; }
+  #garblink, #doorGlow, #motes, #chalk { z-index: 2; }
+  .ppimg { z-index: 3; }
   .hs, .pp, #ppstory { z-index: 4; }
+  /* 下のかたまり(黒板の下の方・データまとめ・床・トビラ)。画面の高さに合わせて上下する */
+  #lower { position: absolute; left: 0; width: 216px; }
+  #chalk { position: absolute; left: 0; top: 0; width: 216px; height: 480px; pointer-events: none; }
+  .ppimg { position: absolute; pointer-events: none; }
   #mshadow, #mayu, #pshadow, #pattifloat { z-index: 5; }
 
   /* 天井の電球がまたたく(3コマ) */
@@ -297,6 +302,8 @@
     <div id="stagebox">
       <div id="stage">
         <img id="room" src="room_design_m.png" alt="デザイン室">
+        <img id="lower" src="" alt="" aria-hidden="true">
+        <canvas id="chalk" width="216" height="480" aria-hidden="true"></canvas>
         <div id="garblink" aria-hidden="true"></div>
         <div id="doorGlow" aria-hidden="true"></div>
         <canvas id="motes" width="216" height="480" aria-hidden="true"></canvas>
@@ -330,25 +337,39 @@ const stage = document.getElementById('stage');
 const stagebox = document.getElementById('stagebox');
 const talktext = document.getElementById('talktext');
 const TALK_DEFAULT = 'ここはデザイン室！<br>黒板の紙をタップしてみてね！';
-let META = null;
+let M = null;                                   // 部屋の数字(room_design_m.json)
+let L = { s: 1, F: 0, d: 0 };                   // いまの画面での 倍率・床の線・奥行き
 
-// ── ステージを画面に収める(横いっぱい。背の低い画面だけ足元を守って少し縮める) ──
-let GROUND_Y = 288;
+// ── ステージを画面に収める ──
+// 横は必ずいっぱい。画面の高さに合わせて床の線 F を上下させ、二人がテキストボックスに被らないようにする。
+// (いちばん短い配置でも入らない機種だけ、少し縮める)
 function fitStage() {
   const area = document.getElementById('roomarea');
   const vw = area.clientWidth, roomH = area.clientHeight;
-  const talkPx = document.getElementById('talk').offsetHeight + 6 + 2;
+  const talkPx = document.getElementById('talk').offsetHeight + 6 + 2;   // 箱 + 下の余白 + 足元の余白
   let s = vw / 216;
-  const sFit = (roomH - talkPx) / (GROUND_Y + 4);
-  if (sFit < s) s = sFit;
+  let F = 0, d = 0;
+  if (M) {
+    const gAvail = Math.floor((roomH - talkPx) / s - 4);                 // 足元を置ける一番下
+    F = Math.min(M.F_ref, gAvail - M.depth_ref); d = M.depth_ref;
+    if (F < M.F_min) { F = M.F_min; d = Math.min(M.depth_ref, Math.max(M.depth_min, gAvail - F)); }
+    if (F + d > gAvail) {
+      s = (roomH - talkPx) / (M.F_min + M.depth_min + 4);
+      F = M.F_min; d = M.depth_min;
+    }
+  }
   s = Math.max(0.5, s);
   stage.style.transform = 'scale(' + s + ')';
   stagebox.style.width = (216 * s) + 'px';
   stagebox.style.height = (480 * s) + 'px';
+  if (M && (F !== L.F || d !== L.d)) { L = { s, F, d }; placeDynamic(); }
+  L.s = s;
 }
 window.addEventListener('resize', fitStage);
 window.addEventListener('orientationchange', () => setTimeout(fitStage, 200));
 if (window.visualViewport) window.visualViewport.addEventListener('resize', fitStage);
+// 画面の高さが変わったとき(ツールバーの出し入れ・回転など)、合図が来なくても部屋の枠の大きさを見て追従する
+if (window.ResizeObserver) new ResizeObserver(() => fitStage()).observe(document.getElementById('roomarea'));
 fitStage();
 
 // ── 吹き出し ──
@@ -402,11 +423,10 @@ function place(el, r) {
   el.style.left = r[0] + 'px'; el.style.top = r[1] + 'px';
   el.style.width = r[2] + 'px'; el.style.height = r[3] + 'px';
 }
-function makeHot(r, label, text, act, style) {
+function makeHot(label, text, act, style) {
   const b = document.createElement('button');
   b.className = 'hs'; b.type = 'button';
-  place(b, r);
-  if (style) b.style.cssText += style;
+  if (style) b.style.cssText = style;
   b.setAttribute('aria-label', label);
   b.addEventListener('click', () => { light(b); if (text) sayFor(text); if (act) act(); });
   stage.appendChild(b);
@@ -415,6 +435,8 @@ function makeHot(r, label, text, act, style) {
 
 // 黒板の紙(PC版と同じ中身。スマホにはカーソルが無いので、タップで説明する)
 const PAPERS = {
+  story:  { label: 'Story is King（ストーリーこそが原点）', id: 'ppstory', text: 'Story is King',
+            talk: 'スタジオパッチが大切にしている合言葉！<br>「ストーリーこそが原点」ってこと！' },
   design: { label: 'キャラクターデザインと設計', html: '<span>キャラクター<br>デザイン＆設計</span>',
             talk: 'キャラクターをゼロからデザイン！<br>性格や生い立ちまで設計するんだ！' },
   world:  { label: '世界観', html: '<span>世界観</span>',
@@ -430,75 +452,125 @@ const PAPERS = {
   datapanel: { label: 'キャラクターに関するデータの資料', html: '',
             talk: 'キャラクターに関するデータ！<br>企業や自治体になぜ効くのか、数字で！', act: () => openDataPop() },
 };
+const EL = {};                                    // 紙の絵(img)と文字・当たり判定(button)
 
 function placeAll(m) {
-  META = m;
-  GROUND_Y = m.ground;
-  fitStage();
+  M = m;
   const gb = document.getElementById('garblink');
   gb.style.top = m.garland_y + 'px'; gb.style.height = m.garland_h + 'px';
   gb.style.backgroundSize = (216 * 3) + 'px ' + m.garland_h + 'px';
-  // 戸口の光は戸口の中心に合わせる
-  const d = m.door, dg = document.getElementById('doorGlow');
-  const gw = 70, gh = 104;
-  place(dg, [Math.round(d[0] + d[2] / 2 - gw / 2), Math.round(d[1] + d[3] * 0.6 - gh * 0.6), gw, gh]);
+  const lower = document.getElementById('lower');
+  lower.src = m.lower.img;
+  lower.style.height = m.lower.h + 'px';
 
-  // Story is King(標語)
-  const st = document.createElement('button');
-  st.id = 'ppstory'; st.type = 'button'; st.textContent = 'Story is King';
-  st.setAttribute('aria-label', 'Story is King（ストーリーこそが原点）');
-  place(st, m.papers.story);
-  st.addEventListener('click', () => sayFor('スタジオパッチが大切にしている合言葉！<br>「ストーリーこそが原点」ってこと！'));
-  stage.appendChild(st);
-
-  Object.keys(PAPERS).forEach(k => {
-    const p = PAPERS[k], r = m.papers[k];
-    if (!r) return;
+  Object.keys(m.papers).forEach(k => {
+    const p = PAPERS[k], d = m.papers[k];
+    if (!p) return;
+    const img = document.createElement('img');
+    img.className = 'ppimg'; img.src = d.img; img.alt = ''; img.setAttribute('aria-hidden', 'true');
+    img.style.width = d.w + 'px'; img.style.height = d.h + 'px';
+    stage.appendChild(img);
     const b = document.createElement('button');
-    b.className = 'pp'; b.type = 'button';
+    b.className = k === 'story' ? '' : 'pp'; b.type = 'button';
     b.id = p.id || ('pp' + k);
-    b.innerHTML = p.html;
+    if (p.text) b.textContent = p.text; else b.innerHTML = p.html;
     b.setAttribute('aria-label', p.label);
-    place(b, r);
     b.addEventListener('click', () => { light(b); sayFor(p.talk); if (p.act) p.act(); });
     stage.appendChild(b);
+    EL[k] = { img, b };
   });
-
-  makeHot(m.door, 'スタジオ（トップページ）にもどる', null, goStudio, '--gi:.5');
-  makeHot(m.window, 'まど', 'まどの外は、夕やけの町だよ！', null, '--gi:.3');
-
-  // マユちゃん(右向き・立っている)
-  const [mx, my, ms] = m.mayu;
+  EL.door = makeHot('スタジオ（トップページ）にもどる', null, goStudio, '--gi:.5');
+  EL.window = makeHot('まど', 'まどの外は、夕やけの町だよ！', null, '--gi:.3');
+  place(EL.window, m.window);
   const mayu = document.getElementById('mayu');
-  mayu.style.left = mx + 'px'; mayu.style.top = my + 'px'; mayu.style.transform = 'scale(' + ms + ')';
-  const msh = document.getElementById('mshadow');
-  const mw = Math.round(24 * ms);
-  place(msh, [Math.round(mx + 15 - mw / 2), my + 72 - 3, mw, 5]);
+  mayu.style.transform = 'scale(' + m.mayu[2] + ')';
   mayu.style.pointerEvents = 'auto'; mayu.style.cursor = 'pointer';
   mayu.addEventListener('click', () => sayFor('マユちゃん！<br>いつも黒板の絵をながめてるんだ'));
-  // パッチ(左向き・ふわりと浮いている)
-  const [px, py, ps] = m.patti;
-  const pf = document.getElementById('pattifloat');
-  pf.style.left = px + 'px'; pf.style.top = py + 'px';
-  document.getElementById('patti').style.transform = 'scale(' + ps + ') scaleX(-1)';
-  const psh = document.getElementById('pshadow');
-  const pw = Math.round(26 * ps);
-  place(psh, [Math.round(px + 16 - pw / 2), py + 48 - 3, pw, 5]);
+  document.getElementById('patti').style.transform = 'scale(' + m.patti[2] + ') scaleX(-1)';
 
-  motes(m);
+  L = { s: 1, F: -1, d: -1 };
+  fitStage();
+  motes();
   stage.classList.add('ready');
 }
 
+// 画面の高さに合わせて置き直す(F: 床の線 / d: 床の線から足元まで)
+function placeDynamic() {
+  const m = M, F = L.F, d = L.d, dF = F - m.F_ref;
+  const t = m.F_ref > m.F_min ? Math.max(0, Math.min(1, (F - m.F_min) / (m.F_ref - m.F_min))) : 1;
+  document.getElementById('lower').style.top = (m.lower.top_ref + dF) + 'px';
+  const rects = {};
+  Object.keys(m.papers).forEach(k => {
+    const p = m.papers[k], e = EL[k];
+    if (!e) return;
+    const y = p.anchor === 'floor' ? p.y + dF : Math.round(p.yc + (p.y - p.yc) * t);
+    place(e.img, [p.x, y, p.w, p.h]);
+    const r = [p.x + p.body[0], y + p.body[1], p.body[2], p.body[3]];
+    place(e.b, r);
+    rects[k] = r;
+  });
+  drawArrows(rects, F);
+  const dr = [m.door[0], m.door[1] + dF, m.door[2], m.door[3]];
+  place(EL.door, dr);
+  const gw = 72, gh = 110;
+  place(document.getElementById('doorGlow'), [Math.round(dr[0] + dr[2] / 2 - gw / 2), Math.round(dr[1] + dr[3] * 0.6 - gh * 0.6), gw, gh]);
+  const dy = dF + (d - m.depth_ref);                     // 二人のずらし量
+  const [mx, my, ms] = m.mayu;
+  const mayu = document.getElementById('mayu');
+  mayu.style.left = mx + 'px'; mayu.style.top = (my + dy) + 'px';
+  const mw = Math.round(24 * ms);
+  place(document.getElementById('mshadow'), [Math.round(mx + 15 - mw / 2), my + dy + 72 - 3, mw, 5]);
+  const [px, py, ps] = m.patti;
+  const pf = document.getElementById('pattifloat');
+  pf.style.left = px + 'px'; pf.style.top = (py + dy) + 'px';
+  const pw = Math.round(26 * ps);
+  place(document.getElementById('pshadow'), [Math.round(px + 16 - pw / 2), py + dy + 48 - 3, pw, 5]);
+  MOTE_LIGHTS[3] = [dr[0] + dr[2] / 2, dr[1] + dr[3] / 2, 40];
+}
+
+// ── チョークの矢印(紙のすき間に引く。紙の下にはもぐらない) ──
+function drawArrows(rects, F) {
+  const cv = document.getElementById('chalk'), g = cv.getContext('2d');
+  g.clearRect(0, 0, 216, 480);
+  const [bx, by, bw] = M.board, slateEnd = F - M.tray_h;
+  const R = Object.values(rects);
+  const free = (x, y) => {
+    if (!(x >= bx + 2 && x < bx + bw - 2 && y >= by + 2 && y < slateEnd - 2)) return false;
+    for (const r of R) if (x >= r[0] - 1 && x < r[0] + r[2] + 1 && y >= r[1] - 1 && y < r[1] + r[3] + 1) return false;
+    return true;
+  };
+  const CHK = 'rgb(226,240,230)', CHK2 = 'rgb(146,176,164)';
+  const px = (x, y, c) => { if (free(x, y)) { g.fillStyle = c; g.fillRect(x, y, 1, 1); } };
+  M.arrows.forEach(([a, b]) => {
+    const A = rects[a], B = rects[b];
+    if (!A || !B) return;
+    if (B[1] >= A[1] + A[3] + 15) {                        // 下へ
+      const lo = Math.max(A[0], B[0]), hi = Math.min(A[0] + A[2], B[0] + B[2]);
+      const x = hi - lo >= 8 ? Math.floor((lo + hi) / 2) : Math.floor((A[0] + A[2] / 2 + B[0] + B[2] / 2) / 2);
+      const y0 = A[1] + A[3] + 3, tip = B[1] - 4;
+      if (tip - y0 < 8) return;
+      for (let k = y0; k < tip - 3; k++) if ((k - y0) % 5 !== 4) { px(x, k, k % 3 ? CHK : CHK2); px(x + 1, k, CHK); }
+      for (let r = 0; r < 4; r++) for (let q = -r; q < r + 2; q++) px(x + q, tip - r, CHK);
+    } else if (B[0] >= A[0] + A[2] + 15) {                 // 右へ
+      const lo = Math.max(A[1], B[1]), hi = Math.min(A[1] + A[3], B[1] + B[3]);
+      const y = hi - lo >= 6 ? Math.floor((lo + hi) / 2) : Math.floor((A[1] + A[3] / 2 + B[1] + B[3] / 2) / 2);
+      const x0 = A[0] + A[2] + 3, tip = B[0] - 4;
+      if (tip - x0 < 8) return;
+      for (let k = x0; k < tip - 3; k++) if ((k - x0) % 5 !== 4) { px(k, y, k % 3 ? CHK : CHK2); px(k, y + 1, CHK); }
+      for (let r = 0; r < 4; r++) for (let q = -r; q < r + 2; q++) px(tip - r, y + q, CHK);
+    }
+  });
+}
+
 // ── 光の中を舞うチリ(電球と戸口の近くだけ見える) ──
-function motes(m) {
+const MOTE_LIGHTS = [[40, 20, 46], [108, 18, 46], [176, 20, 46], [196, 250, 40]];
+function motes() {
   const cv = document.getElementById('motes');
   const g = cv.getContext('2d');
-  const d = m.door;
-  const LIGHTS = [[40, 20, 46], [108, 18, 46], [176, 20, 46], [d[0] + d[2] / 2, d[1] + d[3] / 2, 40]];
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const ms = [];
   for (let i = 0; i < 30; i++) {
-    ms.push({ x: Math.random() * 216, y: 14 + Math.random() * 200,
+    ms.push({ x: Math.random() * 216, y: 14 + Math.random() * 300,
               vx: (Math.random() - 0.5) * 3, vy: -1.4 - Math.random() * 2.2,
               ph: Math.random() * Math.PI * 2, sp: 0.5 + Math.random() * 1.1 });
   }
@@ -506,12 +578,12 @@ function motes(m) {
     g.clearRect(0, 0, 216, 480);
     for (const q of ms) {
       q.x += q.vx * dt; q.y += q.vy * dt;
-      if (q.y < 12) { q.y = 214; q.x = Math.random() * 216; }
+      if (q.y < 12) { q.y = L.F || 300; q.x = Math.random() * 216; }
       if (q.x < -2) q.x = 218; else if (q.x > 218) q.x = -2;
       let best = 0;
-      for (const L of LIGHTS) {
-        const dd = Math.hypot(q.x - L[0], q.y - L[1]);
-        if (dd < L[2]) best = Math.max(best, 1 - dd / L[2]);
+      for (const Lt of MOTE_LIGHTS) {
+        const dd = Math.hypot(q.x - Lt[0], q.y - Lt[1]);
+        if (dd < Lt[2]) best = Math.max(best, 1 - dd / Lt[2]);
       }
       if (best < 0.06) continue;
       const a = best * (0.55 + 0.45 * Math.sin(t * q.sp + q.ph));
