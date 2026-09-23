@@ -23,6 +23,7 @@
     --font: 'DotGothic16', 'MS Gothic', monospace;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { touch-action: manipulation; }             /* 連打で勝手に拡大しない */
   html, body {
     margin: 0; height: 100%; overflow: hidden;
     background: #05030f; color: #f2eefc;
@@ -77,13 +78,18 @@
   #stage {
     position: absolute; left: 0; top: 0;
     width: 216px; height: 480px;
+    visibility: hidden;                            /* 倍率が決まるまで出さない */
     transform-origin: 0 0;
     image-rendering: pixelated;
     overflow: hidden;
   }
   #stage img, #stage div, #stage canvas { image-rendering: pixelated; }
+  #stage, #stage img { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   #room { position: absolute; left: 0; top: 0; width: 216px; height: 480px; }
-  #room:not([src]) { visibility: hidden; }        /* 絵の版が決まるまで(代わりの文字を出さない) */
+  #room:not(.loaded) { visibility: hidden; }      /* 絵がそろうまで(代わりの文字を出さない) */
+  /* 置き場所が決まるまで、小物は出さない(開いた瞬間に左上へかたまって見えるのを防ぐ) */
+  #stage > :not(#room) { visibility: hidden; }
+  #stage.ready > :not(#room) { visibility: visible; }
   /* 二人と紙は、位置が決まるまで出さない(開いた瞬間に左上へ出るのを防ぐ) */
   #mayu, #mshadow, #pattifloat, #pshadow { visibility: hidden; }
   #stage.ready #mayu, #stage.ready #mshadow, #stage.ready #pattifloat, #stage.ready #pshadow { visibility: visible; }
@@ -121,6 +127,7 @@
   #motes { position: absolute; left: 0; top: 0; width: 216px; height: 480px; pointer-events: none; }
 
   /* ─── 黒板に貼ってある紙(そのままボタン) ─── */
+  body:has(#lightbox.on) #stage *, body:has(#dpop.on) #stage * { animation-play-state: paused; }
   .pp {
     position: absolute; border: 0; background: transparent; padding: 0 2px;
     cursor: pointer; color: #fff;
@@ -230,7 +237,12 @@
     padding-top: calc(16px + env(safe-area-inset-top));
   }
   #lightbox.on { display: flex; }
-  #lightbox img { max-width: 100%; max-height: 76vh; border: 2px solid #e8e4f4; background: #fff; image-rendering: auto; }
+  #lbwrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; text-align: center; }
+  #lightbox img {                                  /* 縦画面では高さに合わせ、横は指でなぞって見る */
+    height: 70vh; width: auto; max-width: none; max-height: none;
+    border: 2px solid #e8e4f4; background: #fff; image-rendering: auto;
+  }
+  @media (orientation: landscape) { #lightbox img { height: auto; max-width: 100%; max-height: 74vh; } }
   #lightbox .cap { font-size: 14px; color: #f2eefc; }
 
   /* ─── データの資料(模造紙を拡大したイメージ・縦に読む) ─── */
@@ -242,7 +254,7 @@
   }
   #dpop.on { display: flex; }
   #dpclose {
-    flex: none; align-self: flex-end; margin-bottom: 8px;
+    flex: none; align-self: flex-end; margin-bottom: 8px; min-height: 44px;
     border: 2px solid #e8e4f4; background: rgba(8, 6, 40, .92); border-radius: 3px;
     color: #f2eefc; font-family: var(--font); font-size: 15px; padding: 8px 14px; cursor: pointer;
   }
@@ -302,7 +314,7 @@
   <div id="roomarea">
     <div id="stagebox">
       <div id="stage">
-        <img id="room" alt="デザイン室">
+        <img id="room" src="room_design_m.png?v=6d7095d8ec" alt="デザイン室">
         <img id="lower" src="" alt="" aria-hidden="true">
         <canvas id="chalk" width="216" height="480" aria-hidden="true"></canvas>
         <div id="garblink" aria-hidden="true"></div>
@@ -322,7 +334,7 @@
 </div>
 
 <div id="lightbox" role="dialog" aria-label="拡大表示">
-  <img id="lbimg" src="" alt="Spooks GS（これまでデザインしたキャラクターたち）">
+  <div id="lbwrap"><img id="lbimg" src="" alt="Spooks GS（これまでデザインしたキャラクターたち）"></div>
   <div class="cap">タップでとじる</div>
 </div>
 <div id="dpop" role="dialog" aria-label="キャラクターに関するデータ">
@@ -330,7 +342,7 @@
   <div id="dpsheet"></div>
 </div>
 
-<script src="design_data.js"></script>
+<script src="design_data.js?v=20260923"></script>
 <script>
 const COMPANY_URL = 'https://canva.link/5xu274fv1b00091';
 const NOCACHE = { cache: 'no-store' };
@@ -381,6 +393,8 @@ function sayFor(t, ms) {
   window._tz = setTimeout(() => setTalk(TALK_DEFAULT), ms || 5200);
 }
 function tease(name) { sayFor('「' + name + '」は いま準備中！<br>たのしみに待っててね！', 3400); }
+// ブラウザの「戻る」で凍結状態から戻されたとき、案内中フラグを解いておく
+window.addEventListener('pageshow', e => { _going = false; if (e.persisted) setTalk(TALK_DEFAULT); });
 let _going = false;
 function goTo(page, text) {                       // ひとこと言ってからページを移る
   if (_going) return;
@@ -410,6 +424,9 @@ const NAV_ACT = {
 };
 document.querySelectorAll('#menu button').forEach(b => {
   b.addEventListener('click', () => { closeMenu(); NAV_ACT[b.dataset.k](); });
+});
+document.addEventListener('click', e => {        // 外を触ったら閉じる
+  if (menu.classList.contains('on') && !menu.contains(e.target) && e.target !== menubtn) closeMenu();
 });
 document.getElementById('pclink').addEventListener('click', () => {
   try { sessionStorage.setItem('patti-pc', '1'); } catch (e) {}
@@ -460,6 +477,7 @@ function placeAll(m) {
   const V = m.v ? '?v=' + m.v : '';                 // 絵の版。配置を変えた直後も古い絵を出さない
   document.getElementById('room').src = 'room_design_m.png' + V;
   const gb = document.getElementById('garblink');
+  gb.style.backgroundImage = 'url(design_garland_m.png' + V + ')';
   gb.style.top = m.garland_y + 'px'; gb.style.height = m.garland_h + 'px';
   gb.style.backgroundSize = (216 * 3) + 'px ' + m.garland_h + 'px';
   const lower = document.getElementById('lower');
@@ -474,7 +492,7 @@ function placeAll(m) {
     img.style.width = d.w + 'px'; img.style.height = d.h + 'px';
     stage.appendChild(img);
     const b = document.createElement('button');
-    b.className = k === 'story' ? '' : 'pp'; b.type = 'button';
+    b.className = 'pp'; b.type = 'button';
     b.id = p.id || ('pp' + k);
     if (p.text) b.textContent = p.text; else b.innerHTML = p.html;
     b.setAttribute('aria-label', p.label);
@@ -494,7 +512,10 @@ function placeAll(m) {
   L = { s: 1, F: -1, d: -1 };
   fitStage();
   motes();
-  stage.classList.add('ready');
+  const roomImg = document.getElementById('room');
+  const show = () => { roomImg.classList.add('loaded'); stage.classList.add('ready'); };
+  if (roomImg.complete && roomImg.naturalWidth) show();   // 絵がそろってから中身を出す
+  else { roomImg.addEventListener('load', show, { once: true }); roomImg.addEventListener('error', show, { once: true }); }
 }
 
 // 画面の高さに合わせて置き直す(F: 床の線 / d: 床の線から足元まで)
@@ -509,7 +530,9 @@ function placeDynamic() {
     const y = p.anchor === 'floor' ? p.y + dF : Math.round(p.yc + (p.y - p.yc) * t);
     place(e.img, [p.x, y, p.w, p.h]);
     const r = [p.x + p.body[0], y + p.body[1], p.body[2], p.body[3]];
-    place(e.b, r);
+    const hit = r.slice();
+    if (r[3] < 34) { hit[1] -= 6; hit[3] += 12; }        // 細い札は指で押しやすく広げる
+    place(e.b, hit);
     rects[k] = r;
   });
   drawArrows(rects, F);
@@ -601,7 +624,7 @@ function motes() {
     requestAnimationFrame(tick);
     if (!prev) prev = ts;
     const dt = Math.min(0.1, (ts - prev) / 1000); prev = ts;
-    if (document.hidden) return;
+    if (document.hidden || lightbox.classList.contains('on') || dpop.classList.contains('on')) return;
     acc += dt;
     if (acc < 1 / 14) return;
     draw(acc, ts / 1000); acc = 0;
@@ -626,8 +649,16 @@ function closeDataPop() { dpop.classList.remove('on'); }
 document.getElementById('dpclose').addEventListener('click', closeDataPop);
 dpop.addEventListener('click', e => { if (e.target === dpop) closeDataPop(); });
 
-fetch('room_design_m.json', NOCACHE).then(r => r.json()).then(placeAll)
-  .catch(e => { console.error(e); document.getElementById('room').src = 'room_design_m.png'; });
+function loadRoom(retry) {                     // 部屋の数字。取れなければ一度だけやり直す
+  fetch('room_design_m.json', NOCACHE).then(r => r.json()).then(placeAll).catch(e => {
+    console.error(e);
+    if (retry) { setTimeout(() => loadRoom(false), 1200); return; }
+    const im = document.getElementById('room');
+    im.src = 'room_design_m.png'; im.classList.add('loaded');
+    setTalk('部屋のじゅんびに失敗しちゃった…<br>画面を下に引っぱって、もう一度ひらいてね！');
+  });
+}
+loadRoom(true);
 </script>
 </body>
 </html>

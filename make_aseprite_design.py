@@ -76,11 +76,11 @@ for kind, n, items in plan:
 lua.append(f"spr:saveAs({lua_str(OUT)})")
 lua.append('print("aseprite written: " .. tostring(#spr.layers) .. " top-level layers")')
 
+if not os.path.exists(ASE):
+    sys.exit("Aseprite が見つかりません: " + ASE)
 script = os.path.join(HERE, "_build_aseprite.lua")
 io.open(script, "w", encoding="utf-8").write("\n".join(lua) + "\n")
 
-if not os.path.exists(ASE):
-    sys.exit("Aseprite が見つかりません: " + ASE)
 r = subprocess.run([ASE, "-b", "--script", script], capture_output=True, text=True)
 print((r.stdout or "").strip() or (r.stderr or "").strip())
 os.remove(script)

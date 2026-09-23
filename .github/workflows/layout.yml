@@ -26,7 +26,7 @@ jobs:
           python-version: '3.12'
 
       - name: Pillow を入れる
-        run: python -m pip install --quiet pillow
+        run: python -m pip install --quiet "pillow<14"     # 大きな版上げで止まらないように
 
       - name: 配置を反映して絵を描き直す
         run: python apply_layout.py layout.json
@@ -40,5 +40,9 @@ jobs:
             echo "変わりませんでした"
           else
             git commit -m "配置ツールの配置を反映"
-            git push
+            # 先に誰かが押していても取りこぼさない(3回まで待って合流)
+            for i in 1 2 3; do
+              git pull --rebase origin main && git push && break
+              echo "push をやり直します ($i)"; sleep 5
+            done
           fi

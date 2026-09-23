@@ -63,15 +63,16 @@ function designDataHTML() {
   let h = '<h2>キャラクターに関するデータ</h2>'
         + '<p class="lead">企業や自治体が、若い人材に届き、選ばれるために。'
         + 'キャラクターとアニメーションが「あった方がいいもの」ではなく「必要なもの」である理由を、公的統計と調査データで。</p>'
-        + '<p class="note">※これは仮のボードです。★はスタジオパッチのおすすめ。'
-        + 'ここから載せるものを選んでいただければ、出典つきで黒板に清書します。</p>';
+        + '<p class="note">★はスタジオパッチが特に注目している数字です。'
+        + 'それぞれの「出典先」から、元の調査資料を確認できます。</p>';
   DATA_SECTIONS.forEach(sec => {
     h += '<h3>' + esc(sec.h) + '</h3><ul>';
     sec.items.forEach(it => {
       h += '<li><div class="fig"><span>' + esc(it.fig) + '</span>'
          + (it.rec ? '<span class="rec">★</span>' : '') + '</div>'
          + '<div class="body"><div class="say">' + esc(it.say) + '</div>'
-         + '<div class="src"><a href="' + it.url + '" target="_blank" rel="noopener">出典先</a>'
+         + '<div class="src">' + esc(it.src) + ' '
+         + '<a href="' + it.url + '" target="_blank" rel="noopener">出典先</a>'
          + '</div></div></li>';
     });
     h += '</ul>';

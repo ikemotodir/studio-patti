@@ -6,12 +6,18 @@
 // スマホ(縦画面の電話)はスマホ版へ。PC・タブレットはこのままPC版
 (function () {
   try {
-    if (/[?&]pc=1(&|$)/.test(location.search) || sessionStorage.getItem('patti-pc')) return;
+    if (/[?&]pc=1(&|$)/.test(location.search)) {   // PC版を選んだことを覚えておく
+      try { sessionStorage.setItem('patti-pc', '1'); } catch (e) {}
+      return;
+    }
+    if (sessionStorage.getItem('patti-pc')) return;
     var ua = navigator.userAgent || '';
     var phone = (navigator.userAgentData && navigator.userAgentData.mobile === true)
              || /iPhone|iPod|Android.+Mobile|Windows Phone/i.test(ua);
     var touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-    if (phone && touch) location.replace('m.html' + location.hash);
+    var h = location.hash;                       // スマホ版にある物だけ引き継ぐ
+    if (['#book', '#gallery', '#post'].indexOf(h) < 0) h = '';
+    if (phone && touch) location.replace('m.html' + h);
   } catch (e) {}
 })();
 </script>
@@ -453,7 +459,7 @@
     background: transparent; border: 0; border-bottom: 1px solid #b9a; color: #0a0830;
     font-family: inherit; font-size: clamp(10px, 1.5vw, 14px); padding: 2px;
   }
-  #flyletter {
+  .flyletter {
     position: absolute; width: 12%; height: 8%;
     background: #fdf3e3; border: 1px solid #0a0830; z-index: 5;
     transition: all .9s cubic-bezier(.5,0,.8,1); pointer-events: none;
@@ -522,9 +528,9 @@
     <button id="booklink" class="hs" style="left:72px;top:82px;width:28px;height:28px;--gw:170%;--gh:170%;--gi:.3"
             aria-label="絵本『おばけのパッチ』を読む"></button>
     <img id="bookcover" src="ehon_cover.png" alt="" aria-hidden="true">
-    <button id="gallink" class="hs" style="left:144px;top:36px;width:106px;height:68px;--gw:106%;--gh:112%;--gi:.6"
+    <button id="gallink" class="hs" style="left:144px;top:36px;width:106px;height:56px;--gw:106%;--gh:112%;--gi:.6"
             aria-label="ギャラリー"></button>
-    <button id="postlink" class="hs" style="left:318px;top:112px;width:34px;height:78px;--gw:148%;--gh:148%;--gi:.78"
+    <button id="postlink" class="hs" style="left:320px;top:116px;width:26px;height:72px;--gw:148%;--gh:148%;--gi:.78"
             aria-label="お問い合わせ（ポスト）"></button>
     <canvas id="pcidle" width="92" height="28" aria-hidden="true"></canvas>
     <video id="pcmovie" src="pc_movie.mp4" muted loop playsinline preload="auto" aria-hidden="true"></video>
@@ -775,7 +781,7 @@ const setTalk = t => {                              // 改行位置は<br>で明
 };
 
 window.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && currentView) closeDetail();
+  if (e.key === 'Escape' && currentView) backOrClose();
 });
 
 function hotspot(id, hoverText, onClick) {
@@ -785,7 +791,7 @@ function hotspot(id, hoverText, onClick) {
   b.addEventListener('focus', () => setTalk(hoverText));
   b.addEventListener('mouseleave', () => setTalk(TALK_DEFAULT));
   b.addEventListener('blur', () => setTalk(TALK_DEFAULT));
-  b.addEventListener('click', onClick);
+  b.addEventListener('click', () => { _lastHot = b; onClick(); });
 }
 
 // ─────────────────────────────────────────────
@@ -810,8 +816,14 @@ const NOCACHE = { cache: 'no-store' };
 fetch('closeups.json', NOCACHE).then(r => r.json()).then(j => RECTS = j).catch(() => {});
 let CONTACT = { endpoint: '', fields: {} };   // お問い合わせの送り先(contact.json)
 fetch('contact.json', NOCACHE).then(r => r.json()).then(j => CONTACT = j).catch(() => {});
-fetch('book.json', NOCACHE).then(r => r.json()).then(j => BOOK = j).catch(() => {});
-fetch('gallery.json', NOCACHE).then(r => r.json()).then(j => GALLERY = j).catch(() => {});
+fetch('book.json', NOCACHE).then(r => r.json()).then(j => {
+  BOOK = j;
+  if (currentView === 'book') showDetail('book');      // 開いたまま待っていた人にも出す
+}).catch(() => {});
+fetch('gallery.json', NOCACHE).then(r => r.json()).then(j => {
+  GALLERY = j;
+  if (currentView === 'gallery') showDetail('gallery');
+}).catch(() => {});
 
 const pctRect = r =>
   `position:absolute;left:${r.x / 384 * 100}%;top:${r.y / 240 * 100}%;` +
@@ -820,6 +832,9 @@ const arr4 = a => ({ x: a[0], y: a[1], w: a[2], h: a[3] });
 
 const dcontent = document.getElementById('dcontent');
 const detail = document.getElementById('detail');
+const wrapEl = document.getElementById('wrap');
+const dbackEl = document.getElementById('dback');
+let _opener = null, _lastHot = null;                 // 詳細を開いた元のボタン(閉じたら戻す先)
 const dbg = document.getElementById('dbg');
 let currentView = null;
 
@@ -858,7 +873,13 @@ function showDetail(key, instant = false) {
   } else {
     requestAnimationFrame(() => detail.classList.add('on'));
   }
-  if (location.hash !== '#' + key) history.pushState(null, '', '#' + key);
+  if (!wrapEl.inert) {                                    // 閉じたら元のボタンへ戻す
+    const a = document.activeElement;
+    _opener = (a && a !== document.body && wrapEl.contains(a)) ? a : _lastHot;
+  }
+  wrapEl.inert = true;                                    // 裏の部屋はタブで触れないようにする
+  dbackEl.focus({ preventScroll: true });
+  if (location.hash !== '#' + key) history.pushState({ detail: key }, '', '#' + key);
 }
 
 function closeDetail() {
@@ -866,9 +887,16 @@ function closeDetail() {
   clearTimeout(window._closeT);
   window._closeT = setTimeout(() => { detail.hidden = true; dcontent.innerHTML = ''; }, 300);
   currentView = null;
-  if (location.hash) history.pushState(null, '', location.pathname);
+  wrapEl.inert = false;
+  if (_opener && document.contains(_opener)) _opener.focus({ preventScroll: true });
+  _opener = null;
+  // 自分で積んだ履歴は増やさない(戻るで、閉じた画面が開き直さないように)
+  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
 }
-document.getElementById('dback').addEventListener('click', closeDetail);
+function backOrClose() {                                  // 自分で積んだ履歴があれば「戻る」で閉じる
+  if (history.state && history.state.detail) history.back(); else closeDetail();
+}
+document.getElementById('dback').addEventListener('click', backOrClose);
 window.addEventListener('popstate', () => {
   const k = location.hash.slice(1);
   if (k && BUILDERS[k]) showDetail(k); else closeDetail();
@@ -897,7 +925,7 @@ const BUILDERS = {
     goEdit.id = 'gotoedit';
     goEdit.textContent = '編集室へ入る ▶';
     goEdit.style.cssText = 'position:absolute;left:66%;top:5%;width:26%;padding:1.2% 0;';
-    goEdit.addEventListener('click', () => location.href = 'anime.html');
+    goEdit.addEventListener('click', () => enterRoom('contents.html', '編集室'));
     dcontent.appendChild(goEdit);
     CHANNELS.forEach((ch, i) => {
       const b = document.createElement('button');
@@ -921,7 +949,7 @@ const BUILDERS = {
       1枚の設計図に落とし込むところからキャラクターづくりを始めます。</p>
       <p>マスコット、ブランドキャラクター、絵本やゲームの主人公。
       「描いて終わり」ではなく、アニメーションやグッズ、メタバースまで
-      動かして育てられる設計をお渡しします。（※この文章は仮です）</p>
+      動かして育てられる設計をお渡しします。</p>
       <img src="sekkeizu.jpg" alt="パッチくんの設計図" style="max-width:100%;max-height:52%;border:2px solid #D9ECFF;display:block;">`;
     dcontent.appendChild(p);
   },
@@ -945,10 +973,12 @@ const BUILDERS = {
     const draw = () => {
       if (!BOOK) { txt.textContent = '絵本を準備中…'; return; }
       const pg = BOOK.pages[i];
-      img.src = pg.img || 'ehon_hyoshi.png';
+      img.src = pg.img || 'ehon_cover.png';
       if (pg.spread) {                       // 文字なしのページは見開きいっぱいに絵を出す
         img.style.cssText = pctRect(SPREAD) + 'object-fit:contain;background:#f5f5f7;';
-        txt.style.display = 'none';
+        txt.style.display = i === 0 ? 'flex' : 'none';     // 表紙には書名を出す
+        if (i === 0) txt.innerHTML =
+          '<div style="font-size:clamp(11px,1.4vw,15px);color:#8a8a94">' + (BOOK.title || '') + '</div>';
       } else {
         img.style.cssText = pctRect(L) + 'object-fit:contain;background:#f5f5f7;';
         txt.style.display = 'flex';
@@ -974,8 +1004,13 @@ const BUILDERS = {
       }
       document.getElementById('bnum').textContent = (i + 1) + ' / ' + BOOK.pages.length;
     };
-    nav.querySelector('#bprev').addEventListener('click', () => { i = (i - 1 + BOOK.pages.length) % BOOK.pages.length; draw(); });
-    nav.querySelector('#bnext').addEventListener('click', () => { i = (i + 1) % BOOK.pages.length; draw(); });
+    const turn = d => {                                  // データ未着でも落ちないようにする
+      if (!BOOK || !BOOK.pages || !BOOK.pages.length) return;
+      i = (i + d + BOOK.pages.length) % BOOK.pages.length;
+      draw();
+    };
+    nav.querySelector('#bprev').addEventListener('click', () => turn(-1));
+    nav.querySelector('#bnext').addEventListener('click', () => turn(1));
     draw();
   },
   monitor() {
@@ -996,7 +1031,7 @@ const BUILDERS = {
       const p = document.createElement('div');
       p.className = 'dpanel';
       p.style.cssText = pctRect(r) + 'color:#fdE3d1;padding:4%;background:rgba(4,2,26,.5);';
-      p.innerHTML = '<h2>ギャラリー準備中</h2><p>絵を「サイト用画像\\gallery」フォルダに入れてビルドすると、ここに展示されます。</p>';
+      p.innerHTML = '<h2>よみこみ中…</h2><p>ギャラリーをよみこんでいるよ。ちょっと待っててね！</p>';
       dcontent.appendChild(p);
       return;
     }
@@ -1103,8 +1138,11 @@ const BUILDERS = {
         okEl.style.display = 'block';
         return;
       }
+      if (send.disabled) return;                  // 連打で二重に送らない
+      send.disabled = true;
+      send.textContent = '投函中…';
       const fl = document.createElement('div');
-      fl.id = 'flyletter';
+      fl.className = 'flyletter';
       fl.style.left = (r.x / 384 * 100) + '%';
       fl.style.top = (r.y / 240 * 100) + '%';
       dcontent.appendChild(fl);
@@ -1134,6 +1172,8 @@ const BUILDERS = {
           okEl.textContent = '今はおてがみを受け取れないみたい。もう一度ためしてね！';
           okEl.style.display = 'block';
         }
+        send.disabled = false;                    // 送り終わったら押せる状態に戻す
+        send.textContent = 'ポストに投函する';
       }, 950);
     });
   },
@@ -1149,6 +1189,8 @@ function enterRoom(page, name) {
   setTimeout(() => { location.href = page; }, 380);
 }
 // ページ準備中のご案内(リンク先ページができたら差し替える)
+// ブラウザの「戻る」で凍結状態から戻されたとき、案内中フラグを解いておく
+window.addEventListener('pageshow', e => { _going = false; if (e.persisted) setTalk(TALK_DEFAULT); });
 function tease(name) {
   setTalk('「' + name + '」のページは いま準備中！<br>たのしみに待っててね！');
   clearTimeout(window._tz);
@@ -1157,9 +1199,9 @@ function tease(name) {
 hotspot('booklink', 'それは絵本『おばけのパッチ』！<br>ボクが主役の絵本、ここで読めるよ！',
   () => zoomOpen('book', 72, 82, 28, 28));
 hotspot('gallink', 'ギャラリーのかべ！<br>ボクの絵がいっぱいあるよ！',
-  () => zoomOpen('gallery', 144, 36, 106, 68));
+  () => zoomOpen('gallery', 144, 36, 106, 56));
 hotspot('postlink', '赤いポスト！<br>お手紙（お問い合わせ）はここからどうぞ！',
-  () => zoomOpen('post', 318, 112, 34, 78));
+  () => zoomOpen('post', 320, 116, 26, 72));
 hotspot('doorL', 'デザイン室！キャラクターが生まれる部屋だよ！<br>（入ってみてね！）',
   () => enterRoom('design.html', 'デザイン室'));
 hotspot('doorR', '編集室！アニメーションを創ってる部屋だよ！<br>（入ってみてね！）',
@@ -1223,7 +1265,7 @@ hotspot('companylink', 'スタジオパッチの会社案内が見られる<br>�
   pc.addEventListener('mouseleave', stop);
   pc.addEventListener('blur', stop);
 })();
-hotspot('spooklink', '『おばけのパッチ』の世界への入口！<br>大きな月の絵だよ！',
+hotspot('spooklink', '『おばけのパッチ』の世界への入口！<br>大きな月の絵だよ！（いま準備中）',
   () => tease('Patti the Spook'));
 
 // 上部ナビゲーション(部屋の中の入口と同じところへ案内する)
@@ -1235,7 +1277,7 @@ const NAV_ACT = {
   contents: { talk: 'アニメーションなど制作のページだよ！<br>編集室へ案内するね！',
               act: () => enterRoom('contents.html', '編集室') },
   spook:    { talk: '『おばけのパッチ』の世界のページだよ！（いま準備中）', act: () => tease('Patti the Spook') },
-  contact:  { talk: 'お問い合わせフォームをひらくよ！', act: () => zoomOpen('post', 318, 112, 34, 78) },
+  contact:  { talk: 'お問い合わせフォームをひらくよ！', act: () => zoomOpen('post', 320, 116, 26, 72) },
 };
 document.querySelectorAll('#navbar nav button').forEach(b => {
   const a = NAV_ACT[b.dataset.k];
@@ -1259,14 +1301,14 @@ mayuEl.addEventListener('mouseleave', () => setTalk(TALK_DEFAULT));
 // ジュークボックス: クリックで曲送り。曲名はテキストボックスに出す
 // ─────────────────────────────────────────────
 const TRACKS = [
-  { f: 'music/01_pattis_room.wav',  t: 'パッチのおへや' },
-  { f: 'music/02_night_walk.wav',   t: 'よるのさんぽ' },
-  { f: 'music/03_twinkle_star.wav', t: 'きらきら星' },
-  { f: 'music/05_spook_march.wav',  t: 'おばけのマーチ' },
+  { f: 'music/01_pattis_room.m4a',  t: 'パッチのおへや' },
+  { f: 'music/02_night_walk.m4a',   t: 'よるのさんぽ' },
+  { f: 'music/03_twinkle_star.m4a', t: 'きらきら星' },
+  { f: 'music/05_spook_march.m4a',  t: 'おばけのマーチ' },
 ];
 const audio = new Audio();
 audio.loop = true;
-audio.volume = 0.55;
+audio.volume = 1;              // 音量は音源ファイル側で下げてある(iPhoneはvolume指定が効かない)
 let trackIdx = -1;
 const jbBtn = document.getElementById('jukebox');
 const tbName = document.querySelector('#talkbox .name');
@@ -1330,7 +1372,9 @@ function tickClock() {
 tickClock();
 setInterval(tickClock, 5000);
 if (location.hash && BUILDERS[location.hash.slice(1)]) {
-  setTimeout(() => showDetail(location.hash.slice(1)), 400);
+  const k0 = location.hash.slice(1);
+  history.replaceState(null, '', location.pathname + location.search);   // 開く前に目印を外す
+  setTimeout(() => showDetail(k0), 400);
 }
 
 Promise.all([

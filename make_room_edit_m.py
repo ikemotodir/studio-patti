@@ -20,6 +20,7 @@ import io
 import json
 import math
 import os
+import re
 import sys
 
 from PIL import Image, ImageDraw
@@ -534,6 +535,24 @@ _h = hashlib.md5()
 for f in ("room_edit_m.png", "edit_m_lower.png", "marquee_blink_m.png") + tuple(IMG[k] for k in TOP_ITEMS):
     _h.update(open(os.path.join(WEB, f), "rb").read())
 meta["v"] = _h.hexdigest()[:10]
+
+def stamp_page(page, names, ver):
+    """ページの <img id="room"> などに ?v= を書き込む(開いた瞬間に部屋の絵が出るように)。
+    JSON にも同じ版が入っているので、ページが古くてもJS側で直る。"""
+    path = os.path.join(WEB, page)
+    try:
+        raw = io.open(path, encoding="utf-8", newline="").read()
+    except IOError:
+        return
+    out = raw
+    for n in names:
+        out = re.sub(r'src="%s(\?v=[0-9a-f]+)?"' % re.escape(n), 'src="%s?v=%s"' % (n, ver), out)
+    if out != raw:
+        io.open(path, "w", encoding="utf-8", newline="").write(out)
+        print("  %s に絵の版を書きました" % page)
+
+
+stamp_page("contents_m.html", ("room_edit_m.png",), meta["v"])
 json.dump(meta, io.open(os.path.join(WEB, "room_edit_m.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 print("room_edit_m.png / edit_m_lower.png(高さ %d) / room_edit_m_bare.png / room_edit_m.json  (重なり %d 件)"
       % (LB_H, len(bad)))

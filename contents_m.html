@@ -23,6 +23,7 @@
     --font: 'DotGothic16', 'MS Gothic', monospace;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { touch-action: manipulation; }             /* 連打で勝手に拡大しない */
   html, body {
     margin: 0; height: 100%; overflow: hidden;
     background: #05030f; color: #f2eefc;
@@ -77,13 +78,18 @@
   #stage {
     position: absolute; left: 0; top: 0;
     width: 216px; height: 480px;
+    visibility: hidden;                            /* 倍率が決まるまで出さない */
     transform-origin: 0 0;
     image-rendering: pixelated;
     overflow: hidden;
   }
   #stage img, #stage div, #stage canvas { image-rendering: pixelated; }
+  #stage, #stage img { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   #room { position: absolute; left: 0; top: 0; width: 216px; height: 480px; }
-  #room:not([src]) { visibility: hidden; }        /* 絵の版が決まるまで(代わりの文字を出さない) */
+  #room:not(.loaded) { visibility: hidden; }      /* 絵がそろうまで(代わりの文字を出さない) */
+  /* 置き場所が決まるまで、小物は出さない(開いた瞬間に左上へかたまって見えるのを防ぐ) */
+  #stage > :not(#room) { visibility: hidden; }
+  #stage.ready > :not(#room) { visibility: visible; }
   #lower { position: absolute; left: 0; width: 216px; }
   .spr { position: absolute; pointer-events: none; }
   /* 二人は位置が決まるまで出さない(開いた瞬間に左上へ出るのを防ぐ) */
@@ -146,6 +152,7 @@
     border-top: 8px solid transparent; border-bottom: 8px solid transparent;
   }
   #playbig:active { background: rgba(236, 148, 190, .55); }
+  body:has(#vpop.on) #stage *, body:has(#ipop.on) #stage * { animation-play-state: paused; }
 
   /* ─── メニュー(見出し+2列×2段・▶で選ぶ) ─── */
   .mi {
@@ -159,6 +166,7 @@
     border-left: 4px solid #f79db8;
     border-top: 3px solid transparent; border-bottom: 3px solid transparent;
   }
+  .mi::before { content: ''; position: absolute; inset: -3px -2px; }   /* 指で押しやすいように当たり判定を広げる */
   .mi.sel { color: #ffffff; text-shadow: 0 0 3px rgba(236, 148, 190, .55); background: rgba(236, 148, 190, .10); }
   .mi.sel .cur { visibility: visible; }
   .mi:active { background: rgba(236, 148, 190, .2); }
@@ -248,14 +256,16 @@
   }
   #vpop.on, #ipop.on { display: flex; }
   .pclose {
-    align-self: flex-end; border: 2px solid #e8e4f4; background: rgba(8, 6, 40, .92); border-radius: 3px;
+    align-self: flex-end; flex: none; min-height: 44px;
+    border: 2px solid #e8e4f4; background: rgba(8, 6, 40, .92); border-radius: 3px;
     color: #f2eefc; font-family: var(--font); font-size: 15px; padding: 8px 14px; cursor: pointer;
   }
-  #vpwrap { width: 100%; aspect-ratio: 16 / 9; border: 2px solid #e8e4f4; background: #000; }
+  /* よこ向きでも画面からはみ出さない(閉じるボタンと◀▶のぶんを残す) */
+  #vpwrap { width: min(100%, calc((100dvh - 132px) * 16 / 9)); aspect-ratio: 16 / 9; border: 2px solid #e8e4f4; background: #000; }
   #vpframe { width: 100%; height: 100%; border: 0; display: block; }
-  #ipwrap { position: relative; width: 100%; flex: 0 1 auto; display: flex; align-items: center; justify-content: center; }
-  #ipimg { max-width: 100%; max-height: 70vh; object-fit: contain; display: block; border: 2px solid #e8e4f4; background: #05030f; }
-  #ipbar { display: flex; align-items: center; gap: 18px; }
+  #ipwrap { position: relative; width: 100%; flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
+  #ipimg { max-width: 100%; max-height: 100%; object-fit: contain; display: block; border: 2px solid #e8e4f4; background: #05030f; }
+  #ipbar { display: flex; align-items: center; gap: 18px; flex: none; }
   .ipnav {
     width: 56px; height: 44px; border: 2px solid #e8e4f4; border-radius: 3px;
     background: rgba(8, 6, 40, .88); color: #f2eefc; cursor: pointer;
@@ -295,7 +305,7 @@
   <div id="roomarea">
     <div id="stagebox">
       <div id="stage">
-        <img id="room" alt="編集室">
+        <img id="room" src="room_edit_m.png?v=15f688f640" alt="編集室">
         <img id="lower" src="" alt="" aria-hidden="true">
         <div id="doorGlow" aria-hidden="true"></div>
         <div id="marqblink" aria-hidden="true"></div>
@@ -386,6 +396,8 @@ function sayFor(t, ms) {
   window._tz = setTimeout(() => setTalk(TALK_DEFAULT), ms || 5200);
 }
 function tease(name) { sayFor('「' + name + '」は いま準備中！<br>たのしみに待っててね！', 3400); }
+// ブラウザの「戻る」で凍結状態から戻されたとき、案内中フラグを解いておく
+window.addEventListener('pageshow', e => { _going = false; if (e.persisted) setTalk(TALK_DEFAULT); });
 let _going = false;
 function goTo(page, text) {
   if (_going) return;
@@ -416,6 +428,9 @@ const NAV_ACT = {
 document.querySelectorAll('#menu button').forEach(b => {
   b.addEventListener('click', () => { closeMenu(); NAV_ACT[b.dataset.k](); });
 });
+document.addEventListener('click', e => {        // 外を触ったら閉じる
+  if (menu.classList.contains('on') && !menu.contains(e.target) && e.target !== menubtn) closeMenu();
+});
 document.getElementById('pclink').addEventListener('click', () => {
   try { sessionStorage.setItem('patti-pc', '1'); } catch (e) {}
 });
@@ -437,8 +452,8 @@ const CATS = [
   { name: '実写映像', items: [{t:'y',id:'a6ickLwrHRE'}, {t:'y',id:'RBAMbSCEbSQ'}, {t:'y',id:'XKyWWychUZA'}, {t:'y',id:'bomW6K3pvsY'}] },
 ];
 let META = null, BOOK = null;
-fetch('metaverse.json', NOCACHE).then(r => r.json()).then(j => { META = j; }).catch(() => {});
-fetch('book.json', NOCACHE).then(r => r.json()).then(j => { BOOK = j; }).catch(() => {});
+fetch('metaverse.json').then(r => r.json()).then(j => { META = j; }).catch(() => {});
+fetch('book.json').then(r => r.json()).then(j => { BOOK = j; }).catch(() => {});
 let cat = 0, num = -1;
 const EL = {};
 const catname = document.getElementById('catname');
@@ -466,23 +481,27 @@ function selectNum(j) {
   if (item === undefined) { sayFor('この番号はいま準備中だよ！', 2600); return; }
   num = j;
   EL.nb.forEach((b, k) => b.classList.toggle('on', k === j));
-  scrwait.style.display = 'none';
   if (typeof item === 'string' && item.startsWith('meta:')) {
     const gi = parseInt(item.slice(5), 10);
-    if (!META || !META[gi]) { tease(CATS[cat].name); return; }
+    if (!META || !META[gi]) { loading(); return; }
     showThumb('images', META[gi].files);
   } else if (item === 'book') {
-    if (!BOOK) { tease(CATS[cat].name); return; }
-    showThumb('images', BOOK.pages.map(pg => pg.img));
+    if (!BOOK) { loading(); return; }
+    showThumb('images', BOOK.pages.map(pg => pg.img_w || pg.img), null, BOOK.thumb);
   } else {
     showThumb('video', ['thumbs/' + item.t + item.id + '.jpg'], item);
   }
   sayFor((j + 1) + 'ばんの作品だよ！<br>スクリーンをタッチしてね！');
 }
-function showThumb(kind, list, video) {
+function loading() {                       // 資料がまだ届いていないとき(準備中とは言わない)
+  stopScreen();
+  sayFor('いま よみこみ中だよ！<br>ちょっと待ってね！', 2600);
+}
+function showThumb(kind, list, video, thumb) {
   SHOW = { kind: kind, list: list, idx: 0, video: video || null };
-  thumbimg.src = list[0];
+  thumbimg.src = thumb || list[0];         // 小さい見本があればそちらを出す
   thumbbox.classList.toggle('fit', kind === 'images');
+  scrwait.style.display = 'none';
   thumbbox.style.display = 'block';
 }
 
@@ -497,12 +516,15 @@ function popupURL(t, id) {
 function openShow() {
   if (SHOW.kind === 'video') { vpframe.src = popupURL(SHOW.video.t, SHOW.video.id); vpop.classList.add('on'); }
   else if (SHOW.kind === 'images') { SHOW.idx = 0; drawImagePop(); ipop.classList.add('on'); }
+  else return;
+  history.pushState({ pop: 1 }, '', location.href);    // 端末の「戻る」で閉じられるように
 }
 thumbbox.addEventListener('click', openShow);
 function drawImagePop() {
   const n = SHOW.list.length;
   SHOW.idx = (SHOW.idx + n) % n;
   ipimg.src = SHOW.list[SHOW.idx];
+  if (n > 1) new Image().src = SHOW.list[(SHOW.idx + 1) % n];   // 次の絵を先に取っておく
   document.getElementById('ipnum').textContent = (SHOW.idx + 1) + ' / ' + n;
   document.getElementById('ipbar').style.visibility = n > 1 ? 'visible' : 'hidden';
 }
@@ -515,8 +537,11 @@ ipimg.addEventListener('touchend', e => {
   const dx = e.changedTouches[0].clientX - sx0; sx0 = null;
   if (Math.abs(dx) > 40) { SHOW.idx += dx < 0 ? 1 : -1; drawImagePop(); }
 });
-function closeIpop() { ipop.classList.remove('on'); }
-function closeVpop() { vpop.classList.remove('on'); vpframe.src = 'about:blank'; }
+function hideIpop() { ipop.classList.remove('on'); }
+function hideVpop() { vpop.classList.remove('on'); vpframe.src = 'about:blank'; }
+function closeIpop() { if (history.state && history.state.pop) history.back(); else hideIpop(); }
+function closeVpop() { if (history.state && history.state.pop) history.back(); else hideVpop(); }
+window.addEventListener('popstate', () => { hideIpop(); hideVpop(); });
 document.getElementById('ipclose').addEventListener('click', closeIpop);
 document.getElementById('vpclose').addEventListener('click', closeVpop);
 ipop.addEventListener('click', e => { if (e.target === ipop) closeIpop(); });
@@ -581,7 +606,10 @@ function placeAll(m) {
   L = { s: 1, F: -1, d: -1 };
   fitStage();
   stars();
-  stage.classList.add('ready');
+  const roomImg = document.getElementById('room');
+  const show = () => { roomImg.classList.add('loaded'); stage.classList.add('ready'); };
+  if (roomImg.complete && roomImg.naturalWidth) show();   // 絵がそろってから小物を出す
+  else { roomImg.addEventListener('load', show, { once: true }); roomImg.addEventListener('error', show, { once: true }); }
 }
 
 // 画面の高さに合わせて置き直す(F: 床の線 / d: 床の線から足元まで)
@@ -640,12 +668,24 @@ function stars() {
   };
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { draw(0); return; }
   let prev = 0;
-  const tick = (t) => { requestAnimationFrame(tick); if (document.hidden || t - prev < 1000 / 12) return; prev = t; draw(t); };
+  const tick = (t) => {
+    requestAnimationFrame(tick);
+    if (document.hidden || scrwait.style.display === 'none' || t - prev < 1000 / 12) return;
+    prev = t; draw(t);
+  };
   requestAnimationFrame(tick);
 }
 
-fetch('room_edit_m.json', NOCACHE).then(r => r.json()).then(placeAll)
-  .catch(e => { console.error(e); document.getElementById('room').src = 'room_edit_m.png'; });
+function loadRoom(retry) {                     // 部屋の数字。取れなければ一度だけやり直す
+  fetch('room_edit_m.json', NOCACHE).then(r => r.json()).then(placeAll).catch(e => {
+    console.error(e);
+    if (retry) { setTimeout(() => loadRoom(false), 1200); return; }
+    const im = document.getElementById('room');
+    im.src = 'room_edit_m.png'; im.classList.add('loaded');
+    setTalk('部屋のじゅんびに失敗しちゃった…<br>画面を下に引っぱって、もう一度ひらいてね！');
+  });
+}
+loadRoom(true);
 </script>
 </body>
 </html>

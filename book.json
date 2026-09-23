@@ -8,7 +8,8 @@
    "jp": [],
    "en": [],
    "spread": true,
-   "label": "Front"
+   "label": "Front",
+   "img_w": "book_w/00_Front.jpg"
   },
   {
    "img": "book_hd/01_Page2-3.jpg",
@@ -21,7 +22,8 @@
     "This is a world with a lot of spooks."
    ],
    "spread": false,
-   "label": "Page2-3"
+   "label": "Page2-3",
+   "img_w": "book_w/01_Page2-3.jpg"
   },
   {
    "img": "book_hd/02_Page4.jpg",
@@ -32,7 +34,8 @@
     "Spiky spook　　Wizard spook"
    ],
    "spread": false,
-   "label": "Page4"
+   "label": "Page4",
+   "img_w": "book_w/02_Page4.jpg"
   },
   {
    "img": "book_hd/03_Page5.jpg",
@@ -45,7 +48,8 @@
     "There are so many different spooks."
    ],
    "spread": false,
-   "label": "Page5"
+   "label": "Page5",
+   "img_w": "book_w/03_Page5.jpg"
   },
   {
    "img": "book_hd/04_Page6-7.jpg",
@@ -61,7 +65,8 @@
     "and surprise them."
    ],
    "spread": false,
-   "label": "Page6-7"
+   "label": "Page6-7",
+   "img_w": "book_w/04_Page6-7.jpg"
   },
   {
    "img": "book_hd/05_Page8-9.jpg",
@@ -77,7 +82,8 @@
     "But…"
    ],
    "spread": false,
-   "label": "Page8-9"
+   "label": "Page8-9",
+   "img_w": "book_w/05_Page8-9.jpg"
   },
   {
    "img": "book_hd/06_Page10-11.jpg",
@@ -90,7 +96,8 @@
     "Patti wants to be friends with them."
    ],
    "spread": false,
-   "label": "Page10-11"
+   "label": "Page10-11",
+   "img_w": "book_w/06_Page10-11.jpg"
   },
   {
    "img": "book_hd/07_Page12-13.jpg",
@@ -111,7 +118,8 @@
     "How can Patti be a friend to Hue Mans?"
    ],
    "spread": false,
-   "label": "Page12-13"
+   "label": "Page12-13",
+   "img_w": "book_w/07_Page12-13.jpg"
   },
   {
    "img": "book_hd/08_Page14.jpg",
@@ -124,7 +132,8 @@
     "How about becoming a candy?"
    ],
    "spread": false,
-   "label": "Page14"
+   "label": "Page14",
+   "img_w": "book_w/08_Page14.jpg"
   },
   {
    "img": "book_hd/09_Page15.jpg",
@@ -137,7 +146,8 @@
     "How about taking a bath together?"
    ],
    "spread": false,
-   "label": "Page15"
+   "label": "Page15",
+   "img_w": "book_w/09_Page15.jpg"
   },
   {
    "img": "book_hd/10_Page16-17.jpg",
@@ -154,7 +164,8 @@
     "with Hue Mans and went back home."
    ],
    "spread": false,
-   "label": "Page16-17"
+   "label": "Page16-17",
+   "img_w": "book_w/10_Page16-17.jpg"
   },
   {
    "img": "book_hd/11_Page18-19.jpg",
@@ -169,7 +180,8 @@
     "Named……Mayu."
    ],
    "spread": false,
-   "label": "Page18-19"
+   "label": "Page18-19",
+   "img_w": "book_w/11_Page18-19.jpg"
   },
   {
    "img": "book_hd/12_Page20.jpg",
@@ -181,7 +193,8 @@
     "with Patti, too."
    ],
    "spread": false,
-   "label": "Page20"
+   "label": "Page20",
+   "img_w": "book_w/12_Page20.jpg"
   },
   {
    "img": "book_hd/13_Page21.jpg",
@@ -192,7 +205,8 @@
     "Let's play together!!"
    ],
    "spread": false,
-   "label": "Page21"
+   "label": "Page21",
+   "img_w": "book_w/13_Page21.jpg"
   },
   {
    "img": "book_hd/14_Page22-23.jpg",
@@ -208,7 +222,8 @@
     "That's sad."
    ],
    "spread": false,
-   "label": "Page22-23"
+   "label": "Page22-23",
+   "img_w": "book_w/14_Page22-23.jpg"
   },
   {
    "img": "book_hd/15_Page24-25.jpg",
@@ -223,7 +238,8 @@
     "in the Hue Man world!"
    ],
    "spread": false,
-   "label": "Page24-25"
+   "label": "Page24-25",
+   "img_w": "book_w/15_Page24-25.jpg"
   },
   {
    "img": "book_hd/16_Page26-27.jpg",
@@ -244,14 +260,16 @@
     "Are they Mayu-chan's mom and dad?"
    ],
    "spread": false,
-   "label": "Page26-27"
+   "label": "Page26-27",
+   "img_w": "book_w/16_Page26-27.jpg"
   },
   {
    "img": "book_hd/17_Page28-29.jpg",
    "jp": [],
    "en": [],
    "spread": true,
-   "label": "Page28-29"
+   "label": "Page28-29",
+   "img_w": "book_w/17_Page28-29.jpg"
   },
   {
    "img": "book_hd/18_Page30-31.jpg",
@@ -268,7 +286,8 @@
     "I wanted to keep on playing again."
    ],
    "spread": false,
-   "label": "Page30-31"
+   "label": "Page30-31",
+   "img_w": "book_w/18_Page30-31.jpg"
   },
   {
    "img": "book_hd/19_Page32-33.jpg",
@@ -281,7 +300,8 @@
     "In the distance, a small Hue Man."
    ],
    "spread": false,
-   "label": "Page32-33"
+   "label": "Page32-33",
+   "img_w": "book_w/19_Page32-33.jpg"
   },
   {
    "img": "book_hd/20_Page34-35.jpg",
@@ -298,7 +318,8 @@
     "You can come play any time\", they say."
    ],
    "spread": false,
-   "label": "Page34-35"
+   "label": "Page34-35",
+   "img_w": "book_w/20_Page34-35.jpg"
   },
   {
    "img": "book_hd/21_Page36-37.jpg",
@@ -309,7 +330,8 @@
     "What should we play next time?"
    ],
    "spread": false,
-   "label": "Page36-37"
+   "label": "Page36-37",
+   "img_w": "book_w/21_Page36-37.jpg"
   },
   {
    "img": "book_hd/22_Page38-39.jpg",
@@ -325,7 +347,8 @@
     "But…"
    ],
    "spread": false,
-   "label": "Page38-39"
+   "label": "Page38-39",
+   "img_w": "book_w/22_Page38-39.jpg"
   },
   {
    "img": "book_hd/23_Page40.jpg",
@@ -338,7 +361,9 @@
     "END"
    ],
    "spread": false,
-   "label": "Page40"
+   "label": "Page40",
+   "img_w": "book_w/23_Page40.jpg"
   }
- ]
+ ],
+ "thumb": "thumbs/book.jpg"
 }

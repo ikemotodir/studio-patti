@@ -160,3 +160,16 @@ save("05_spook_march.wav",
          noise_drums(d5, 126, 20)))
 
 print("all tracks written to", OUT)
+# ── ページが読むのは圧縮版(.m4a)。ffmpeg があればここで作る ──
+import shutil, subprocess
+if shutil.which("ffmpeg"):
+    for f in sorted(os.listdir(OUT)):
+        if not f.endswith(".wav"):
+            continue
+        src, dst = os.path.join(OUT, f), os.path.join(OUT, f[:-4] + ".m4a")
+        subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", src,
+                        "-filter:a", "volume=0.6", "-c:a", "aac", "-b:a", "128k", dst], check=False)
+    print("m4a も書き出しました(ページが読むのはこちら)")
+else:
+    print("注意: ffmpeg が無いので .m4a は作れませんでした(ページは .m4a を読みます)")
+

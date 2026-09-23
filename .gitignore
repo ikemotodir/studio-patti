@@ -16,3 +16,6 @@ desktop.ini
 # room.aseprite を組み立てる時の中間ファイル
 room_layers/objects/
 _sync_tmp/
+
+# Aseprite を組み立てるときの中間ファイル
+_build_aseprite.lua

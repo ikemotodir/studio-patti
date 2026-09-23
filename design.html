@@ -6,7 +6,11 @@
 // スマホ(縦画面の電話)はスマホ版へ。PC・タブレットはこのままPC版
 (function () {
   try {
-    if (/[?&]pc=1(&|$)/.test(location.search) || sessionStorage.getItem('patti-pc')) return;
+    if (/[?&]pc=1(&|$)/.test(location.search)) {   // PC版を選んだことを覚えておく
+      try { sessionStorage.setItem('patti-pc', '1'); } catch (e) {}
+      return;
+    }
+    if (sessionStorage.getItem('patti-pc')) return;
     var ua = navigator.userAgent || '';
     var phone = (navigator.userAgentData && navigator.userAgentData.mobile === true)
              || /iPhone|iPod|Android.+Mobile|Windows Phone/i.test(ua);
@@ -48,7 +52,7 @@
 
   /* ─── 重なり順をここで一元管理(レイヤー事故防止) ─── */
   #room { z-index: 1; }
-  #garblink, #doorGlowStudio { z-index: 2; }
+  #garblink, #doorGlowStudio, #motes { z-index: 2; }
   .hs, .pp, #ppstory { z-index: 4; }
   #mshadow, #mayu, #pshadow, #pattifloat { z-index: 5; }
   #navbar, #talkbox { z-index: 6; }
@@ -154,6 +158,7 @@
   .pp:hover::after, .pp:focus-visible::after { opacity: 1; }
   @media (prefers-reduced-motion: reduce) { .pp { transition: none; } }
   /* Spooks GS: 紙の内側に実画像をそのまま(なめらかに)出す */
+  #stage #spooksimg { image-rendering: auto; }     /* 実写なので なめらかに出す */
   #spooksimg {
     position: absolute; left: 2px; top: 2px;
     width: calc(100% - 4px); height: calc(100% - 4px);
@@ -225,11 +230,13 @@
     position: absolute; left: 42px; top: 208px;
     width: 23px; height: 5px;
     border-radius: 50%; background: rgba(64, 24, 108, .5);
+    pointer-events: none;
   }
   /* おばけなので、ふわりと浮き沈みする */
   #pattifloat {
     position: absolute; left: 261px; top: 135px; width: 32px; height: 48px;
     animation: pattifloat 3.1s ease-in-out infinite;
+    pointer-events: none;                          /* 後ろの模造紙を押せるように */
   }
   @keyframes pattifloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
   @media (prefers-reduced-motion: reduce) { #pattifloat { animation: none; } }
@@ -458,13 +465,13 @@
     <div id="dpsheet"></div>
   </div>
 </div>
-<script src="design_data.js"></script>
+<script src="design_data.js?v=20260923"></script>
 <script>
 const COMPANY_URL = 'https://canva.link/5xu274fv1b00091';
 const stage = document.getElementById('stage');
 const talktext = document.getElementById('talktext');
 const TALK_DEFAULT = 'ここはデザイン室！<br>キャラクターをデザインして、世界と物語まで設計するよ！';
-const setTalk = t => { talktext.innerHTML = t; };
+const setTalk = t => { clearTimeout(window._tz); talktext.innerHTML = t; };   // 前のタイマーは止める
 
 function fitStage() {
   const s = Math.max(0.5, Math.min(window.innerWidth / 384, window.innerHeight / 240));

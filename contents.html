@@ -6,7 +6,11 @@
 // スマホ(縦画面の電話)はスマホ版へ。PC・タブレットはこのままPC版
 (function () {
   try {
-    if (/[?&]pc=1(&|$)/.test(location.search) || sessionStorage.getItem('patti-pc')) return;
+    if (/[?&]pc=1(&|$)/.test(location.search)) {   // PC版を選んだことを覚えておく
+      try { sessionStorage.setItem('patti-pc', '1'); } catch (e) {}
+      return;
+    }
+    if (sessionStorage.getItem('patti-pc')) return;
     var ua = navigator.userAgent || '';
     var phone = (navigator.userAgentData && navigator.userAgentData.mobile === true)
              || /iPhone|iPod|Android.+Mobile|Windows Phone/i.test(ua);
@@ -555,7 +559,7 @@ const NOCACHE = { cache: 'no-cache' };
 // ─────────────────────────────────────────────
 const talktext = document.getElementById('talktext');
 const TALK_DEFAULT = 'ここは編集室だよ！左のパネルを▶でえらんで、<br>右のパネルのすうじをえらんでね！';
-const setTalk = t => { talktext.innerHTML = t; };
+const setTalk = t => { clearTimeout(window._tz); talktext.innerHTML = t; };   // 前のタイマーは止める
 setTalk(TALK_DEFAULT);
 
 function tease(name) {
@@ -688,9 +692,18 @@ function selectCat(i) {
   }
 }
 
+function sayFor(t, ms) {                        // ひとことだけ言って、すぐ元に戻す
+  setTalk(t);
+  window._tz = setTimeout(() => setTalk(TALK_DEFAULT), ms || 3200);
+}
+function loading() {                            // 資料がまだ届いていないとき(準備中とは言わない)
+  stopScreen();
+  sayFor('いま よみこみ中だよ！ちょっと待ってね！', 2600);
+}
+
 function selectNum(j) {
   const item = CATS[cat].items[j];
-  if (item === undefined) { tease(CATS[cat].name); return; }
+  if (item === undefined) { sayFor('この番号の作品はいま準備中！<br>たのしみに待っててね！'); return; }
   num = j;
   nbEls.forEach((b, k) => b.classList.toggle('on', k === j));
 
@@ -698,26 +711,28 @@ function selectNum(j) {
   scrframe.style.display = 'none';
   document.getElementById('scrguard').style.display = 'none';
   scrsnd.style.display = 'none';
-  document.getElementById('scrwait').style.display = 'none';
 
   if (typeof item === 'string' && item.startsWith('meta:')) {
     const gi = parseInt(item.slice(5), 10);
-    if (!META || !META[gi]) { tease(CATS[cat].name); return; }
+    if (!META || !META[gi]) { loading(); return; }
     showThumb('images', META[gi].files, META[gi].name);
   } else if (item === 'book') {
-    if (!BOOK) { tease(CATS[cat].name); return; }
-    showThumb('images', BOOK.pages.map(pg => pg.img), BOOK.title || '絵本');
+    if (!BOOK) { loading(); return; }
+    showThumb('images', BOOK.pages.map(pg => pg.img), BOOK.title || '絵本', null, BOOK.thumb);
   } else {
     showThumb('video', ['thumbs/' + item.t + item.id + '.jpg'], '', item);
   }
 }
 
 let SHOW = { kind: '', list: [], idx: 0, video: null };
-function showThumb(kind, list, name, video) {
+function showThumb(kind, list, name, video, thumb) {
   SHOW = { kind: kind, list: list, idx: 0, video: video || null };
-  thumbimg.src = list[0];
+  thumbimg.src = thumb || list[0];             // 小さい見本があればそちらを出す
   thumbbox.classList.toggle('fit', kind === 'images');
+  document.getElementById('scrwait').style.display = 'none';   // 出せると決まってから消す
   thumbbox.style.display = 'block';
+  // 表示板は 45x12 ドットしかないので、短い作品名だけ出す(長いものはカテゴリ名のまま)
+  if (name && name.length <= 8) catname.textContent = name;
 }
 
 // ─── ポップアップ再生(うしろに編集室をうっすら残す) ───

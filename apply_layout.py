@@ -21,11 +21,14 @@ SCRATCH = WEB          # 部屋の作り方一式はリポジトリの中に置�
 
 
 def newest_layout():
-    cands = []
-    for d in (os.path.join(os.path.expanduser("~"), "Downloads"), WEB, os.getcwd()):
-        cands += glob.glob(os.path.join(d, "layout*.json"))
+    # 既定はリポジトリの layout.json(サイトに反映済みの配置)。
+    # 手元のダウンロードを使いたいときは、引数でそのファイルを指定する。
+    here = os.path.join(WEB, "layout.json")
+    if os.path.exists(here):
+        return here
+    cands = glob.glob(os.path.join(os.getcwd(), "layout*.json"))
     if not cands:
-        sys.exit("layout.json が見つかりません。配置ツールで「配置ファイルを保存」を押してください。")
+        sys.exit("layout.json が見つかりません。配置ツールの「サイトに反映する」を使ってください。")
     return max(cands, key=os.path.getmtime)
 
 
@@ -66,13 +69,13 @@ def apply_design(P, it):
               "%s = (%d, %d, %d, %d)" % (k, o['x'], o['y'], o['w'], o['h']), k)
         if k == 'PAP_STORY':               # これだけ CSS 側で位置を持っている
             P.sub(dh,
-                  r"#ppstory \{(\s+)position: absolute; left: \d+px; top: \d+px;"
-                  r" width: \d+px; height: \d+px;",
+                  r"#ppstory \{(\s+)position: absolute; left: -?\d+px; top: -?\d+px;"
+                  r" width: -?\d+px; height: -?\d+px;",
                   "#ppstory {\\1position: absolute; left: %dpx; top: %dpx;"
                   " width: %dpx; height: %dpx;" % (o['x'], o['y'], o['w'], o['h']),
                   "ppstory")
             continue
-        P.sub(dh, r'id="%s" style="left:\d+px;top:\d+px;width:\d+px;height:\d+px' % HOT[k],
+        P.sub(dh, r'id="%s" style="left:-?\d+px;top:-?\d+px;width:-?\d+px;height:-?\d+px' % HOT[k],
               'id="%s" style="left:%dpx;top:%dpx;width:%dpx;height:%dpx'
               % (HOT[k], o['x'], o['y'], o['w'], o['h']), HOT[k])
     apply_chara(P, dh, it)
@@ -89,19 +92,19 @@ def apply_edit(P, it):
               "%-4s = (%d, %d, %d, %d)" % (k, o['x'], o['y'], o['w'], o['h']), k)
     if 'MENU' in it:                       # メニュー枠から決まるもの
         m = it['MENU']
-        P.sub(ch, r"\.mi \{(\s+)position: absolute; left: \d+px; width: \d+px;",
+        P.sub(ch, r"\.mi \{(\s+)position: absolute; left: -?\d+px; width: -?\d+px;",
               ".mi {\\1position: absolute; left: %dpx; width: %dpx;" % (m['x'] + 3, m['w'] - 6),
               ".mi の枠")
-        P.sub(ch, r"#mihdr \{(\s+)position: absolute; left: \d+px; width: \d+px;",
+        P.sub(ch, r"#mihdr \{(\s+)position: absolute; left: -?\d+px; width: -?\d+px;",
               "#mihdr {\\1position: absolute; left: %dpx; width: %dpx;" % (m['x'] + 3, m['w'] - 6),
               "#mihdr の枠")
         P.sub(ch, r"const MENU_TOP = [\d.]+", "const MENU_TOP = %.2f" % (m['y'] + 5.42), "MENU_TOP")
     if 'SCR' in it:                        # モニターから決まるもの
         s = it['SCR']
-        P.sub(ch, r"position: absolute; left: \d+px; top: \d+px;(\s+)width: \d+px; height: \d+px; overflow: hidden;",
+        P.sub(ch, r"position: absolute; left: -?\d+px; top: -?\d+px;(\s+)width: -?\d+px; height: -?\d+px; overflow: hidden;",
               "position: absolute; left: %dpx; top: %dpx;\\1width: %dpx; height: %dpx; overflow: hidden;"
               % (s['x'], s['y'], s['w'], s['h']), "#screenbox")
-        P.sub(ch, r"position: absolute; left: \d+px; top: 10px; width: \d+px; height: \d+px;",
+        P.sub(ch, r"position: absolute; left: -?\d+px; top: 10px; width: -?\d+px; height: -?\d+px;",
               "position: absolute; left: %dpx; top: 10px; width: %dpx; height: %dpx;"
               % (s['x'] - 1, s['w'] + 18, s['h'] + 20), "#screenglow")
         P.sub(ch, r'<canvas id="wstars" width="\d+" height="\d+"',
@@ -109,10 +112,10 @@ def apply_edit(P, it):
         P.sub(ch, r"const SW = \d+, SH = \d+;", "const SW = %d, SH = %d;" % (s['w'], s['h']), "SW/SH")
     if 'MARQ' in it:                       # 電飾の表示板から決まるもの
         q = it['MARQ']
-        P.sub(ch, r"position: absolute; left: \d+px; top: [\d.]+px; width: \d+px; height: \d+px;(\s+)display: flex; align-items: center; justify-content: center;\s+font-family: 'DotGothic16', 'MS Gothic', monospace;\s+color: #fff6e0",
+        P.sub(ch, r"position: absolute; left: -?\d+px; top: -?[\d.]+px; width: -?\d+px; height: -?\d+px;(\s+)display: flex; align-items: center; justify-content: center;\s+font-family: 'DotGothic16', 'MS Gothic', monospace;\s+color: #fff6e0",
               "position: absolute; left: %dpx; top: %.2fpx; width: %dpx; height: %dpx;\\1display: flex; align-items: center; justify-content: center;\\1font-family: 'DotGothic16', 'MS Gothic', monospace;\\1color: #fff6e0"
               % (q['x'] + 4, q['y'] + 6.15, q['w'] - 8, q['h'] - 12), "#catname")
-        P.sub(ch, r"position: absolute; left: 0; top: \d+px;(\s+)width: 384px; height: \d+px; pointer-events: none;\s+background-image: url\(marquee_blink.png\);\s+background-size: 1536px \d+px;",
+        P.sub(ch, r"position: absolute; left: 0; top: -?\d+px;(\s+)width: 384px; height: -?\d+px; pointer-events: none;\s+background-image: url\(marquee_blink.png\);\s+background-size: 1536px -?\d+px;",
               "position: absolute; left: 0; top: %dpx;\\1width: 384px; height: %dpx; pointer-events: none;\\1background-image: url(marquee_blink.png);\\1background-size: 1536px %dpx;"
               % (q['y'], q['h'], q['h']), "#marqblink")
     if 'BTNP' in it:                       # 数字ボタンの枠から決まるもの
@@ -135,9 +138,9 @@ def apply_chara(P, page, it):
             continue
         o = it[key]
         sc = float(o.get('s', 0.9))
-        P.sub(page, r"%s \{(\s+)position: absolute; left: \d+px; top: \d+px;" % re.escape(sel),
+        P.sub(page, r"%s \{(\s+)position: absolute; left: -?\d+px; top: -?\d+px;" % re.escape(sel),
               "%s {\\1position: absolute; left: %dpx; top: %dpx;" % (sel, o['x'], o['y']), sel)
-        P.sub(page, r"%s \{(\s+)position: absolute; left: \d+px; top: \d+px;\s+width: \d+px; height: 5px;" % re.escape(sh),
+        P.sub(page, r"%s \{(\s+)position: absolute; left: -?\d+px; top: -?\d+px;\s+width: -?\d+px; height: 5px;" % re.escape(sh),
               "%s {\\1position: absolute; left: %dpx; top: %dpx;\\1width: %dpx; height: 5px;"
               % (sh, int(round(o['x'] + w * (1 - sc) / 2.0 + 2)), o['y'] + h - 2,
                  int(round(w * sc - 4))), sh)

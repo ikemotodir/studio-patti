@@ -47,7 +47,7 @@
   }
   #top .brand img { height: 22px; width: auto; display: block; image-rendering: auto; }
   #menubtn {
-    width: 44px; height: 40px; border: 1px solid #3a3470; border-radius: 4px;
+    width: 44px; height: 44px; border: 1px solid #3a3470; border-radius: 4px;
     background: transparent; color: #ffffff; font-size: 22px; line-height: 1; cursor: pointer;
     font-family: var(--font);
   }
@@ -68,6 +68,8 @@
   #menu .pc { color: #b7aede; font-size: 13px; padding: 12px 18px 14px; }
 
   /* ─── 部屋(ドット絵のステージ)。上端はバーの直下、床は画面の下端まで ─── */
+  body { touch-action: manipulation; }             /* 連打で勝手に拡大しない */
+  #stage, #stage img { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   #roomarea {
     flex: 1 1 auto; min-height: 0; position: relative; overflow: hidden;
     background: #000;                          /* 機種の都合で両脇が空くときは黒 */
@@ -76,16 +78,20 @@
   #stage {
     position: absolute; left: 0; top: 0;
     width: 216px; height: 480px;
+    visibility: hidden;                            /* 倍率が決まるまで出さない */
     transform-origin: 0 0;
     image-rendering: pixelated;
     overflow: hidden;
   }
   #stage img, #stage div, #stage canvas { image-rendering: pixelated; }
   #room { position: absolute; left: 0; top: 0; width: 216px; height: 480px; }
-  #room:not([src]) { visibility: hidden; }        /* 絵の版が決まるまで(代わりの文字を出さない) */
-  /* 二人は位置が決まるまで出さない(開いた瞬間に左上へ出るのを防ぐ) */
-  #patti, #mayu, #pshadow, #mshadow { visibility: hidden; }
-  #stage.ready #patti, #stage.ready #mayu, #stage.ready #pshadow, #stage.ready #mshadow { visibility: visible; }
+  #room:not(.loaded) { visibility: hidden; }      /* 絵がそろうまで(代わりの文字を出さない) */
+  /* 置き場所が決まるまで、小物は出さない(開いた瞬間に左上へかたまって見えるのを防ぐ) */
+  #stage > :not(#room) { visibility: hidden; }
+  #stage.placed > :not(#room) { visibility: visible; }
+  /* 二人はコマもそろってから(この2行は上の行より後に置くこと) */
+  #stage:not(.ready) > #patti, #stage:not(.ready) > #mayu,
+  #stage:not(.ready) > #pshadow, #stage:not(.ready) > #mshadow { visibility: hidden; }
 
   /* 重なり順(レイヤー事故防止) */
   #room { z-index: 1; }
@@ -182,10 +188,13 @@
   }
   #mshadow { position: absolute; width: 46px; height: 6px; border-radius: 50%; background: rgba(64,24,108,.5); pointer-events: none; }
 
+  /* 詳細パネルを開いているあいだ、裏の部屋のアニメは止める */
+  body:has(#detail.on) #stage *, body:has(#detail.on) #stage { animation-play-state: paused; }
+
   /* ─── テキストボックス(床の上に重ねる。本物の文字サイズ) ─── */
   #talk {
     position: absolute; left: 8px; right: 8px; bottom: 6px; z-index: 10;
-    height: var(--talkH); margin: 0;
+    min-height: var(--talkH); height: auto; margin: 0;
     background: rgba(8, 6, 40, .96); border: 2px solid #e8e4f4; border-radius: 4px;
     box-shadow: inset 0 0 0 1px #2a2560;
     padding: 8px 26px 8px 12px;
@@ -213,6 +222,7 @@
   #dback {
     background: rgba(8,6,40,.92); color: #f2eefc; border: 2px solid #e8e4f4; border-radius: 3px;
     font-family: var(--font); font-size: 15px; padding: 8px 14px; cursor: pointer;
+    min-height: 44px;
   }
   #dtitle { font-size: 15px; color: #cfc9e6; }
   #dbody { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; padding: 0 12px 12px; }
@@ -233,6 +243,7 @@
   .navbtn {
     background: rgba(8,6,40,.85); color: #f2eefc; border: 2px solid #e8e4f4; border-radius: 3px;
     font-family: var(--font); font-size: 18px; cursor: pointer; padding: 6px 18px;
+    min-height: 44px; min-width: 56px;
   }
   .navbtn:active { background: #fcc800; color: #1c1640; }
   .dnum { color: #c8c8d0; font-size: 14px; min-width: 64px; text-align: center; }
@@ -277,7 +288,7 @@
 <body>
 <div id="app">
   <div id="top">
-    <a class="brand" href="index.html?pc=1" aria-label="STUDIO PATTI"><img src="nav_logo.png" alt="STUDIO PATTI"></a>
+    <a class="brand" href="m.html" aria-label="STUDIO PATTI（このページのトップ）"><img src="nav_logo.png" alt="STUDIO PATTI"></a>
     <button id="menubtn" type="button" aria-label="メニュー" aria-expanded="false">☰</button>
     <div id="menu" role="menu">
       <button data-k="company">COMPANY <small>会社概要</small></button>
@@ -292,9 +303,9 @@
   <div id="roomarea">
     <div id="stagebox">
       <div id="stage">
-        <img id="room" alt="パッチくんの部屋">
+        <img id="room" src="room_m.png?v=54c8f42d8b" alt="パッチくんの部屋">
         <div id="winclip" aria-hidden="true"><div id="bonbon"></div><div id="speop"></div></div>
-        <img id="winbars" alt="" aria-hidden="true">
+        <img id="winbars" src="winbars_m.png?v=54c8f42d8b" alt="" aria-hidden="true">
         <div id="garland" aria-hidden="true"></div>
         <div id="globespin" aria-hidden="true"></div>
         <canvas id="clockhands" width="38" height="38" aria-hidden="true"></canvas>
@@ -343,16 +354,20 @@ let META = null, BOOK = null, GALLERY = { items: [] }, CONTACT = { endpoint: '',
 // ── ステージを画面に収める(横いっぱい、または上下に収まる方) ──
 let GROUND_Y = 288;
 function fitStage() {
+  if (!META) { stage.style.visibility = ''; }      // まだ数字が無い間は横幅だけで決める
   const area = document.getElementById('roomarea');
   const vw = area.clientWidth, roomH = area.clientHeight;
   const talkPx = document.getElementById('talk').offsetHeight + 6 + 2;   // 箱 + 下の余白 + 足元の余白
   let s = vw / 216;                                    // 基本は横幅いっぱい
-  const sFit = (roomH - talkPx) / (GROUND_Y + 4);      // 足元(影まで)がテキストボックスより上に来る上限
-  if (sFit < s) s = sFit;                              // 背の低い画面だけ少し縮める
+  if (META) {                                          // 足元(影まで)がテキストボックスより上に来る上限
+    const sFit = (roomH - talkPx) / (GROUND_Y + 4);
+    if (sFit < s) s = sFit;                            // 背の低い画面だけ少し縮める
+  }
   s = Math.max(0.5, s);
   stage.style.transform = 'scale(' + s + ')';
   stagebox.style.width = (216 * s) + 'px';
   stagebox.style.height = (480 * s) + 'px';
+  stage.style.visibility = 'visible';
 }
 window.addEventListener('resize', fitStage);
 window.addEventListener('orientationchange', () => setTimeout(fitStage, 200));
@@ -375,6 +390,8 @@ function enterRoom(page, name) {                 // 部屋へ入る(ひとこと
   setTalk(name + 'へ ごあんない！<br>' + (tall ? 'ドアをあけるね…' : 'スマホは よこ向きにすると見やすいよ！'));
   setTimeout(() => { location.href = page; }, tall ? 500 : 950);
 }
+// ブラウザの「戻る」で凍結状態から戻されたとき、案内中フラグを解いておく
+window.addEventListener('pageshow', e => { _going = false; if (e.persisted) setTalk(TALK_DEFAULT); });
 function tease(name) {
   setTalk('「' + name + '」のページは いま準備中！<br>たのしみに待っててね！');
   clearTimeout(window._tz);
@@ -408,9 +425,7 @@ document.querySelectorAll('#menu button').forEach(b => {
 document.getElementById('pclink').addEventListener('click', () => {
   try { sessionStorage.setItem('patti-pc', '1'); } catch (e) {}
 });
-document.querySelector('#top .brand').addEventListener('click', () => {
-  try { sessionStorage.setItem('patti-pc', '1'); } catch (e) {}
-});
+document.getElementById('roomarea').addEventListener('click', closeMenu);   // 外を触ったら閉じる
 
 // ── 触れる場所: タップで光って、パッチが話して、ひらく ──
 function makeHot(key, r, text, act, opt) {
@@ -437,21 +452,27 @@ const dtitle = document.getElementById('dtitle');
 let currentView = null;
 function openDetail(key) {
   closeMenu();
+  clearTimeout(window._closeT);          // 閉じかけのタイマーが新しい中身を消すのを防ぐ
   currentView = key;
+  pauseRoom(true);
   dbody.innerHTML = '';
   detail.hidden = false;
   BUILDERS[key]();
   requestAnimationFrame(() => detail.classList.add('on'));
-  if (location.hash !== '#' + key) history.pushState(null, '', '#' + key);
+  if (location.hash !== '#' + key) history.pushState({ detail: key }, '', '#' + key);
 }
 function closeDetail() {
   detail.classList.remove('on');
   clearTimeout(window._closeT);
   window._closeT = setTimeout(() => { detail.hidden = true; dbody.innerHTML = ''; }, 260);
   currentView = null;
-  if (location.hash) history.pushState(null, '', location.pathname);
+  pauseRoom(false);
+  // 自分で積んだ履歴は増やさない(戻るで、閉じた画面が開き直さないように)
+  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
 }
-document.getElementById('dback').addEventListener('click', closeDetail);
+document.getElementById('dback').addEventListener('click', () => {
+  if (history.state && history.state.detail) history.back(); else closeDetail();
+});
 window.addEventListener('popstate', () => {
   const k = location.hash.slice(1);
   if (k && BUILDERS[k]) openDetail(k); else closeDetail();
@@ -484,10 +505,11 @@ const BUILDERS = {
     const draw = () => {
       if (!BOOK) { txt.textContent = '絵本を準備中…'; return; }
       const pg = BOOK.pages[i];
-      img.src = pg.img || 'ehon_hyoshi.png';
+      img.src = pg.img_w || pg.img || 'ehon_cover.png';   // スマホは軽い方を読む
       if (pg.spread) {
-        txt.style.display = 'none';
-        img.style.maxHeight = '72vh';
+        txt.style.display = i === 0 ? 'block' : 'none';   // 表紙には書名を出す
+        if (i === 0) txt.innerHTML = '<div class="bt">' + (BOOK.title || '') + '</div>';
+        img.style.maxHeight = i === 0 ? '62vh' : '72vh';
       } else {
         txt.style.display = 'block';
         img.style.maxHeight = '40vh';
@@ -498,11 +520,15 @@ const BUILDERS = {
       }
       document.getElementById('bnum').textContent = (i + 1) + ' / ' + BOOK.pages.length;
     };
-    const prev = () => { i = (i - 1 + BOOK.pages.length) % BOOK.pages.length; draw(); };
-    const next = () => { i = (i + 1) % BOOK.pages.length; draw(); };
+    const turn = d => {                                  // データ未着でも落ちないようにする
+      if (!BOOK || !BOOK.pages || !BOOK.pages.length) return;
+      i = (i + d + BOOK.pages.length) % BOOK.pages.length;
+      draw();
+    };
+    const prev = () => turn(-1), next = () => turn(1);
     nav.querySelector('#bprev').addEventListener('click', prev);
     nav.querySelector('#bnext').addEventListener('click', next);
-    swipe(dbody, next, prev);
+    swipe(img, next, prev);                              // 絵に付ける(パネルに残さない)
     draw();
   },
   gallery() {
@@ -521,7 +547,7 @@ const BUILDERS = {
     let i = 0;
     const draw = () => {
       const it = GALLERY.items[i];
-      img.src = it.file;
+      img.src = it.file_w || it.file;                   // スマホは軽い方を読む
       plate.innerHTML = '<b>' + it.title + '</b><small>STUDIO PATTI</small>';
       document.getElementById('gnum').textContent = (i + 1) + ' / ' + GALLERY.items.length;
       if (it.url) { buy.innerHTML = GIFT + '<span>この絵がほしい？</span>'; buy.href = it.url; buy.target = '_blank'; buy.rel = 'noopener'; buy.style.display = 'flex'; }
@@ -555,11 +581,14 @@ const BUILDERS = {
       if (CONTACT.endpoint && F.name && F.mail && F.body) {
         const q = new URLSearchParams();
         q.append(F.name, name); q.append(F.mail, mail); q.append(F.body, body);
+        okEl.textContent = '投函中…'; okEl.style.display = 'block';
         fetch(CONTACT.endpoint, { method: 'POST', mode: 'no-cors', redirect: 'follow',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: q.toString() }).catch(() => {});
-        okEl.textContent = 'おてがみを投函しました！ありがとう！';
-        okEl.style.display = 'block';
-        nameEl.value = ''; mailEl.value = ''; ta.value = '';
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: q.toString() })
+          .then(() => {
+            okEl.textContent = 'おてがみを投函しました！ありがとう！';
+            nameEl.value = ''; mailEl.value = ''; ta.value = '';   // 送れたときだけ消す
+          })
+          .catch(() => { okEl.textContent = '送れなかったみたい…電波のいい所で、もう一度ためしてね！'; });
       } else {
         okEl.textContent = '今はおてがみを受け取れないみたい。もう一度ためしてね！';
         okEl.style.display = 'block';
@@ -695,7 +724,13 @@ async function speopBehave() {
   }
 }
 let last = performance.now();
-function loop(t) { const dt = Math.min(100, t - last); p.tick(dt); mp.tick(dt); last = t; requestAnimationFrame(loop); }
+let paused = false, _raf = 0, _still = false;
+function loop(t) { const dt = Math.min(100, t - last); p.tick(dt); mp.tick(dt); last = t; _raf = requestAnimationFrame(loop); }
+function pauseRoom(on) {              // 詳細パネルを開いているあいだは二人を止める
+  paused = on;
+  if (on) { if (_raf) cancelAnimationFrame(_raf); _raf = 0; }
+  else if (!_raf && !_still) { last = performance.now(); _raf = requestAnimationFrame(loop); }
+}
 
 // ── 掛け時計(見ている人の時刻) ──
 const ckv = document.getElementById('clockhands'), cctx = ckv.getContext('2d');
@@ -734,12 +769,13 @@ tickClock(); setInterval(tickClock, 5000);
 
 // ── ジュークボックス(タップで曲送り) ──
 const TRACKS = [
-  { f: 'music/01_pattis_room.wav',  t: 'パッチのおへや' },
-  { f: 'music/02_night_walk.wav',   t: 'よるのさんぽ' },
-  { f: 'music/03_twinkle_star.wav', t: 'きらきら星' },
-  { f: 'music/05_spook_march.wav',  t: 'おばけのマーチ' },
+  { f: 'music/01_pattis_room.m4a',  t: 'パッチのおへや' },
+  { f: 'music/02_night_walk.m4a',   t: 'よるのさんぽ' },
+  { f: 'music/03_twinkle_star.m4a', t: 'きらきら星' },
+  { f: 'music/05_spook_march.m4a',  t: 'おばけのマーチ' },
 ];
-const audio = new Audio(); audio.loop = true; audio.volume = 0.55;
+const audio = new Audio(); audio.loop = true;
+audio.volume = 1;              // 音量は音源ファイル側で下げてある(iPhoneはvolume指定が効かない)
 let trackIdx = -1;
 const jbBtn = document.getElementById('jukebox');
 function talkTrack(title) { document.querySelector('#talk .name').style.display = 'none'; talktext.innerHTML = title; }
@@ -816,22 +852,44 @@ function placeAll(m) {
           null, { label: 'Patti the Spook（準備中）', style: '--gw:114%;--gh:126%;--gi:.7' });
   makeHot('window', H.window, 'まどの外は夜！<br>たまにおばけが飛んでいくよ', null, { label: 'まど', style: '--gi:.3' });
   makeHot('clock', H.clock, 'かけ時計！<br>いま見てる人の時間を指してるんだ', null, { label: 'かけ時計', style: '--gi:.5' });
+  const roomImg = document.getElementById('room');
+  const show = () => { roomImg.classList.add('loaded'); stage.classList.add('placed'); };
+  if (roomImg.complete && roomImg.naturalWidth) show();   // 絵がそろってから小物を出す
+  else { roomImg.addEventListener('load', show, { once: true }); roomImg.addEventListener('error', show, { once: true }); }
 }
 
-fetch('room_m.json', NOCACHE).then(r => r.json()).then(m => {
-  const V = m.v ? '?v=' + m.v : '';               // 絵の版。配置を変えた直後も古い絵を出さない
-  document.getElementById('room').src = 'room_m.png' + V;
-  document.getElementById('winbars').src = 'winbars_m.png' + V;
-  META = m; placeAll(m); reveal();
-}).catch(e => { console.error(e); document.getElementById('room').src = 'room_m.png'; });
-fetch('book.json', NOCACHE).then(r => r.json()).then(j => BOOK = j).catch(() => {});
-fetch('gallery.json', NOCACHE).then(r => r.json()).then(j => GALLERY = j).catch(() => {});
-fetch('contact.json', NOCACHE).then(r => r.json()).then(j => CONTACT = j).catch(() => {});
+function loadRoom(retry) {                        // 部屋の数字。取れなければ一度だけやり直す
+  fetch('room_m.json', NOCACHE).then(r => r.json()).then(m => {
+    const V = m.v ? '?v=' + m.v : '';             // 絵の版。配置を変えた直後も古い絵を出さない
+    document.getElementById('room').src = 'room_m.png' + V;
+    document.getElementById('winbars').src = 'winbars_m.png' + V;
+    META = m; placeAll(m); fitStage(); reveal();
+  }).catch(e => {
+    console.error(e);
+    if (retry) { setTimeout(() => loadRoom(false), 1200); return; }
+    document.getElementById('room').src = 'room_m.png';
+    document.getElementById('room').classList.add('loaded');
+    setTalk('部屋のじゅんびに失敗しちゃった…<br>画面を下に引っぱって、もう一度ひらいてね！');
+  });
+}
+loadRoom(true);
+fetch('book.json').then(r => r.json()).then(j => {
+  BOOK = j;
+  if (currentView === 'book') openDetail('book');   // 開いたまま待っていた人にも出す
+}).catch(() => {});
+fetch('gallery.json').then(r => r.json()).then(j => {
+  GALLERY = j;
+  if (currentView === 'gallery') openDetail('gallery');
+}).catch(() => {});
+fetch('contact.json').then(r => r.json()).then(j => CONTACT = j).catch(() => {});
 Promise.all([
-  fetch('patti.json', NOCACHE).then(r => r.json()),
-  fetch('mayu_shaded.json', NOCACHE).then(r => r.json()),
+  fetch('patti.json').then(r => r.json()),
+  fetch('mayu_shaded.json').then(r => r.json()),
 ]).then(([pd, md]) => {
-  p.load(pd); mp.load(md); reveal(); requestAnimationFrame(loop); behave(); mayuBehave(); speopBehave();
+  p.load(pd); mp.load(md); reveal();
+  _still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (_still) { p.play('idle'); mp.play('idle'); return; }     // 動きを減らす設定のときは止めておく
+  _raf = requestAnimationFrame(loop); behave(); mayuBehave(); speopBehave();
 }).catch(e => console.error(e));
 if (location.hash && BUILDERS[location.hash.slice(1)]) setTimeout(() => openDetail(location.hash.slice(1)), 300);
 </script>
