@@ -101,7 +101,7 @@
   #navbar nav { display: flex; align-items: center; gap: 0; }
   #navbar nav button {
     border: 0; background: transparent; color: #ffffff; cursor: pointer;
-    font-family: inherit; font-size: 6.5px; line-height: 1.1; padding: 1px 5px; text-align: center; white-space: nowrap;
+    font-family: inherit; font-size: 6px; line-height: 1.1; padding: 0 5px; text-align: center; white-space: nowrap;
   }
   /* 隣どうしの境目: 暗線+明線の溝彫り(ピクセル1px) */
   #navbar nav button + button {
@@ -347,14 +347,14 @@
   /* COMPANYモニタ: ふだんはスクリーンセーバー、カーソルを合わせると映像が流れる */
   /* AI事業の入口: 映写機の上で回る「AI」のホログラム(絵は ai_holo.js) */
   #aiholo {
-    position: absolute; width: 44px; height: 38px;
+    position: absolute; width: 44px; height: 46px;
     image-rendering: pixelated; pointer-events: none; mix-blend-mode: screen;
-    filter: drop-shadow(0 0 1px rgba(170, 140, 255, .9)) drop-shadow(0 0 3px rgba(90, 120, 255, .5));
+    filter: drop-shadow(0 0 1px rgba(200, 180, 255, .95)) drop-shadow(0 0 3px rgba(110, 130, 255, .75));
   }
   #aiglow {                                       /* 壁に映るホログラムの光(呼吸する) */
-    position: absolute; left: 259px; top: 64px; width: 60px; height: 50px;
+    position: absolute; left: 259px; top: 79px; width: 60px; height: 50px;
     pointer-events: none; mix-blend-mode: screen; animation: aiglow 3.2s ease-in-out infinite;
-    background: radial-gradient(closest-side, rgba(150, 110, 255, .32), rgba(70, 110, 255, .14) 55%, rgba(70, 110, 255, 0));
+    background: radial-gradient(closest-side, rgba(150, 110, 255, .42), rgba(70, 110, 255, .18) 55%, rgba(70, 110, 255, 0));
   }
   @keyframes aiglow { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { #aiglow { animation: none; } }
@@ -537,7 +537,7 @@
     <button id="companylink" class="hs nobg" style="left:144px;top:100px;width:104px;height:42px"
             aria-label="COMPANY（会社概要をひらく）"></button>
     <div id="aiglow" aria-hidden="true"></div>
-    <button id="ailink" class="hs" style="left:262px;top:68px;width:54px;height:54px;--gw:120%;--gh:120%;--gi:.55"
+    <button id="ailink" class="hs" style="left:268px;top:84px;width:42px;height:54px;--gw:130%;--gh:115%;--gi:.55"
             aria-label="AIの部屋（AI事業）へ入る"></button>
     <button id="booklink" class="hs" style="left:72px;top:82px;width:28px;height:28px;--gw:170%;--gh:170%;--gi:.3"
             aria-label="絵本『おばけのパッチ』を読む"></button>
@@ -554,7 +554,7 @@
         <button data-k="company">COMPANY</button>
         <button data-k="chdesign">CHARACTER<br>DESIGN</button>
         <button data-k="contents">CONTENTS<br>CREATIVE</button>
-        <button data-k="ai">AI<br>BUSINESS</button>
+        <button data-k="ai">AI<br>INTRODUCTION</button>
         <button data-k="spook">Patti the Spook</button>
         <button data-k="contact">CONTACT US</button>
       </nav>
@@ -1285,7 +1285,7 @@ hotspot('companylink', 'スタジオパッチの会社案内が見られる<br>�
 })();
 hotspot('ailink', 'AIの部屋への入口！<br>AIの講座と、会社のAI導入のお手伝いだよ！',
   () => enterRoom('ai.html', 'AIの部屋'));
-if (window.mountAIHolo) mountAIHolo(stage, 289, 100);   // 映写機のレンズ(make_room.py の AIX と机の位置)
+if (window.mountAIHolo) mountAIHolo(stage, 289, 128);   // 映写機のレンズ(make_room.py の AIX とカウンターの高さ)
 
 // 上部ナビゲーション(部屋の中の入口と同じところへ案内する)
 const NAV_ACT = {

@@ -126,9 +126,9 @@ def mark(name, x, y, w, h):
 
 # ═══════════ 置き場所(既定)。配置ツールの layout.json "mobile" で上書きできる ═══════════
 DEFAULT = {
-    'gallery': (8, 24),   'window': (116, 24), 'clock': (6, 88),    'spook': (46, 94),
-    'shelf': (112, 98),   'doorL': (0, 129),   'doorR': (170, 129),
-    'counter': (42, 200), 'globe': (42, 176),  'monitor': (63, 158), 'keyboard': (100, 201),
+    'gallery': (8, 24),   'window': (116, 24), 'clock': (6, 88),    'spook': (42, 190),
+    'shelf': (90, 98),    'doorL': (0, 129),   'doorR': (170, 129),
+    'counter': (42, 200), 'globe': (185, 98),  'monitor': (63, 158), 'keyboard': (100, 201),
     'pen': (165, 185),    'jukebox': (0, 213), 'post': (176, 216),
     'mayu': (60, 230),    'patti': (126, 240),
 }
@@ -136,7 +136,7 @@ SCALE = {'mayu': 0.75, 'patti': 0.75}
 WALK = 10                                            # パッチは置いた所から右へこれだけ歩く
 MAYU_W, MAYU_H, PATTI_W, PATTI_H = 76, 58, 36, 48    # 二人のコマの大きさ(等倍)
 NAMES = {
-    'gallery': 'ギャラリーのかべ', 'window': 'まど', 'clock': 'かけ時計', 'spook': 'AIの映写機と机（上でホログラムが回ります）',
+    'gallery': 'ギャラリーのかべ', 'window': 'まど', 'clock': 'かけ時計', 'spook': 'AIの映写機（カウンターの上。上でホログラムが回ります）',
     'shelf': '本棚（絵本・本・鉢植え）', 'doorL': 'デザイン室の戸口（横にだけ動きます）',
     'doorR': '編集室の戸口（横にだけ動きます）', 'counter': 'カウンター', 'globe': '地球儀',
     'monitor': 'COMPANYのパソコン', 'keyboard': 'キーボード', 'pen': 'ペン立て',
@@ -330,23 +330,14 @@ def clean_window(win):
     return win
 
 
-AI_BOX = (64, 52)                                    # 映写機の机は、前の額と同じ大きさの箱の下に置く
-
-
-def box_ai(sp):
-    """机+映写機を 64x52 の箱の下(左右は中央)に置く。上の空きでホログラムが回る。"""
-    if sp.size[0] > AI_BOX[0] or sp.size[1] > AI_BOX[1]:
-        sys.exit("映写機の机の絵(%dx%d)が箱(%dx%d)より大きいので、AI_BOX を広げてください" % (sp.size + AI_BOX))
-    b = Image.new("RGBA", AI_BOX, (0, 0, 0, 0))
-    b.alpha_composite(sp, ((AI_BOX[0] - sp.size[0]) // 2, AI_BOX[1] - sp.size[1]))
-    return b
+AI_HOT = (28, 42)                                    # ホログラムが回る所(レンズの上)。押せる範囲に足す
 
 
 SPR = {
     'gallery': part('gallery', "props__*_額縁の壁(ギャラリー)"),
     'window': part('window', "window__*_楕円窓", clean_window),
     'clock': part('clock', "furniture__*_掛け時計"),
-    'spook': part('spook', "props__*_AIホログラムの机", box_ai),
+    'spook': part('spook', "props__*_AIの映写機"),          # 脚の行がカウンターの天板に重なる
     'globe': part('globe', "furniture__*_地球儀"),
     'monitor': part('monitor', "furniture__*_COMPANYモニタ"),
     'keyboard': part('keyboard', "furniture__*_キーボード"),
@@ -362,7 +353,7 @@ counter_raw = part('counter_raw', "furniture__*_カウンター")  # 290px。両
 
 # 本棚: 長い板(棚板の行を伸ばす)に 絵本・本・鉢植え を並べる
 PLANK_H = 4
-SHELF_W, SHELF_H = 102, ehon.size[1] + PLANK_H
+SHELF_W, SHELF_H = 124, ehon.size[1] + PLANK_H          # 本と鉢植えのあいだに地球儀が乗る幅
 shelf = Image.new("RGBA", (SHELF_W, SHELF_H), (0, 0, 0, 0))
 plank_src = shelf_raw.crop((0, 0, shelf_raw.size[0], PLANK_H))
 plank = Image.new("RGBA", (SHELF_W, PLANK_H), (0, 0, 0, 0))
@@ -390,6 +381,12 @@ END = 66
 counter = Image.new("RGBA", (END * 2, counter_raw.size[1]), (0, 0, 0, 0))
 counter.alpha_composite(counter_raw.crop((0, 0, END, counter_raw.size[1])), (0, 0))
 counter.alpha_composite(counter_raw.crop((counter_raw.size[0] - END, 0, counter_raw.size[0], counter_raw.size[1])), (END, 0))
+FILL_SRC = 56                                        # 欠けの列 x は、元の x+56 列(無地・ディザの向きも同じ偶数ずらし)で埋める
+_cp, _rp = counter.load(), counter_raw.load()
+for xx in range(3, END):
+    for yy in range(counter.size[1]):
+        if _cp[xx, yy][3] == 0 and _rp[xx + FILL_SRC, yy][3]:
+            _cp[xx, yy] = _rp[xx + FILL_SRC, yy]
 save_unit('counter', counter)
 
 # 大きさの一覧(配置ツール用・はみ出し判定用)
@@ -419,12 +416,7 @@ for k in ORDER:
 HOT['gallery'] = put('gallery', SPR['gallery'], *POS['gallery'])
 HOT['window'] = put('window', SPR['window'], *POS['window'])
 HOT['clock'] = put('clock', SPR['clock'], *POS['clock'])
-HOT['spook'] = put('spook', SPR['spook'], *POS['spook'])
-# 映写機のレンズ(箱の中でいちばん上にある不透明な点の、左右の真ん中)
-_a = SPR['spook'].getchannel("A")
-_ly = min(yy for yy in range(AI_BOX[1]) for xx in range(AI_BOX[0]) if _a.getpixel((xx, yy)))
-_lx = [xx for xx in range(AI_BOX[0]) if _a.getpixel((xx, _ly))]
-AI_LENS = [POS['spook'][0] + (_lx[0] + _lx[-1] + 1) // 2, POS['spook'][1] + _ly]
+# (映写機はカウンターより手前に置くので、ここでは置かない。カウンターまわりで置く)
 sx, sy = POS['shelf']
 im.alpha_composite(shelf, (sx, sy))
 for pid, spimg in (('ehon', ehon), ('books', books), ('plant', plant), ('plank', plank)):
@@ -450,6 +442,18 @@ HOT['company'] = MON
 SCREEN = [MON[0] + 4, MON[1] + 4, 92, 28]            # 画面の内側
 put('keyboard', SPR['keyboard'], *POS['keyboard'])
 put('pen', SPR['pen'], *POS['pen'])
+_sp = put('spook', SPR['spook'], *POS['spook'])
+# 映写機のレンズ(いちばん上にある不透明な点の、左右の真ん中)。ホログラムの柱はここから上へ
+_a = SPR['spook'].getchannel("A")
+_sw, _sh = SPR['spook'].size
+_ly = min(yy for yy in range(_sh) for xx in range(_sw) if _a.getpixel((xx, yy)))
+_lx = [xx for xx in range(_sw) if _a.getpixel((xx, _ly))]
+AI_LENS = [POS['spook'][0] + (_lx[0] + _lx[-1] + 1) // 2, POS['spook'][1] + _ly]
+# 押せる範囲 = 映写機 + その上でホログラムが回る所
+_hx0 = min(_sp[0], AI_LENS[0] - AI_HOT[0] // 2)
+_hx1 = min(max(_sp[0] + _sp[2], AI_LENS[0] + AI_HOT[0] // 2), MON[0])   # 右のモニタ(COMPANY)の押せる所にはかけない
+_hy0 = AI_LENS[1] - AI_HOT[1]
+HOT['spook'] = (_hx0, _hy0, _hx1 - _hx0, _sp[1] + _sp[3] - _hy0)
 HOT['jukebox'] = put('jukebox', SPR['jukebox'], *POS['jukebox'])
 HOT['post'] = put('post', SPR['post'], *POS['post'])
 
@@ -487,6 +491,7 @@ ALLOWED = {
     frozenset(('monitor', 'counter')),               # モニタの台はカウンターに乗る
     frozenset(('keyboard', 'counter')),
     frozenset(('keyboard', 'monitor')),              # PC版と同じくキーボードは台の手前
+    frozenset(('spook', 'counter')),                 # 映写機の脚はカウンターの天板に乗る
 }
 def isect(a, b):
     ax0, ay0, ax1, ay1 = a[1], a[2], a[1] + a[3], a[2] + a[4]

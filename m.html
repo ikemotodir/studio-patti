@@ -190,14 +190,14 @@
 
   /* AI事業の入口: 映写機の上で回る「AI」のホログラム(絵は ai_holo.js・位置は room_m.json の ai_lens) */
   #aiholo {
-    position: absolute; width: 44px; height: 38px;
+    position: absolute; width: 44px; height: 46px;
     image-rendering: pixelated; pointer-events: none; mix-blend-mode: screen;
-    filter: drop-shadow(0 0 1px rgba(170, 140, 255, .9)) drop-shadow(0 0 3px rgba(90, 120, 255, .5));
+    filter: drop-shadow(0 0 1px rgba(200, 180, 255, .95)) drop-shadow(0 0 3px rgba(110, 130, 255, .75));
   }
   #aiglow {
     position: absolute; width: 60px; height: 50px; pointer-events: none; mix-blend-mode: screen;
     animation: aiglow 3.2s ease-in-out infinite;
-    background: radial-gradient(closest-side, rgba(150, 110, 255, .32), rgba(70, 110, 255, .14) 55%, rgba(70, 110, 255, 0));
+    background: radial-gradient(closest-side, rgba(150, 110, 255, .42), rgba(70, 110, 255, .18) 55%, rgba(70, 110, 255, 0));
   }
   @keyframes aiglow { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { #aiglow { animation: none; } }
@@ -304,11 +304,11 @@
   <div id="top">
     <a class="brand" href="m.html" aria-label="STUDIO PATTI（このページのトップ）"><img src="nav_logo.png" alt="STUDIO PATTI"></a>
     <button id="menubtn" type="button" aria-label="メニュー" aria-expanded="false">☰</button>
-    <div id="menu" role="menu">
+    <div id="menu">
       <button data-k="company">COMPANY <small>会社概要</small></button>
       <button data-k="chdesign">CHARACTER DESIGN <small>デザイン室</small></button>
       <button data-k="contents">CONTENTS CREATIVE <small>編集室</small></button>
-      <button data-k="ai">AI BUSINESS <small>AIの部屋</small></button>
+      <button data-k="ai">AI INTRODUCTION <small>AIの部屋</small></button>
       <button data-k="spook">Patti the Spook <small>準備中</small></button>
       <button data-k="contact">CONTACT US <small>お問い合わせ</small></button>
       <div class="pc"><a id="pclink" href="index.html?pc=1" style="color:#7ee0eb">PC版で見る →</a></div>
@@ -318,9 +318,9 @@
   <div id="roomarea">
     <div id="stagebox">
       <div id="stage">
-        <img id="room" src="room_m.png?v=775645868e" alt="パッチくんの部屋">
+        <img id="room" src="room_m.png?v=fe33dab65a" alt="パッチくんの部屋">
         <div id="winclip" aria-hidden="true"><div id="bonbon"></div><div id="speop"></div></div>
-        <img id="winbars" src="winbars_m.png?v=775645868e" alt="" aria-hidden="true">
+        <img id="winbars" src="winbars_m.png?v=fe33dab65a" alt="" aria-hidden="true">
         <div id="garland" aria-hidden="true"></div>
         <div id="globespin" aria-hidden="true"></div>
         <canvas id="clockhands" width="38" height="38" aria-hidden="true"></canvas>
@@ -871,7 +871,7 @@ function placeAll(m) {
   if (m.ai_lens) {                                // 映写機の上で「AI」が回る
     const glow = document.getElementById('aiglow') || document.createElement('div');
     glow.id = 'aiglow'; glow.setAttribute('aria-hidden', 'true');
-    glow.style.left = (m.ai_lens[0] - 30) + 'px'; glow.style.top = (m.ai_lens[1] - 38) + 'px';
+    glow.style.left = (m.ai_lens[0] - 30) + 'px'; glow.style.top = (m.ai_lens[1] - 49) + 'px';   // 文字の真ん中(レンズの24ドット上)に光
     stage.appendChild(glow);
     if (window.mountAIHolo) mountAIHolo(stage, m.ai_lens[0], m.ai_lens[1]);
   }

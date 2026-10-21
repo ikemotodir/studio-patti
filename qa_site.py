@@ -133,8 +133,25 @@ for page in ("index.html", "m.html"):
     t_ = read(page)
     check("%s に AIの部屋への入口(ai.html)が無い" % page, "enterRoom('ai.html'" in t_)
     check("%s が ai_holo.js を読んでいない" % page, 'src="ai_holo.js"' in t_)
-for page in ("index.html", "m.html", "design.html", "design_m.html", "contents.html", "contents_m.html"):
-    check("%s のメニューに AI BUSINESS が無い" % page, 'data-k="ai"' in read(page))
+for page in ("index.html", "m.html", "design.html", "design_m.html", "contents.html", "contents_m.html", "ai.html"):
+    t_ = read(page)
+    check("%s のメニューに AI INTRODUCTION が無い" % page, 'data-k="ai"' in t_ and ("AI INTRODUCTION" in t_ or "AI<br>INTRODUCTION" in t_))
+    check("%s に古いタブ名 AI BUSINESS が残っている" % page, "AI BUSINESS" not in t_ and "AI<br>BUSINESS" not in t_)
+# AIの部屋の上のタブは TOP と同じ6つ(10/21 池本さん「上部タブはTOPと同じものを」)
+_tabs = re.search(r'<nav id="tabs".*?</nav>', ai, re.S)
+check("ai.html の上のタブが TOP と同じ6つになっていない", bool(_tabs) and all('data-k="%s"' % k in _tabs.group(0) for k in ("company", "chdesign", "contents", "ai", "spook", "contact")))
+check("ai.html の ☰ メニューにスタジオへもどるが無い", 'data-k="studio"' in ai)
+# TOPの映写機の位置(make_room.py)と、ホログラムを置く位置(index.html)がずれていない
+_mr = read("make_room.py")
+_ax = re.search(r"^AIX = (\d+)", _mr, re.M); _dy = re.search(r"^DY = (\d+)", _mr, re.M)
+check("make_room.py に映写機の位置(AIX / DY)が無い", bool(_ax and _dy))
+if _ax and _dy:
+    check("index.html のホログラムが映写機のレンズとずれている", "mountAIHolo(stage, %s, %d)" % (_ax.group(1), 100 + int(_dy.group(1))) in read("index.html"))
+check("make_room.py に壁付けの机が残っている(10/21 机は要らない・カウンターに置く)", "AIホログラムの机" not in _mr)
+# 部屋の絵を作り直したら room.aseprite も作り直す(古いまま sync_aseprite.py を回すと昔の絵に戻るため)。手元のPCだけで見る
+if os.path.isdir(os.path.join(WEB, "room_layers")):
+    check("room.aseprite が room.png より古い(python make_aseprite.py で作り直す)",
+          os.path.getmtime(os.path.join(WEB, "room.aseprite")) >= os.path.getmtime(os.path.join(WEB, "room.png")) - 1)
 check("ai.html からスタジオへ戻れない", "location.href = studioURL()" in ai and 'href="index.html"' in ai and "'m.html'" in ai)
 rm = json.load(io.open(os.path.join(WEB, "room_m.json"), encoding="utf-8"))
 check("room_m.json に映写機のレンズの位置(ai_lens)が無い", bool(rm.get("ai_lens")))
@@ -149,7 +166,10 @@ for m in re.finditer(r'<div class="scr[^"]*" data-k="(\w+)"[^>]*>(.*?)</div>\s*(
 for m in re.finditer(r"(course|fde): \(\) => `(.*?)`", ai, re.S):
     body = re.sub(r"<form.*?</form>", "", m.group(2), flags=re.S)
     n = len(plain(body))
-    check("AIの部屋のくわしく(%s)の文字が多すぎる" % m.group(1), n <= 420, "%d字" % n)
+    check("AIの部屋のくわしく(%s)の文字が多すぎる" % m.group(1), n <= 340, "%d字" % n)   # 10/21「読むの疲れる」→ 短く
+# お相手(個人・企業)に失礼な言い方(10/21 池本さん「小さな会社・お店はマジで失礼」)
+for w in ("小さな会社", "小さい会社", "小さなお店", "小さいお店", "零細", "そんな会社", "も歓迎", "初心者でも", "苦手な方でも", "分からない方"):
+    check("ai.html にお相手に失礼な言い方『%s』がある" % w, w not in ai)
 # 講座の広告で使わない言い方(国民生活センター・弁護士確認)
 for w in ("稼げる", "必ず", "誰でも", "簡単に", "今だけ", "本日限定", "1日あたり", "元が取れる", "回収"):
     check("ai.html に講座の広告で使わない言い方『%s』がある" % w, w not in ai)   # くわしくの文は script の中にあるので、ページ全体で見る
