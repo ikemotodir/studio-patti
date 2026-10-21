@@ -163,7 +163,7 @@
   .arrow:hover, .arrow:focus-visible { border-color: #fcc800; outline: none; }
   .arrow:active { background: rgba(203, 108, 230, .45); }
 
-  /* 球の左にマユちゃん(右向き)、右にパッチ(左向き・ふわふわ浮く)。デザイン室と同じ絵 */
+  /* 球の左にマユちゃん(右向き)、右にパッチ(正面向き・ふわふわ浮く) */
   #mayu, #patti { position: absolute; left: 0; top: 0; image-rendering: pixelated; transform-origin: 0 0; pointer-events: none; }
   #mayu {
     z-index: 30; width: 30px; height: 72px;
@@ -175,7 +175,7 @@
   @keyframes pattifloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
   #patti {
     width: 32px; height: 48px;
-    background: url(patti_right_shaded.png) 0 0 / 384px 48px no-repeat;   /* 右向きを左右反転して左を向かせる(JSで) */
+    background: url(patti_front_shaded.png) 0 0 / 384px 48px no-repeat;   /* 正面向き(横向きの絵は反転すると背中が枠で切れる) */
     animation: pattichar 1.2s steps(12) infinite;
   }
   @keyframes pattichar { to { background-position: -384px 0; } }
@@ -747,19 +747,19 @@ function placeExtras() {
   const boxes = [[vw / 2 - G.sw * G.k / 2, ringY + G.lift - G.hF * G.k / 2, G.sw * G.k, G.hF * G.k]];   // 前の画面
   [prev, next].forEach(a => boxes.push([a.offsetLeft, a.offsetTop, 48, 48]));                      // 矢印
   const hits = (x, y, w, h) => boxes.some(b => x < b[0] + b[2] + 4 && x + w > b[0] - 4 && y < b[1] + b[3] + 4 && y + h > b[1] - 4);
-  const place = (el, sh, x, w, h, flip) => {
+  const place = (el, sh, x, w, h) => {
     const top = feet - h, off = ps < p * 0.35 || x < 0 || x + w > vw || hits(x, top, w, h);
-    el.style.transform = flip ? 'matrix(' + (-ps).toFixed(3) + ',0,0,' + ps.toFixed(3) + ',' + w.toFixed(1) + ',0)' : 'scale(' + ps.toFixed(3) + ')';
+    el.style.transform = 'scale(' + ps.toFixed(3) + ')';
     el.style.left = x.toFixed(1) + 'px'; el.style.top = top.toFixed(1) + 'px';
     sh.style.left = (x + w * 0.12).toFixed(1) + 'px'; sh.style.top = (feet - 3 * ps).toFixed(1) + 'px';
     sh.style.width = (w * 0.76).toFixed(1) + 'px'; sh.style.height = (5 * ps).toFixed(1) + 'px';
     el.style.display = sh.style.display = off ? 'none' : '';
   };
-  place(document.getElementById('mayu'), document.getElementById('mshadow'), mx, mw, mh, false);
+  place(document.getElementById('mayu'), document.getElementById('mshadow'), mx, mw, mh);
   const pf = document.getElementById('pattifloat'), pa = document.getElementById('patti');
-  place(pf, document.getElementById('pshadow'), px, pw, ph, false);
-  pf.style.transform = '';                           // 浮き沈みは CSS。大きさと向きは中の絵で
-  pa.style.transform = 'matrix(' + (-ps).toFixed(3) + ',0,0,' + ps.toFixed(3) + ',' + pw.toFixed(1) + ',0)';
+  place(pf, document.getElementById('pshadow'), px, pw, ph);
+  pf.style.transform = '';                           // 浮き沈みは CSS。大きさは中の絵で
+  pa.style.transform = 'scale(' + ps.toFixed(3) + ')';
   pf.style.width = pw.toFixed(1) + 'px'; pf.style.height = ph.toFixed(1) + 'px';
   document.getElementById('pshadow').style.top = (feet - 2 * ps).toFixed(1) + 'px';
 }
