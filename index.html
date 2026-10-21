@@ -833,13 +833,18 @@ fetch('closeups.json', NOCACHE).then(r => r.json()).then(j => RECTS = j).catch((
 let CONTACT = { endpoint: '', fields: {} };   // お問い合わせの送り先(contact.json)
 // お問い合わせを送り、受け口の返事({"ok":true})を読んで本当に受け付けたかを確かめる。
 // 返事を読まない送り方(no-cors)だと、受け口が止まっていても「送信しました」と出てしまっていた(2026-10-22)
+// メインに届かなければ、予備の受け口(contact.json の backup)へ送り直す。
+// メインは Google のパスワードを変えると許可が外れて止まる(10/22 原因特定)。予備はその許可を使わないので止まらない
 function postContact(params) {
-  const ac = window.AbortController ? new AbortController() : null;
-  const tm = ac && setTimeout(() => ac.abort(), 20000);
-  return fetch(CONTACT.endpoint, {
-    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-    body: params.toString(), signal: ac ? ac.signal : undefined,
-  }).then(r => r.json()).then(j => !!(j && j.ok)).catch(() => false).finally(() => clearTimeout(tm));
+  const send = url => {
+    const ac = window.AbortController ? new AbortController() : null;
+    const tm = ac && setTimeout(() => ac.abort(), 20000);
+    return fetch(url, {
+      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+      body: params.toString(), signal: ac ? ac.signal : undefined,
+    }).then(r => r.json()).then(j => !!(j && j.ok)).catch(() => false).finally(() => clearTimeout(tm));
+  };
+  return send(CONTACT.endpoint).then(ok => (ok || !CONTACT.backup) ? ok : send(CONTACT.backup));
 }
 fetch('contact.json', NOCACHE).then(r => r.json()).then(j => CONTACT = j).catch(() => {});
 fetch('book.json', NOCACHE).then(r => r.json()).then(j => {

@@ -172,6 +172,9 @@ for page in ("index.html", "m.html", "ai.html"):
     t_ = read(page)
     check("%s のお問い合わせが返事を読まない送り方(no-cors)のまま" % page, "mode: 'no-cors'" not in t_)
     check("%s のお問い合わせが届いたかを確かめていない(postContact)" % page, "function postContact(" in t_ and "postContact(q)" in t_)
+    check("%s のお問い合わせが、メインに届かないとき予備へ送り直していない" % page, "send(CONTACT.backup)" in t_)
+_cj = json.load(io.open(os.path.join(WEB, "contact.json"), encoding="utf-8"))
+check("contact.json に予備の受け口(backup)が無い(パスワードを変えるとメインが止まるため)", str(_cj.get("backup", "")).startswith("https://script.google.com/macros/s/") and _cj.get("backup") != _cj.get("endpoint"))
 # お相手(個人・企業)に失礼な言い方(10/21 池本さん「小さな会社・お店はマジで失礼」)
 for w in ("小さな会社", "小さい会社", "小さなお店", "小さいお店", "零細", "そんな会社", "も歓迎", "初心者でも", "苦手な方でも", "分からない方"):
     check("ai.html にお相手に失礼な言い方『%s』がある" % w, w not in ai)

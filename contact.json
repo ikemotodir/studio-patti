@@ -1,6 +1,7 @@
 {
- "_メモ": "お問い合わせの送り先。池本さんのGoogleアカウント内で動く Google Apps Script のウェブアプリです。ここに送ると、その場でGmailに通知メールが届きます。送り先を変える時はこのURLだけ差し替えてください（メールアドレスはこのファイルにもページにも書きません）。",
+ "_メモ": "お問い合わせの送り先。endpoint=メイン(池本さんのGoogleアカウントで動く Apps Script。内容がそのままGmailに届く)、backup=予備(Apps Script「STUDIO PATTI お問い合わせの受け口（予備）」。Googleフォーム「【スタジオパッチ】お問い合わせ（予備の受け口）」の回答になり、Googleフォームが新しい回答をメールで知らせる)。メインは『本人に代わってメールを送る許可』を使うので、Googleのパスワードを変えると止まる。止まってもサイトが自動で予備へ送るので、お問い合わせは落ちない。予備はメールの許可を使わないので、パスワードを変えても止まらない。送り先を変える時はこのURLだけ差し替える（メールアドレスはこのファイルにもページにも書かない）。",
  "endpoint": "https://script.google.com/macros/s/AKfycbz_btZ9EF1scOLwoOAbUjWZ11ecwlHJ6K3Xfjnx0rGTeqHkk7-T0KEcPv59vP9B9-TU/exec",
+ "backup": "https://script.google.com/macros/s/AKfycbxmpiROf-b_NWnG_O8YAxk-JJVfqHUp0nuS_IQMMkOLOU-tBxAbi7-jLCWbc3tsl3sB/exec",
  "fields": {
   "name": "name",
   "mail": "mail",
