@@ -831,6 +831,16 @@ let RECTS = {}, BOOK = null, GALLERY = { items: [] };
 const NOCACHE = { cache: 'no-store' };
 fetch('closeups.json', NOCACHE).then(r => r.json()).then(j => RECTS = j).catch(() => {});
 let CONTACT = { endpoint: '', fields: {} };   // お問い合わせの送り先(contact.json)
+// お問い合わせを送り、受け口の返事({"ok":true})を読んで本当に受け付けたかを確かめる。
+// 返事を読まない送り方(no-cors)だと、受け口が止まっていても「送信しました」と出てしまっていた(2026-10-22)
+function postContact(params) {
+  const ac = window.AbortController ? new AbortController() : null;
+  const tm = ac && setTimeout(() => ac.abort(), 20000);
+  return fetch(CONTACT.endpoint, {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+    body: params.toString(), signal: ac ? ac.signal : undefined,
+  }).then(r => r.json()).then(j => !!(j && j.ok)).catch(() => false).finally(() => clearTimeout(tm));
+}
 fetch('contact.json', NOCACHE).then(r => r.json()).then(j => CONTACT = j).catch(() => {});
 fetch('book.json', NOCACHE).then(r => r.json()).then(j => {
   BOOK = j;
@@ -1174,24 +1184,26 @@ const BUILDERS = {
       setTimeout(() => {
         fl.remove();
         const F = CONTACT.fields || {};
+        const done = () => { send.disabled = false; send.textContent = 'ポストに投函する'; };   // 送り終わったら押せる状態に戻す
         if (CONTACT.endpoint && F.name && F.mail && F.body) {
-          // サイトの中だけで送信を完了させる(メールソフトは開かない)
+          // サイトの中だけで送信を完了させる(メールソフトは開かない)。届いたと分かってから「投函しました」と出す
           const q = new URLSearchParams();
           q.append(F.name, name); q.append(F.mail, mail); q.append(F.body, body);
-          fetch(CONTACT.endpoint, {
-            method: 'POST', mode: 'no-cors', redirect: 'follow',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-            body: q.toString()
-          }).catch(() => {});
-          okEl.textContent = 'おてがみを投函しました！ありがとう！';
-          okEl.style.display = 'block';
-          nameEl.value = ''; mailEl.value = ''; ta.value = '';
+          okEl.textContent = '投函中…'; okEl.style.display = 'block';
+          postContact(q).then(ok => {
+            if (ok) {
+              okEl.textContent = 'おてがみを投函しました！ありがとう！';
+              nameEl.value = ''; mailEl.value = ''; ta.value = '';   // 届いたときだけ消す
+            } else {
+              okEl.textContent = 'おてがみが届かなかったみたい…時間をおいて、もう一度ためしてね！';
+            }
+            done();
+          });
         } else {
           okEl.textContent = '今はおてがみを受け取れないみたい。もう一度ためしてね！';
           okEl.style.display = 'block';
+          done();
         }
-        send.disabled = false;                    // 送り終わったら押せる状態に戻す
-        send.textContent = 'ポストに投函する';
       }, 950);
     });
   },

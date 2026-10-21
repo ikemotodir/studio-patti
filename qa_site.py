@@ -167,6 +167,11 @@ for m in re.finditer(r"(course|fde): \(\) => `(.*?)`", ai, re.S):
     body = re.sub(r"<form.*?</form>", "", m.group(2), flags=re.S)
     n = len(plain(body))
     check("AIの部屋のくわしく(%s)の文字が多すぎる" % m.group(1), n <= 340, "%d字" % n)   # 10/21「読むの疲れる」→ 短く
+# お問い合わせは受け口の返事を読んで確かめる(返事を読まない no-cors だと、止まっていても「送信しました」と出る。10/22)
+for page in ("index.html", "m.html", "ai.html"):
+    t_ = read(page)
+    check("%s のお問い合わせが返事を読まない送り方(no-cors)のまま" % page, "mode: 'no-cors'" not in t_)
+    check("%s のお問い合わせが届いたかを確かめていない(postContact)" % page, "function postContact(" in t_ and "postContact(q)" in t_)
 # お相手(個人・企業)に失礼な言い方(10/21 池本さん「小さな会社・お店はマジで失礼」)
 for w in ("小さな会社", "小さい会社", "小さなお店", "小さいお店", "零細", "そんな会社", "も歓迎", "初心者でも", "苦手な方でも", "分からない方"):
     check("ai.html にお相手に失礼な言い方『%s』がある" % w, w not in ai)

@@ -366,6 +366,16 @@ const talktext = document.getElementById('talktext');
 const TALK_DEFAULT = 'ここはスタジオパッチのホームページだよ！気になるところをタップしてね！';
 
 let META = null, BOOK = null, GALLERY = { items: [] }, CONTACT = { endpoint: '', fields: {} };
+// お問い合わせを送り、受け口の返事({"ok":true})を読んで本当に受け付けたかを確かめる。
+// 返事を読まない送り方(no-cors)だと、受け口が止まっていても「送信しました」と出てしまっていた(2026-10-22)
+function postContact(params) {
+  const ac = window.AbortController ? new AbortController() : null;
+  const tm = ac && setTimeout(() => ac.abort(), 20000);
+  return fetch(CONTACT.endpoint, {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+    body: params.toString(), signal: ac ? ac.signal : undefined,
+  }).then(r => r.json()).then(j => !!(j && j.ok)).catch(() => false).finally(() => clearTimeout(tm));
+}
 
 // ── ステージを画面に収める(横いっぱい、または上下に収まる方) ──
 let GROUND_Y = 288;
@@ -596,16 +606,20 @@ const BUILDERS = {
       }
       const F = CONTACT.fields || {};
       if (CONTACT.endpoint && F.name && F.mail && F.body) {
+        if (send.disabled) return;                  // 連打で二重に送らない
+        send.disabled = true;
         const q = new URLSearchParams();
         q.append(F.name, name); q.append(F.mail, mail); q.append(F.body, body);
         okEl.textContent = '投函中…'; okEl.style.display = 'block';
-        fetch(CONTACT.endpoint, { method: 'POST', mode: 'no-cors', redirect: 'follow',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: q.toString() })
-          .then(() => {
+        postContact(q).then(ok => {                 // 届いたと分かってから「投函しました」と出す
+          if (ok) {
             okEl.textContent = 'おてがみを投函しました！ありがとう！';
-            nameEl.value = ''; mailEl.value = ''; ta.value = '';   // 送れたときだけ消す
-          })
-          .catch(() => { okEl.textContent = '送れなかったみたい…電波のいい所で、もう一度ためしてね！'; });
+            nameEl.value = ''; mailEl.value = ''; ta.value = '';   // 届いたときだけ消す
+          } else {
+            okEl.textContent = 'おてがみが届かなかったみたい…時間をおいて、もう一度ためしてね！';
+          }
+          send.disabled = false;
+        });
       } else {
         okEl.textContent = '今はおてがみを受け取れないみたい。もう一度ためしてね！';
         okEl.style.display = 'block';

@@ -820,6 +820,16 @@ const DETAIL = {
     </form>`,
 };
 let CONTACT = null;
+// お問い合わせを送り、受け口の返事({"ok":true})を読んで本当に受け付けたかを確かめる。
+// 返事を読まない送り方(no-cors)だと、受け口が止まっていても「送信しました」と出てしまっていた(2026-10-22)
+function postContact(params) {
+  const ac = window.AbortController ? new AbortController() : null;
+  const tm = ac && setTimeout(() => ac.abort(), 20000);
+  return fetch(CONTACT.endpoint, {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+    body: params.toString(), signal: ac ? ac.signal : undefined,
+  }).then(r => r.json()).then(j => !!(j && j.ok)).catch(() => false).finally(() => clearTimeout(tm));
+}
 fetch('contact.json', { cache: 'no-store' }).then(r => r.json()).then(j => { CONTACT = j; }).catch(() => {});
 const hasDetail = k => Object.prototype.hasOwnProperty.call(DETAIL, k);
 const appEl = document.getElementById('app');
@@ -868,11 +878,11 @@ function wireForm() {
     const q = new URLSearchParams();
     q.append(F.name, v('name')); q.append(F.mail, v('mail'));
     q.append(F.body, '【AI FDE（企業さま向け）のご相談】\n会社名・屋号: ' + (v('co') || '（未記入）') + '\n\n' + v('body'));
-    fetch(CONTACT.endpoint, { method: 'POST', mode: 'no-cors', redirect: 'follow',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: q.toString() })
-      .then(() => { msg.textContent = 'お問い合わせありがとうございます。メールでお返事いたします。数日たっても届かない場合は、恐れ入りますが再度お送りください。'; f.reset(); })
-      .catch(() => { msg.textContent = '送信できませんでした。通信環境をご確認のうえ、もう一度お試しください。'; })
-      .finally(() => { btn.disabled = false; });
+    postContact(q).then(ok => {                       // 届いたと分かってから「ありがとうございます」と出す
+      if (ok) { msg.textContent = 'お問い合わせありがとうございます。メールでお返事いたします。'; f.reset(); }
+      else msg.textContent = '申し訳ございません。送信できませんでした。時間をおいて、もう一度お試しください。';
+      btn.disabled = false;
+    });
   });
 }
 
