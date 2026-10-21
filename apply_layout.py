@@ -185,7 +185,9 @@ def main():
                                   ("make_room_edit_m.py", False),
                                   ("make_aseprite_edit.py", True),
                                   ("make_aseprite_design.py", True)):
-        r = subprocess.run([sys.executable, script], cwd=WEB, capture_output=True)
+        # 子の標準出力を UTF-8 にそろえる(Windows では cp932 で出て「注意」が化け、重なりの警告を拾えなかった)
+        r = subprocess.run([sys.executable, script], cwd=WEB, capture_output=True,
+                           env=dict(os.environ, PYTHONIOENCODING="utf-8"))
         out = r.stdout.decode("utf-8", "replace")
         if r.returncode != 0:
             msg = (out + r.stderr.decode("utf-8", "replace"))[-800:]
