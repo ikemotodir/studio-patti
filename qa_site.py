@@ -5,7 +5,7 @@ GitHub の反映ワークフローからも呼べるように、外部ライブ�
 import io, json, os, re, sys
 
 WEB = os.path.dirname(os.path.abspath(__file__))
-PAGES = ["index.html", "m.html", "design.html", "design_m.html", "contents.html", "contents_m.html", "layout.html"]
+PAGES = ["index.html", "m.html", "design.html", "design_m.html", "contents.html", "contents_m.html", "layout.html", "ai.html"]
 PHONE = ["m.html", "design_m.html", "contents_m.html"]
 ng = []
 ok = 0
@@ -126,6 +126,33 @@ gj = json.load(io.open(os.path.join(WEB, "gallery.json"), encoding="utf-8"))
 check("gallery.json にスマホ用の軽い絵(file_w)が無い", all("file_w" in i_ for i_ in gj.get("items", [])))
 mm = read("m.html")
 check("m.html がスマホ用の軽い絵を使っていない", "img_w" in mm and "file_w" in mm)
+
+# ── 8) AIの部屋(ai.html)と入口のホログラム ──
+ai = read("ai.html")
+for page in ("index.html", "m.html"):
+    t_ = read(page)
+    check("%s に AIの部屋への入口(ai.html)が無い" % page, "enterRoom('ai.html'" in t_)
+    check("%s が ai_holo.js を読んでいない" % page, 'src="ai_holo.js"' in t_)
+for page in ("index.html", "m.html", "design.html", "design_m.html", "contents.html", "contents_m.html"):
+    check("%s のメニューに AI BUSINESS が無い" % page, 'data-k="ai"' in read(page))
+check("ai.html からスタジオへ戻れない", "location.href = studioURL()" in ai and 'href="index.html"' in ai and "'m.html'" in ai)
+rm = json.load(io.open(os.path.join(WEB, "room_m.json"), encoding="utf-8"))
+check("room_m.json に映写機のレンズの位置(ai_lens)が無い", bool(rm.get("ai_lens")))
+# 文字の量(読まれる量に抑える)。画面1枚は60字まで・くわしくは1つ420字まで
+def plain(h):
+    h = re.sub(r"<script.*?</script>|<style.*?</style>", "", h, flags=re.S)
+    h = re.sub(r"<[^>]+>", "", h)
+    return re.sub(r"\s+", "", h)
+for m in re.finditer(r'<div class="scr[^"]*" data-k="(\w+)"[^>]*>(.*?)</div>\s*(?=<div class="scr|<button id="prev")', ai, re.S):
+    n = len(plain(m.group(2)))
+    check("AIの部屋の画面(%s)の文字が多すぎる" % m.group(1), n <= 60, "%d字" % n)
+for m in re.finditer(r"(course|fde): \(\) => `(.*?)`", ai, re.S):
+    body = re.sub(r"<form.*?</form>", "", m.group(2), flags=re.S)
+    n = len(plain(body))
+    check("AIの部屋のくわしく(%s)の文字が多すぎる" % m.group(1), n <= 420, "%d字" % n)
+# 講座の広告で使わない言い方(国民生活センター・弁護士確認)
+for w in ("稼げる", "必ず", "誰でも", "簡単に", "今だけ", "本日限定", "1日あたり", "元が取れる", "回収"):
+    check("ai.html に講座の広告で使わない言い方『%s』がある" % w, w not in ai)   # くわしくの文は script の中にあるので、ページ全体で見る
 
 print("OK %d 件 / NG %d 件" % (ok, len(ng)))
 for x in ng:

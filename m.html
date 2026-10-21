@@ -95,7 +95,7 @@
 
   /* 重なり順(レイヤー事故防止) */
   #room { z-index: 1; }
-  #winclip, #winbars, #garland, #globespin, #clockhands, #pcidle, #jukeglow, #jukehalo, #doorGlowL, #doorGlowR, #bookcover { z-index: 2; }
+  #winclip, #winbars, #garland, #globespin, #clockhands, #pcidle, #jukeglow, #jukehalo, #doorGlowL, #doorGlowR, #bookcover, #aiholo, #aiglow { z-index: 2; }
   .hs, #jukebox { z-index: 3; }
   #mshadow, #mayu, #pshadow, #patti { z-index: 4; }
 
@@ -187,6 +187,20 @@
     transform: scale(.75); transform-origin: 50% 100%;
   }
   #mshadow { position: absolute; width: 46px; height: 6px; border-radius: 50%; background: rgba(64,24,108,.5); pointer-events: none; }
+
+  /* AI事業の入口: 映写機の上で回る「AI」のホログラム(絵は ai_holo.js・位置は room_m.json の ai_lens) */
+  #aiholo {
+    position: absolute; width: 44px; height: 38px;
+    image-rendering: pixelated; pointer-events: none; mix-blend-mode: screen;
+    filter: drop-shadow(0 0 1px rgba(170, 140, 255, .9)) drop-shadow(0 0 3px rgba(90, 120, 255, .5));
+  }
+  #aiglow {
+    position: absolute; width: 60px; height: 50px; pointer-events: none; mix-blend-mode: screen;
+    animation: aiglow 3.2s ease-in-out infinite;
+    background: radial-gradient(closest-side, rgba(150, 110, 255, .32), rgba(70, 110, 255, .14) 55%, rgba(70, 110, 255, 0));
+  }
+  @keyframes aiglow { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { #aiglow { animation: none; } }
 
   /* 詳細パネルを開いているあいだ、裏の部屋のアニメは止める */
   body:has(#detail.on) #stage *, body:has(#detail.on) #stage { animation-play-state: paused; }
@@ -294,6 +308,7 @@
       <button data-k="company">COMPANY <small>会社概要</small></button>
       <button data-k="chdesign">CHARACTER DESIGN <small>デザイン室</small></button>
       <button data-k="contents">CONTENTS CREATIVE <small>編集室</small></button>
+      <button data-k="ai">AI BUSINESS <small>AIの部屋</small></button>
       <button data-k="spook">Patti the Spook <small>準備中</small></button>
       <button data-k="contact">CONTACT US <small>お問い合わせ</small></button>
       <div class="pc"><a id="pclink" href="index.html?pc=1" style="color:#7ee0eb">PC版で見る →</a></div>
@@ -303,9 +318,9 @@
   <div id="roomarea">
     <div id="stagebox">
       <div id="stage">
-        <img id="room" src="room_m.png?v=54c8f42d8b" alt="パッチくんの部屋">
+        <img id="room" src="room_m.png?v=775645868e" alt="パッチくんの部屋">
         <div id="winclip" aria-hidden="true"><div id="bonbon"></div><div id="speop"></div></div>
-        <img id="winbars" src="winbars_m.png?v=54c8f42d8b" alt="" aria-hidden="true">
+        <img id="winbars" src="winbars_m.png?v=775645868e" alt="" aria-hidden="true">
         <div id="garland" aria-hidden="true"></div>
         <div id="globespin" aria-hidden="true"></div>
         <canvas id="clockhands" width="38" height="38" aria-hidden="true"></canvas>
@@ -337,6 +352,7 @@
   <div id="dbody"></div>
 </div>
 
+<script src="ai_holo.js"></script>
 <script>
 // ─────────────────────────────────────────────
 // 部屋の座標は room_m.json(make_room_m.py の出力)から読む。
@@ -386,7 +402,7 @@ function enterRoom(page, name) {                 // 部屋へ入る(ひとこと
   if (_going) return;
   _going = true;
   clearTimeout(window._tz);
-  const tall = /_m\.html/.test(page);             // スマホ用の部屋はそのまま。PC用の部屋は横向きをすすめる
+  const tall = /_m\.html|^ai\.html/.test(page);   // スマホ用の部屋はそのまま。PC用の部屋は横向きをすすめる
   setTalk(name + 'へ ごあんない！<br>' + (tall ? 'ドアをあけるね…' : 'スマホは よこ向きにすると見やすいよ！'));
   setTimeout(() => { location.href = page; }, tall ? 500 : 950);
 }
@@ -416,6 +432,7 @@ const NAV_ACT = {
   company:  () => { sayFor('会社概要をひらくよ！'); window.open(COMPANY_URL, '_blank', 'noopener'); },
   chdesign: () => enterRoom('design_m.html', 'デザイン室'),
   contents: () => enterRoom('contents_m.html', '編集室'),
+  ai:       () => enterRoom('ai.html', 'AIの部屋'),
   spook:    () => tease('Patti the Spook'),
   contact:  () => openDetail('post'),
 };
@@ -728,6 +745,7 @@ let paused = false, _raf = 0, _still = false;
 function loop(t) { const dt = Math.min(100, t - last); p.tick(dt); mp.tick(dt); last = t; _raf = requestAnimationFrame(loop); }
 function pauseRoom(on) {              // 詳細パネルを開いているあいだは二人を止める
   paused = on;
+  window.AI_HOLO_PAUSED = on;
   if (on) { if (_raf) cancelAnimationFrame(_raf); _raf = 0; }
   else if (!_raf && !_still) { last = performance.now(); _raf = requestAnimationFrame(loop); }
 }
@@ -848,8 +866,15 @@ function placeAll(m) {
           () => enterRoom('design_m.html', 'デザイン室'), { label: 'デザイン室へ入る', style: '--gi:.4' });
   makeHot('doorR', H.doorR, '編集室！アニメーションを創ってる部屋だよ！<br>（入ってみてね！）',
           () => enterRoom('contents_m.html', '編集室'), { label: '編集室へ入る', style: '--gi:.4' });
-  makeHot('spook', H.spook, '『おばけのパッチ』の世界への入口！<br>大きな月の絵だよ！（いま準備中）',
-          null, { label: 'Patti the Spook（準備中）', style: '--gw:114%;--gh:126%;--gi:.7' });
+  makeHot('spook', H.spook, 'AIの部屋への入口！<br>AIの講座と、会社のAI導入のお手伝い！',
+          () => enterRoom('ai.html', 'AIの部屋'), { label: 'AIの部屋（AI事業）へ入る', style: '--gw:120%;--gh:120%;--gi:.55' });
+  if (m.ai_lens) {                                // 映写機の上で「AI」が回る
+    const glow = document.getElementById('aiglow') || document.createElement('div');
+    glow.id = 'aiglow'; glow.setAttribute('aria-hidden', 'true');
+    glow.style.left = (m.ai_lens[0] - 30) + 'px'; glow.style.top = (m.ai_lens[1] - 38) + 'px';
+    stage.appendChild(glow);
+    if (window.mountAIHolo) mountAIHolo(stage, m.ai_lens[0], m.ai_lens[1]);
+  }
   makeHot('window', H.window, 'まどの外は夜！<br>たまにおばけが飛んでいくよ', null, { label: 'まど', style: '--gi:.3' });
   makeHot('clock', H.clock, 'かけ時計！<br>いま見てる人の時間を指してるんだ', null, { label: 'かけ時計', style: '--gi:.5' });
   const roomImg = document.getElementById('room');

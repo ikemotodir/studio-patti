@@ -295,6 +295,7 @@
       <button data-k="company">COMPANY <small>会社概要</small></button>
       <button data-k="chdesign">CHARACTER DESIGN <small>デザイン室</small></button>
       <button data-k="contents" class="here">CONTENTS CREATIVE <small>いまいる部屋</small></button>
+      <button data-k="ai">AI BUSINESS <small>AIの部屋</small></button>
       <button data-k="spook">Patti the Spook <small>準備中</small></button>
       <button data-k="contact">CONTACT US <small>お問い合わせ</small></button>
       <button data-k="studio">STUDIO <small>スタジオへもどる</small></button>
@@ -421,6 +422,7 @@ const NAV_ACT = {
   company:  () => { sayFor('会社概要をひらくよ！'); window.open(COMPANY_URL, '_blank', 'noopener'); },
   chdesign: () => goTo('design_m.html', 'デザイン室へ ごあんない！'),
   contents: () => sayFor('いまいるのが、この編集室だよ！'),
+  ai:       () => goTo('ai.html', 'AIの部屋へ ごあんない！'),
   spook:    () => tease('Patti the Spook'),
   contact:  () => goTo('m.html#post', 'お問い合わせのポストへ案内するね！'),
   studio:   () => goStudio(),

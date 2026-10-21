@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<title>AI BUSINESS｜STUDIO PATTI</title>
+<meta name="description" content="スタジオパッチのAIの部屋。個人さま向けのAI講座と、企業さま向けのAI導入の現場伴走（AI FDE）のご案内です。">
+<meta name="theme-color" content="#05030f">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="canonical" href="https://studiopatti.jp/ai.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="STUDIO PATTI">
+<meta property="og:title" content="AI BUSINESS｜STUDIO PATTI">
+<meta property="og:description" content="AIの部屋へようこそ。AI講座（個人さま向け）と、AI導入の現場伴走（企業さま向け）のご案内です。">
+<meta property="og:url" content="https://studiopatti.jp/ai.html">
+<meta property="og:image" content="https://studiopatti.jp/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root {
+    --topH: 48px;
+    --font: 'DotGothic16', 'MS Gothic', monospace;
+    --navy: #004aad; --lilac: #cb6ce6; --cyan: #7ee0eb;
+    --grad: linear-gradient(120deg, #004aad, #cb6ce6);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: #05030f; color: #f2eefc; font-family: var(--font);
+    -webkit-text-size-adjust: 100%;
+  }
+  body { touch-action: manipulation; }
+  #app {
+    position: fixed; inset: 0; display: flex; flex-direction: column;
+    height: 100vh; height: 100dvh;
+    padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* ─── 上のバー ─── */
+  #top {
+    flex: none; height: var(--topH); position: relative; z-index: 40;
+    display: flex; align-items: center; justify-content: space-between; padding: 0 12px 0 14px;
+    background: rgba(8, 6, 40, .96); border-bottom: 1px solid #2a2560;
+  }
+  #top .brand img { height: 22px; width: auto; display: block; }
+  #back {
+    min-height: 44px; padding: 0 14px; border: 1px solid #3a3470; border-radius: 4px;
+    background: transparent; color: #fff; font-family: var(--font); font-size: 14px; cursor: pointer;
+  }
+  #back:hover, #back:focus-visible { border-color: #fcc800; color: #fcc800; outline: none; }
+  @media (max-width: 440px) { #back .w { display: none; } }
+  @media (max-width: 360px) {
+    #top .brand img { height: 18px; }
+    #back { padding: 0 10px; font-size: 13px; white-space: nowrap; }
+    .scr { padding: 14px 12px; }
+    .scr h2 { font-size: 30px; }
+    .scr .lead { font-size: 14px; }
+  }
+
+  /* ─── 部屋 ─── */
+  #roomarea { flex: 1 1 auto; min-height: 0; position: relative; overflow: hidden; background: #05030f; }
+  #bg, #globe { position: absolute; image-rendering: pixelated; pointer-events: none; }
+  #bg { left: 0; top: 0; }
+  #globe {
+    z-index: 20;
+    filter: drop-shadow(0 0 2px rgba(126, 224, 235, .8)) drop-shadow(0 0 10px rgba(90, 120, 255, .45));
+  }
+  /* 部屋の絵がそろうまで中身を出さない(開いた瞬間に左上へかたまって見えるのを防ぐ) */
+  #roomarea > :not(#bg) { visibility: hidden; }
+  #roomarea.ready > :not(#bg) { visibility: visible; }
+
+  /* ─── 球のまわりを回る3枚のスクリーン ─── */
+  .scr {
+    position: absolute; left: 0; top: 0; z-index: 10;
+    display: flex; flex-direction: column; justify-content: center; gap: 8px;
+    padding: 18px 20px; border-radius: 6px; text-align: center; cursor: pointer;
+    color: #f2eefc; background: rgba(10, 14, 52, .94);
+    border: 1px solid rgba(126, 224, 235, .65);
+    box-shadow: 0 0 0 1px rgba(203, 108, 230, .25), 0 0 18px rgba(80, 120, 255, .45), inset 0 0 26px rgba(80, 120, 255, .22);
+    transform-origin: 50% 50%; will-change: transform, opacity;
+  }
+  .scr::before {                                    /* 走査線 */
+    content: ''; position: absolute; inset: 0; border-radius: 6px; pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .045) 0 1px, transparent 1px 4px);
+  }
+  .scr::after {                                     /* 上のふちの光(会社概要の 青→紫) */
+    content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px; border-radius: 6px 6px 0 0;
+    background: var(--grad);
+  }
+  .scr .tag {
+    align-self: center; font-size: 13px; padding: 3px 12px; border-radius: 99px;
+    border: 1px solid rgba(126, 224, 235, .7); color: var(--cyan);
+  }
+  .scr h2 {
+    margin: 0; font-weight: normal; font-size: 34px; line-height: 1.1; letter-spacing: 2px;
+    background: linear-gradient(120deg, #8fb6ff, #e3a6ff); -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 0 14px rgba(150, 120, 255, .35);
+  }
+  .scr .sub { font-size: 15px; color: #d9d2ff; }
+  .scr .lead { margin: 0; font-size: 15px; line-height: 1.6; text-wrap: balance; word-break: auto-phrase; }
+  .scr .more {
+    align-self: center; min-height: 44px; padding: 0 22px; margin-top: 4px; border: 0; border-radius: 99px;
+    background: var(--grad); color: #fff; font-family: var(--font); font-size: 15px; cursor: pointer;
+    box-shadow: 0 0 12px rgba(150, 110, 255, .5);
+  }
+  .scr .more:hover, .scr .more:focus-visible { filter: brightness(1.15); outline: 2px solid #fff; outline-offset: 2px; }
+  .scr.soon h2 { font-size: 26px; }
+  .scr.soon .lead::after { content: '_'; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .scr.back .more { visibility: hidden; }            /* 奥の画面はボタンを押させない(回して前へ) */
+
+  /* 左右の矢印 */
+  .arrow {
+    position: absolute; z-index: 35; width: 48px; height: 48px; border-radius: 50%;
+    border: 1px solid rgba(126, 224, 235, .7); background: rgba(8, 6, 40, .82); cursor: pointer;
+    box-shadow: 0 0 12px rgba(90, 120, 255, .45);
+  }
+  .arrow::after {
+    content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    border-top: 9px solid transparent; border-bottom: 9px solid transparent;
+  }
+  #prev::after { border-right: 13px solid #f2eefc; margin-left: -2px; }
+  #next::after { border-left: 13px solid #f2eefc; margin-left: 2px; }
+  .arrow:hover, .arrow:focus-visible { border-color: #fcc800; outline: none; }
+  .arrow:active { background: rgba(203, 108, 230, .45); }
+
+  /* パッチ(ふわふわ浮く) */
+  #patti {
+    position: absolute; z-index: 30; width: 32px; height: 48px; pointer-events: none;
+    background: url(patti_front_shaded.png) 0 0 / 384px 48px no-repeat;
+    image-rendering: pixelated; transform-origin: 0 0;
+    animation: pattichar 1.2s steps(12) infinite;
+  }
+  @keyframes pattichar { to { background-position: -384px 0; } }
+
+  /* テキストボックス(ほかの部屋と同じ) */
+  #talk {
+    position: absolute; left: 8px; right: 8px; bottom: 6px; z-index: 36;
+    min-height: 76px; margin: 0 auto; max-width: 760px;
+    background: rgba(8, 6, 40, .96); border: 2px solid #e8e4f4; border-radius: 4px;
+    box-shadow: inset 0 0 0 1px #2a2560;
+    padding: 9px 26px 9px 14px; font-size: 15px; line-height: 1.6; color: #f2eefc;
+  }
+  #talk .name { color: #fcc800; margin-right: 6px; }
+
+  /* ─── くわしく(ポップアップ) ─── */
+  #detail {
+    position: fixed; inset: 0; z-index: 60; display: none;
+    background: rgba(4, 3, 18, .86); overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: calc(14px + env(safe-area-inset-top)) 12px calc(24px + env(safe-area-inset-bottom));
+  }
+  #detail.on { display: block; }
+  #dsheet {
+    position: relative; max-width: 680px; margin: 0 auto; padding: 22px 20px 26px;
+    background: rgba(12, 14, 46, .97); border: 1px solid rgba(126, 224, 235, .55); border-radius: 8px;
+    box-shadow: 0 0 30px rgba(80, 110, 255, .35);
+  }
+  #dsheet::before {
+    content: ''; position: absolute; left: 0; right: 0; top: 0; height: 4px; border-radius: 8px 8px 0 0; background: var(--grad);
+  }
+  #dclose {
+    float: right; min-height: 44px; padding: 0 14px; margin: -6px -6px 6px 10px;
+    border: 1px solid #e8e4f4; border-radius: 4px; background: transparent; color: #f2eefc;
+    font-family: var(--font); font-size: 15px; cursor: pointer;
+  }
+  #dbody .tag { display: inline-block; font-size: 13px; padding: 3px 12px; border-radius: 99px; border: 1px solid rgba(126, 224, 235, .7); color: var(--cyan); }
+  #dbody h2 {
+    margin: 10px 0 2px; font-weight: normal; font-size: 30px; letter-spacing: 2px;
+    background: linear-gradient(120deg, #8fb6ff, #e3a6ff); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  #dbody .sub { font-size: 16px; color: #d9d2ff; margin-bottom: 12px; }
+  #dbody p { font-size: 15px; line-height: 1.8; margin: 10px 0; }
+  #dbody h3 { font-weight: normal; font-size: 16px; color: var(--cyan); margin: 22px 0 8px; border-bottom: 1px solid rgba(126, 224, 235, .35); padding-bottom: 4px; }
+  #dbody table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  #dbody th, #dbody td { text-align: left; padding: 8px 6px; border-bottom: 1px solid rgba(255, 255, 255, .1); vertical-align: top; line-height: 1.6; }
+  #dbody th { width: 6.5em; color: #cfc9e6; font-weight: normal; white-space: nowrap; }
+  #dbody ol { margin: 0; padding: 0; list-style: none; counter-reset: n; }
+  #dbody ol li { counter-increment: n; position: relative; padding: 6px 0 6px 2.6em; font-size: 15px; line-height: 1.6; }
+  #dbody ol li::before {
+    content: counter(n); position: absolute; left: 0; top: 6px; width: 1.9em; height: 1.9em; line-height: 1.9em;
+    text-align: center; border-radius: 50%; background: var(--grad); color: #fff; font-size: 13px;
+  }
+  #dbody .cur { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; font-size: 14px; line-height: 1.6; }
+  #dbody .cur div span { color: var(--cyan); margin-right: 6px; }
+  @media (max-width: 560px) { #dbody .cur { grid-template-columns: 1fr; } }
+  #dbody .cta {
+    display: flex; align-items: center; justify-content: center; min-height: 52px; margin: 18px 0 4px; padding: 0 18px;
+    border-radius: 99px; background: var(--grad); color: #fff; text-decoration: none; font-size: 16px;
+    box-shadow: 0 0 16px rgba(150, 110, 255, .5); border: 0; width: 100%; font-family: var(--font); cursor: pointer;
+  }
+  #dbody .cta:hover, #dbody .cta:focus-visible { filter: brightness(1.12); outline: 2px solid #fff; outline-offset: 2px; }
+  #dbody .cta:disabled { filter: grayscale(.6); cursor: default; }
+  #dbody form { display: grid; gap: 10px; margin-top: 10px; }
+  #dbody label { font-size: 14px; color: #cfc9e6; display: grid; gap: 4px; }
+  #dbody input, #dbody textarea {
+    font-family: inherit; font-size: 16px; color: #f2eefc; background: rgba(255, 255, 255, .06);
+    border: 1px solid rgba(126, 224, 235, .45); border-radius: 4px; padding: 10px;
+  }
+  #dbody textarea { min-height: 110px; resize: vertical; }
+  #dbody .msg { font-size: 15px; color: #fcc800; min-height: 1.4em; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #patti, .scr.soon .lead::after { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="top">
+    <a class="brand" href="index.html" aria-label="STUDIO PATTI（スタジオへもどる）"><img src="nav_logo.png" alt="STUDIO PATTI"></a>
+    <button id="back" type="button" aria-label="スタジオへもどる">← スタジオ<span class="w">へもどる</span></button>
+  </div>
+
+  <div id="roomarea">
+    <canvas id="bg" aria-hidden="true"></canvas>
+    <canvas id="globe" aria-hidden="true"></canvas>
+
+    <div class="scr" data-k="course" role="group" aria-label="AI講座（個人さま向け）">
+      <span class="tag">個人さま向け</span>
+      <h2>AI講座</h2>
+      <p class="lead">AIを「もう1人の自分」にして、やりたい事を形にすることを目指す講座</p>
+      <button class="more" type="button">くわしく見る</button>
+    </div>
+    <div class="scr" data-k="fde" role="group" aria-label="AI FDE（企業さま向け）">
+      <span class="tag">企業さま向け</span>
+      <h2>AI FDE</h2>
+      <div class="sub">AI導入の現場伴走</div>
+      <p class="lead">現場に入って、AIに任せる仕事を一緒に決めます</p>
+      <button class="more" type="button">くわしく見る</button>
+    </div>
+    <div class="scr soon" data-k="soon" role="group" aria-label="COMING SOON">
+      <h2>COMING SOON...</h2>
+      <p class="lead">つぎの画面を じゅんび中です</p>
+    </div>
+
+    <button id="prev" class="arrow" type="button" aria-label="左の画面へ回す"></button>
+    <button id="next" class="arrow" type="button" aria-label="右の画面へ回す"></button>
+    <div id="patti" role="img" aria-label="パッチくん"></div>
+    <div id="talk"><span class="name">パッチ</span><span id="talktext">ここはAIの部屋だよ！<br>左右の矢印で、画面を回してみてね！</span></div>
+  </div>
+</div>
+
+<div id="detail" role="dialog" aria-modal="true" aria-label="くわしく">
+  <div id="dsheet">
+    <button id="dclose" type="button">× とじる</button>
+    <div id="dbody"></div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// AIの部屋: 夜景の見えるガラスの部屋。真ん中に浮かぶ地球のホログラムと、そのまわりを回る3枚の画面
+// 背景と球はドット絵(1ドット=p px)を canvas で描く。画面の文字は読みやすいように HTML で出す
+// ─────────────────────────────────────────────
+const LINE_URL = 'https://lin.ee/QV4fVfO';          // 公式LINE(無料の個別相談の受付)
+const TALK_DEFAULT = 'ここはAIの部屋だよ！<br>左右の矢印で、画面を回してみてね！';
+const TALKS = {
+  course: 'AI講座だよ！<br>AIを「もう1人の自分」に育てるのが目標！',
+  fde: '会社のAI導入を、<br>現場でお手伝いするよ！',
+  soon: 'ここは まだ じゅんび中！<br>たのしみに待っててね！',
+};
+const area = document.getElementById('roomarea');
+const bg = document.getElementById('bg'), bgx = bg.getContext('2d');
+const gl = document.getElementById('globe'), glx = gl.getContext('2d');
+const talktext = document.getElementById('talktext');
+const SCR = [...document.querySelectorAll('.scr')];
+const still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// 決まった並びの乱数(毎回おなじ夜景になるように)
+function rng(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
+const mix = (a, b, k) => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
+const css = (c, a) => 'rgba(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ',' + (a == null ? 1 : a) + ')';
+
+// ── 大きさを決める ──
+let G = null;                                        // いまの寸法(CSS px と ドット)
+function layout() {
+  const vw = area.clientWidth, vh = area.clientHeight;
+  if (!vw || !vh) return;
+  const land = vw > vh * 1.05;
+  const p = land ? Math.min(vh / 220, vw / 300) : Math.min(vw / 180, 3.2);   // 1ドットの大きさ(大きな画面で粗くなりすぎない)
+  const W = Math.ceil(vw / p), H = Math.ceil(vh / p);
+  const talkH = document.getElementById('talk').offsetHeight + 12;
+  // 球の位置と大きさ(ドット)
+  const gr = Math.round(land ? H * 0.2 : Math.min(W * 0.27, H * 0.16));
+  const gy = Math.round(land ? H * 0.31 : H * 0.25);
+  // 画面(CSS px)
+  const sw = Math.round(land ? Math.min(400, vw * 0.34) : Math.min(420, vw * 0.72, vw - 112));   // 縦は両わきに矢印の幅を残す
+  const ringY = land ? vh * 0.53 : vh * 0.55;
+  const rx = land ? Math.min(vw * 0.3, 430) : vw * 0.33;
+  G = { vw, vh, land, p, W, H, gr, gy, sw, ringY, rx, talkH, floorY: Math.round(H * (land ? 0.66 : 0.6)) };
+  bg.width = W; bg.height = H;
+  bg.style.width = (W * p) + 'px'; bg.style.height = (H * p) + 'px';
+  const gs = Math.ceil(gr * 2.6) + 8;                // 球の canvas(赤道の輪・つなぐ線が切れない余白)
+  gl.width = gs; gl.height = gs;
+  gl.style.width = (gs * p) + 'px'; gl.style.height = (gs * p) + 'px';
+  gl.style.left = (vw / 2 - gs * p / 2) + 'px';
+  gl.style.top = (gy * p - gs * p / 2) + 'px';
+  SCR.forEach(e => { e.style.width = sw + 'px'; });
+  // 背の低い画面(スマホの横向きなど): 前の画面がテキストボックスにかからないよう、縮めて上へ寄せる
+  const hF = Math.max(...SCR.map(e => e.offsetHeight));
+  const lift = land ? 34 : 26, talkTop = vh - talkH;
+  G.k = Math.max(0.35, Math.min(1, (talkTop - 12) / (hF + lift + 12)));
+  G.hF = hF;
+  G.ringY = Math.min(ringY, talkTop - 8 - lift * G.k - hF * G.k / 2);
+  G.lift = lift * G.k;
+  buildStatic();
+  placeScreens();
+  placeExtras();
+}
+
+// ── 部屋の絵(動かない所)。夜景・窓の枠・天井・床 ──
+let STATIC = null;
+function buildStatic() {
+  const { W, H, floorY } = G;
+  STATIC = document.createElement('canvas'); STATIC.width = W; STATIC.height = H;
+  const g = STATIC.getContext('2d');
+  const R = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x | 0, y | 0, Math.max(1, w | 0), Math.max(1, h | 0)); };
+  const ceilY = Math.round(H * 0.12);
+  const r = rng(20261021);
+  // 空(上は濃い紺 → 地平は紫)
+  for (let y = 0; y < floorY; y++) {
+    const k = y / floorY;
+    R(0, y, W, 1, css(mix([6, 6, 26], [46, 20, 86], Math.pow(k, 1.6))));
+  }
+  for (let i = 0; i < W * 0.35; i++) {               // 星
+    const x = r() * W, y = ceilY + r() * (floorY - ceilY) * 0.55;
+    R(x, y, 1, 1, css([200, 210, 255], 0.25 + r() * 0.6));
+  }
+  // 遠くのビル(暗い・窓はまばら)
+  const skyH = floorY - ceilY;
+  let x = 0;
+  while (x < W) {
+    const bw = 4 + (r() * 9 | 0), bh = skyH * (0.12 + r() * 0.22);
+    R(x, floorY - bh, bw, bh, css([18, 16, 52]));
+    for (let wy = floorY - bh + 2; wy < floorY - 1; wy += 3)
+      for (let wx = x + 1; wx < x + bw - 1; wx += 2)
+        if (r() < 0.16) R(wx, wy, 1, 1, css([120, 130, 220], 0.7));
+    x += bw + (r() < 0.3 ? 1 : 0);
+  }
+  // 近くの高いビル(窓あかり・屋上の赤いランプ)
+  x = -2;
+  while (x < W) {
+    const bw = 7 + (r() * 12 | 0), bh = skyH * (0.25 + r() * 0.5);
+    const top = floorY - bh, warm = r() < 0.55;
+    R(x, top, bw, bh, css([9, 8, 30]));
+    R(x, top, 1, bh, css([30, 26, 80]));             // 月側のふち
+    if (r() < 0.35) { R(x + (bw >> 1), top - 5, 1, 5, css([60, 56, 110])); R(x + (bw >> 1), top - 6, 1, 1, '#ff4d6d'); }
+    for (let wy = top + 3; wy < floorY - 2; wy += 3)
+      for (let wx = x + 2; wx < x + bw - 1; wx += 2)
+        if (r() < 0.38) R(wx, wy, 1, 1, warm ? css([255, 214, 120], 0.55 + r() * 0.4) : css([126, 224, 235], 0.45 + r() * 0.4));
+    x += bw + 2 + (r() * 6 | 0);
+  }
+  // ガラスの映り込み(ななめの光)
+  for (let i = 0; i < 4; i++) {
+    const sx = W * (0.1 + i * 0.26);
+    for (let y = ceilY; y < floorY; y++) R(sx + (y - ceilY) * 0.35, y, 2, 1, 'rgba(160,180,255,.05)');
+  }
+  // 窓の枠(縦の桟。はしほど部屋の丸みで太く暗く)
+  const n = G.land ? 7 : 4;
+  for (let i = 0; i <= n; i++) {
+    const fx = Math.round(i * W / n), edge = Math.abs(i / n - 0.5) * 2;
+    const fw = 2 + Math.round(edge * 3);
+    R(fx - (fw >> 1), ceilY, fw, floorY - ceilY, css([16, 14, 44]));
+    R(fx - (fw >> 1), ceilY, 1, floorY - ceilY, css([60, 56, 130]));
+  }
+  R(0, Math.round(ceilY + (floorY - ceilY) * 0.08), W, 1, css([40, 38, 96]));   // 横の桟
+  // 天井(暗い板・ふちに光の線・真ん中に丸い照明)
+  R(0, 0, W, ceilY, css([10, 9, 30]));
+  R(0, ceilY - 2, W, 1, css([126, 224, 235], 0.75));
+  R(0, ceilY - 1, W, 1, css([203, 108, 230], 0.5));
+  R(0, ceilY, W, 1, css([4, 3, 18]));
+  for (let lx = 6; lx < W; lx += 18) R(lx, ceilY - 4, 3, 1, css([180, 200, 255], 0.8));   // 小さな照明
+  // 床(つやのある暗い床・窓の光が映る)
+  for (let y = floorY; y < H; y++) {
+    const k = (y - floorY) / (H - floorY);
+    R(0, y, W, 1, css(mix([18, 14, 46], [7, 6, 22], k)));
+  }
+  R(0, floorY, W, 1, css([80, 70, 160]));            // 窓のすそ
+  R(0, floorY + 1, W, 1, css([4, 3, 18]));
+  const r2 = rng(77);
+  for (let i = 0; i < W * 0.6; i++) {                // 夜景の映り込み(縦にのびる光)
+    const fx = r2() * W, len = 2 + r2() * (H - floorY) * 0.35;
+    const c = r2() < 0.55 ? [255, 214, 120] : [126, 160, 255];
+    for (let k = 0; k < len; k += 2) R(fx, floorY + 2 + k, 1, 1, css(c, 0.18 * (1 - k / len)));
+  }
+}
+
+// ── 毎コマ: 床の光の輪・天井の丸い照明・球 ──
+function drawFrame(t) {
+  if (!STATIC || !G) return;
+  const { W, H, floorY, gr, gy } = G;
+  bgx.drawImage(STATIC, 0, 0);
+  const cx = W / 2;
+  // 天井の丸い照明(ゆっくり光がまわる)
+  const ceilY = Math.round(H * 0.12), crx = W * (G.land ? 0.22 : 0.36), cry = ceilY * 0.32;
+  for (let a = 0; a < Math.PI * 2; a += 0.02) {
+    const xx = cx + Math.cos(a) * crx, yy = ceilY * 0.55 + Math.sin(a) * cry;
+    const k = (Math.sin(a * 3 - t * 1.5) + 1) / 2;
+    bgx.fillStyle = css(mix([126, 224, 235], [203, 108, 230], k), 0.5 + k * 0.4);
+    bgx.fillRect(xx | 0, yy | 0, 1, 1);
+  }
+  // 床の光の輪(球の真下を中心に、外へ広がって消える)
+  const ry0 = floorY + (H - floorY) * 0.42, pedR = gr * 0.55;
+  for (let i = 0; i < 4; i++) {
+    const ph = ((t * 0.18 + i / 4) % 1);
+    const rx = pedR + ph * W * 0.55, ryy = rx * 0.16;
+    const col = mix([126, 224, 235], [203, 108, 230], ph);
+    const al = 0.55 * (1 - ph);
+    for (let a = 0; a < Math.PI * 2; a += 1.4 / rx) {
+      if (((a * 20) | 0) % 3 === 0) continue;        // 点線
+      bgx.fillStyle = css(col, al);
+      bgx.fillRect((cx + Math.cos(a) * rx) | 0, (ry0 + Math.sin(a) * ryy) | 0, 1, 1);
+    }
+  }
+  // 台座(球を映し出す床の装置)
+  for (let k = 0; k < 3; k++) {
+    const rr = pedR - k * 2;
+    for (let a = 0; a < Math.PI * 2; a += 1 / rr) {
+      bgx.fillStyle = css(k === 0 ? [126, 224, 235] : [60, 90, 200], k === 0 ? 0.85 : 0.6);
+      bgx.fillRect((cx + Math.cos(a) * rr) | 0, (ry0 + Math.sin(a) * rr * 0.22) | 0, 1, 1);
+    }
+  }
+  // 台座から球への光の柱
+  const top = gy + gr * 0.7;
+  for (let y = top | 0; y < ry0; y++) {
+    const k = (y - top) / (ry0 - top);
+    const half = Math.max(1, pedR * 0.35 + (1 - k) * 2);
+    bgx.fillStyle = css([110, 150, 255], 0.1 + 0.12 * k);
+    bgx.fillRect((cx - half) | 0, y, (half * 2) | 0, 1);
+  }
+  drawGlobe(t);
+}
+
+// ── 地球のホログラム(線でできた球・都市の点・つながる線) ──
+const NODES = (() => {
+  const r = rng(4242), out = [];
+  for (let i = 0; i < 22; i++) {
+    const lat = (r() - 0.5) * 2.2, lon = r() * Math.PI * 2;
+    out.push([Math.cos(lat) * Math.cos(lon), Math.sin(lat), Math.cos(lat) * Math.sin(lon)]);
+  }
+  return out;
+})();
+const LINKS = [[0, 3], [3, 7], [7, 12], [1, 5], [5, 9], [9, 14], [2, 6], [6, 11], [11, 16], [4, 8], [8, 13], [13, 18], [10, 15], [15, 19], [12, 17], [17, 20], [19, 21], [0, 9]];
+function drawGlobe(t) {
+  const { gr } = G;
+  const S = gl.width, c = S / 2;
+  glx.clearRect(0, 0, S, S);
+  const rot = t * 0.35, tilt = 0.38;
+  const cr = Math.cos(rot), sr = Math.sin(rot), ct = Math.cos(tilt), st = Math.sin(tilt);
+  const proj = (v) => {                              // 回して(縦軸)・少し前に傾けて・まっすぐ写す
+    const x1 = v[0] * cr + v[2] * sr, z1 = -v[0] * sr + v[2] * cr;
+    const y2 = v[1] * ct - z1 * st, z2 = v[1] * st + z1 * ct;
+    return [c + x1 * gr, c - y2 * gr, z2];
+  };
+  const dot = (x, y, col, a) => { glx.fillStyle = css(col, a); glx.fillRect(x | 0, y | 0, 1, 1); };
+  // うっすら光る球の中身
+  for (let y = -gr; y <= gr; y++) for (let x = -gr; x <= gr; x++) {
+    const d = (x * x + y * y) / (gr * gr);
+    if (d > 1 || (x + y) & 1) continue;
+    dot(c + x, c + y, mix([40, 80, 220], [150, 80, 220], (y + gr) / (2 * gr)), 0.1 + 0.12 * d);
+  }
+  const color = (z, y) => mix([126, 224, 235], [203, 108, 230], Math.max(0, Math.min(1, (y - (c - gr)) / (2 * gr))));
+  // 緯線・経線
+  const step = 2.4 / gr;
+  for (let lat = -60; lat <= 60; lat += 30) {
+    const la = lat * Math.PI / 180;
+    for (let lo = 0; lo < Math.PI * 2; lo += step) {
+      const q = proj([Math.cos(la) * Math.cos(lo), Math.sin(la), Math.cos(la) * Math.sin(lo)]);
+      dot(q[0], q[1], color(q[2], q[1]), q[2] > 0 ? 0.85 : 0.22);
+    }
+  }
+  for (let lo = 0; lo < 180; lo += 30) {
+    const lr = lo * Math.PI / 180;
+    for (let la = 0; la < Math.PI * 2; la += step) {
+      const q = proj([Math.cos(la) * Math.cos(lr), Math.sin(la), Math.cos(la) * Math.sin(lr)]);
+      dot(q[0], q[1], color(q[2], q[1]), q[2] > 0 ? 0.7 : 0.18);
+    }
+  }
+  // 都市をつなぐ線(光が流れる)
+  for (let i = 0; i < LINKS.length; i++) {
+    const [ia, ib] = LINKS[i], A = NODES[ia], B = NODES[ib];
+    const n = 24, flow = (t * 0.6 + i * 0.13) % 1;
+    for (let k = 0; k <= n; k++) {
+      const s = k / n;
+      let v = [A[0] + (B[0] - A[0]) * s, A[1] + (B[1] - A[1]) * s, A[2] + (B[2] - A[2]) * s];
+      const L = Math.hypot(v[0], v[1], v[2]) || 1, lift = 1.08 + Math.sin(s * Math.PI) * 0.12;
+      v = [v[0] / L * lift, v[1] / L * lift, v[2] / L * lift];
+      const q = proj(v);
+      if (q[2] < -0.1) continue;
+      const hot = Math.abs(s - flow) < 0.08;
+      dot(q[0], q[1], hot ? [255, 255, 255] : [160, 200, 255], hot ? 0.95 : 0.45);
+    }
+  }
+  // 都市の点
+  for (const v of NODES) {
+    const q = proj(v);
+    if (q[2] < 0) continue;
+    dot(q[0], q[1], [255, 255, 255], 1);
+    dot(q[0] + 1, q[1], [200, 230, 255], 0.6); dot(q[0] - 1, q[1], [200, 230, 255], 0.6);
+    dot(q[0], q[1] + 1, [200, 230, 255], 0.6); dot(q[0], q[1] - 1, [200, 230, 255], 0.6);
+  }
+  // 赤道をまわる光の輪
+  for (let a = 0; a < Math.PI * 2; a += 1.2 / gr) {
+    const q = proj([Math.cos(a) * 1.22, 0, Math.sin(a) * 1.22]);
+    const k = (Math.sin(a * 2 + t * 2) + 1) / 2;
+    dot(q[0], q[1], mix([126, 224, 235], [203, 108, 230], k), q[2] > 0 ? 0.75 : 0.25);
+  }
+}
+
+// ── 3枚の画面を球のまわりに置く ──
+let ang = 0, target = 0, anim = null;               // ang: いま前に来ている画面の番号(小数で回る途中)
+function placeScreens() {
+  if (!G) return;
+  const { vw, ringY, rx, sw, land } = G;
+  SCR.forEach((e, i) => {
+    let d = i - ang;                                   // 前からの番号の差(-1.5〜1.5に)
+    d = ((d % 3) + 4.5) % 3 - 1.5;
+    const phi = d * Math.PI * 2 / 3;                   // 画面の角度(0=前)
+    const z = Math.cos(phi), sx = Math.sin(phi);
+    const scale = (0.78 + 0.22 * (z + 0.5) / 1.5) * G.k;   // 前1.0・奥0.78(背の低い画面は全体を縮める)
+    const x = vw / 2 + rx * sx - sw / 2;
+    const y = ringY + G.lift * z - e.offsetHeight / 2;
+    const rotY = -sx * 26;                              // 球の方を向くように少し傾ける
+    e.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0) perspective(900px) rotateY(' + rotY.toFixed(1) + 'deg) scale(' + scale.toFixed(3) + ')';
+    e.style.zIndex = z > 0.6 ? 25 : 10;                 // 前の画面は球より手前・奥は球のうしろ
+    e.style.opacity = ((land ? 0.74 : 0.5) + (land ? 0.26 : 0.5) * (z + 0.5) / 1.5).toFixed(2);   // 縦画面は奥をうすく
+    e.style.filter = z > 0.6 ? '' : 'saturate(.8) brightness(.82)';
+    const front = Math.abs(d) < 0.01;
+    e.classList.toggle('back', !front);
+    e.setAttribute('aria-hidden', front ? 'false' : 'true');
+    e.querySelectorAll('button').forEach(b => { b.tabIndex = front ? 0 : -1; });
+  });
+}
+function frontIndex() { return ((Math.round(target) % 3) + 3) % 3; }
+function rotate(dir) {                               // dir=+1 で右の画面が前へ
+  target += dir;
+  const from = ang, to = target, t0 = performance.now(), dur = still ? 1 : 900;
+  cancelAnimationFrame(anim);
+  const ease = k => k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;   // グインと回る
+  const step = (now) => {
+    const k = Math.min(1, (now - t0) / dur);
+    ang = from + (to - from) * ease(k);
+    placeScreens();
+    if (k < 1) anim = requestAnimationFrame(step); else placeExtras();
+  };
+  anim = requestAnimationFrame(step);
+  setTalk(TALKS[SCR[frontIndex()].dataset.k]);
+}
+document.getElementById('next').addEventListener('click', () => rotate(1));
+document.getElementById('prev').addEventListener('click', () => rotate(-1));
+window.addEventListener('keydown', e => {
+  if (detailEl.classList.contains('on')) { if (e.key === 'Escape') closeDetail(); return; }
+  if (e.key === 'ArrowRight') rotate(1);
+  if (e.key === 'ArrowLeft') rotate(-1);
+});
+SCR.forEach((e, i) => {
+  e.addEventListener('click', (ev) => {
+    const f = frontIndex();
+    if (i === f) { if (e.dataset.k !== 'soon') openDetail(e.dataset.k); return; }
+    rotate(((i - f + 3) % 3) === 1 ? 1 : -1);        // 奥の画面を押したら、その画面を前へ
+    ev.stopPropagation();
+  });
+});
+let sx0 = null;                                      // 左右になぞっても回る
+area.addEventListener('touchstart', e => { sx0 = e.touches[0].clientX; }, { passive: true });
+area.addEventListener('touchend', e => {
+  if (sx0 === null) return;
+  const dx = e.changedTouches[0].clientX - sx0; sx0 = null;
+  if (Math.abs(dx) > 50) rotate(dx < 0 ? 1 : -1);
+});
+
+// ── 矢印とパッチの置き場所 ──
+function placeExtras() {
+  const { vw, vh, ringY, sw, land, p, talkH } = G;
+  const prev = document.getElementById('prev'), next = document.getElementById('next');
+  const ay = ringY + G.lift - 24;
+  const gap = land ? sw * G.k / 2 + 24 : Math.min(sw * G.k / 2 + 4, vw / 2 - 52);
+  prev.style.left = (vw / 2 - gap - 48) + 'px'; prev.style.top = ay + 'px';
+  next.style.left = (vw / 2 + gap) + 'px'; next.style.top = ay + 'px';
+  // パッチは前の画面にかからない所に(場所がなければ出さない)
+  const pa = document.getElementById('patti');
+  const front = SCR[frontIndex()];
+  const frontBottom = ringY + G.lift + G.hF * G.k / 2;
+  const talkTop = vh - talkH;
+  let ps = land ? p * 0.75 : p * 0.8;
+  if (!land) ps = Math.min(ps, (talkTop - frontBottom - 6) / 48);   // 縦画面は画面の下の空きに入る大きさ
+  const pw = 32 * ps, ph = 48 * ps;
+  const left = land ? Math.max(8, vw * 0.1) : 8;
+  const top = talkTop - ph - 2;
+  const hit = ps < p * 0.35 || (land && left + pw > vw / 2 - G.sw * G.k / 2 - 4 && top < frontBottom + 4);
+  pa.style.transform = 'scale(' + ps.toFixed(3) + ')';
+  pa.style.left = left + 'px'; pa.style.top = top + 'px';
+  pa.style.display = hit ? 'none' : '';
+}
+
+// ── 吹き出し ──
+function setTalk(t) { talktext.innerHTML = t; }
+
+// ── くわしく(ポップアップ) ──
+const detailEl = document.getElementById('detail'), dbody = document.getElementById('dbody');
+const DETAIL = {
+  course: () => `
+    <span class="tag">個人さま向け</span>
+    <h2>AI講座</h2>
+    <div class="sub">がんばる親の「やりたい」を叶えるAI講座</div>
+    <p>AIを「もう1人の自分」にして、やりたい事を形にすることを目指します。</p>
+    <table>
+      <tr><th>形式</th><td>オンライン・マンツーマン</td></tr>
+      <tr><th>回数</th><td>全8回（1回60分）</td></tr>
+      <tr><th>期間</th><td>第1回の日から3か月</td></tr>
+      <tr><th>使うAI</th><td>Claude（受講料とは別に、Claudeの有料プラン（月額）が必要です）</td></tr>
+      <tr><th>必要なもの</th><td>パソコン（Windows／Mac）</td></tr>
+    </table>
+    <h3>カリキュラム</h3>
+    <div class="cur">
+      <div><span>1</span>やりたい事の明確化</div><div><span>2</span>目的地と目標と理念</div>
+      <div><span>3</span>AIの現状</div><div><span>4</span>AIを「もう1人の自分」にする</div>
+      <div><span>5</span>AIリテラシーとセキュリティ</div><div><span>6</span>非エンジニアのAI開発</div>
+      <div><span>7</span>学習の効率化</div><div><span>8</span>AIでSNSを自動化する方法</div>
+    </div>
+    <p>進み方は人それぞれで、成果をお約束するものではありません。</p>
+    <h3>お申し込みまでの流れ</h3>
+    <ol>
+      <li>公式LINEに登録</li>
+      <li>「相談」と送って、日程を決める</li>
+      <li>無料の個別相談（オンライン）</li>
+    </ol>
+    <p>相談では、有料講座のご案内もします。受講料も相談の中でお伝えします。その場で決めなくて大丈夫です。</p>
+    <a class="cta" href="${LINE_URL}" target="_blank" rel="noopener">公式LINEで無料相談を申し込む</a>`,
+  fde: () => `
+    <span class="tag">企業さま向け</span>
+    <h2>AI FDE</h2>
+    <div class="sub">AI導入の現場伴走</div>
+    <p>「AIを使いたいけれど、何から始めればいいか分からない」。そんな会社の現場に入って、一緒に進めます。</p>
+    <h3>進め方</h3>
+    <ol>
+      <li>お話を聞く（無料）<br>今の仕事の流れと、困りごとを伺います</li>
+      <li>AIに任せる仕事を決める<br>手間のかかっている作業から選びます</li>
+      <li>小さく試す<br>試しに作って使ってもらい、定着を目指して一緒に直します</li>
+    </ol>
+    <p>費用がかかる場合は、進める前にお伝えします。小さな会社・お店のご相談も歓迎です。</p>
+    <h3>ご相談フォーム（無料）</h3>
+    <form id="fdeform" novalidate>
+      <label>会社名・お店の名前<input name="co" autocomplete="organization"></label>
+      <label>お名前<input name="name" autocomplete="name" required></label>
+      <label>メールアドレス<input name="mail" type="email" autocomplete="email" required></label>
+      <label>ご相談の内容<textarea name="body" required></textarea></label>
+      <p>いただいた内容は、このご相談へのお返事とご連絡にだけ使います。</p>
+      <div class="msg" id="fdemsg" aria-live="polite"></div>
+      <button class="cta" type="submit">この内容で送る</button>
+    </form>`,
+};
+let CONTACT = null;
+fetch('contact.json', { cache: 'no-store' }).then(r => r.json()).then(j => { CONTACT = j; }).catch(() => {});
+const hasDetail = k => Object.prototype.hasOwnProperty.call(DETAIL, k);
+const appEl = document.getElementById('app');
+let _opener = null;
+function showSheet(k) {
+  if (!hasDetail(k)) return false;
+  if (detailEl.classList.contains('on')) return false;   // もう開いている(二重に開かない)
+  _opener = document.activeElement;
+  dbody.innerHTML = DETAIL[k]();
+  detailEl.classList.add('on');
+  appEl.inert = true;                                   // 裏の部屋はタブで触れないようにする
+  document.getElementById('dclose').focus({ preventScroll: true });
+  detailEl.scrollTop = 0;
+  if (k === 'fde') wireForm();
+  return true;
+}
+function openDetail(k) {
+  if (showSheet(k)) history.pushState({ aidetail: k }, '', '#' + k);
+}
+function hideDetail() {
+  if (!detailEl.classList.contains('on')) return;
+  detailEl.classList.remove('on'); dbody.innerHTML = '';
+  appEl.inert = false;
+  if (_opener && document.contains(_opener)) _opener.focus({ preventScroll: true });
+  _opener = null;
+}
+function closeDetail() { if (history.state && history.state.aidetail) history.back(); else hideDetail(); }
+document.getElementById('dclose').addEventListener('click', closeDetail);
+detailEl.addEventListener('click', e => { if (e.target === detailEl) closeDetail(); });
+window.addEventListener('popstate', () => {
+  const k = location.hash.slice(1);
+  if (hasDetail(k)) showSheet(k); else hideDetail();
+});
+function wireForm() {
+  const f = document.getElementById('fdeform'), msg = document.getElementById('fdemsg');
+  const btn = f.querySelector('button');
+  f.addEventListener('submit', e => {
+    e.preventDefault();
+    const v = n => f.elements[n].value.trim();
+    if (!v('name') || !v('mail') || !v('body')) { msg.textContent = 'お名前・メールアドレス・ご相談の内容を書いてください。'; return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('mail'))) { msg.textContent = 'メールアドレスをもう一度ご確認ください。'; return; }
+    const F = (CONTACT && CONTACT.fields) || {};
+    if (!CONTACT || !CONTACT.endpoint || !F.name || !F.mail || !F.body) { msg.textContent = 'いま送れないみたいです。少し待ってから、もう一度お試しください。'; return; }
+    if (btn.disabled) return;                          // 連打で二重に送らない
+    btn.disabled = true; msg.textContent = '送っています…';
+    const q = new URLSearchParams();
+    q.append(F.name, v('name')); q.append(F.mail, v('mail'));
+    q.append(F.body, '【AI FDE（企業さま向け）のご相談】\n会社名: ' + (v('co') || '（未記入）') + '\n\n' + v('body'));
+    fetch(CONTACT.endpoint, { method: 'POST', mode: 'no-cors', redirect: 'follow',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: q.toString() })
+      .then(() => { msg.textContent = '送信しました。お返事はメールでお送りします。数日たっても届かないときは、もう一度お送りください。'; f.reset(); })
+      .catch(() => { msg.textContent = '送れませんでした。電波のいい所で、もう一度お試しください。'; })
+      .finally(() => { btn.disabled = false; });
+  });
+}
+
+// ── スタジオへもどる(スマホはスマホ版のスタジオへ直接) ──
+function studioURL() {
+  try {
+    if (sessionStorage.getItem('patti-pc')) return 'index.html';
+    const ua = navigator.userAgent || '';
+    const phone = (navigator.userAgentData && navigator.userAgentData.mobile === true)
+               || /iPhone|iPod|Android.+Mobile|Windows Phone/i.test(ua);
+    const touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    return (phone && touch) ? 'm.html' : 'index.html';
+  } catch (e) { return 'index.html'; }
+}
+document.querySelector('#top .brand').href = studioURL();
+let _going = false;
+function goStudio() {
+  if (_going) return; _going = true;
+  setTalk('スタジオにもどるよ！');
+  setTimeout(() => { location.href = studioURL(); }, 500);
+}
+document.getElementById('back').addEventListener('click', goStudio);
+window.addEventListener('pageshow', e => { _going = false; if (e.persisted) setTalk(TALK_DEFAULT); });
+
+// ── 動かす ──
+let rz = 0;
+const relayout = () => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => { layout(); drawFrame(performance.now() / 1000); }); };
+window.addEventListener('resize', relayout);
+if (window.ResizeObserver) new ResizeObserver(relayout).observe(area);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);   // 文字の書体が届いたら高さを測り直す
+layout();
+drawFrame(0);
+area.classList.add('ready');
+if (location.hash && hasDetail(location.hash.slice(1))) {   // 共有されたリンク(#course / #fde)から来た人
+  const k0 = location.hash.slice(1);
+  history.replaceState(null, '', location.pathname + location.search);
+  setTimeout(() => openDetail(k0), 300);
+}
+if (!still) {
+  let prevT = 0;
+  const tick = (ms) => {
+    requestAnimationFrame(tick);
+    if (document.hidden || detailEl.classList.contains('on') || ms - prevT < 1000 / 15) return;   // 15コマ/秒
+    prevT = ms;
+    drawFrame(ms / 1000);
+  };
+  requestAnimationFrame(tick);
+}
+</script>
+</body>
+</html>

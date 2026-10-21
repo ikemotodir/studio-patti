@@ -85,7 +85,8 @@ PLACED = []                      # (名前, x, y, w, h) — 重なり検査用
 
 # ═══════════ 部品の読み込み(room_layers から切り出す / 無ければ props_m から) ═══════════
 def _cut(prefix):
-    fs = glob.glob(os.path.join(OBJ, prefix + "*.png"))
+    """部品を名前で探す(例 "props__*_ペン立て")。番号は部屋の物を足し引きするとずれるので使わない。"""
+    fs = glob.glob(os.path.join(OBJ, prefix + ".png"))
     assert len(fs) == 1, prefix + " が1つに決まらない: %r" % fs
     s = Image.open(fs[0]).convert("RGBA")
     return s.crop(s.getchannel("A").getbbox())
@@ -135,7 +136,7 @@ SCALE = {'mayu': 0.75, 'patti': 0.75}
 WALK = 10                                            # パッチは置いた所から右へこれだけ歩く
 MAYU_W, MAYU_H, PATTI_W, PATTI_H = 76, 58, 36, 48    # 二人のコマの大きさ(等倍)
 NAMES = {
-    'gallery': 'ギャラリーのかべ', 'window': 'まど', 'clock': 'かけ時計', 'spook': 'Patti the Spookの額',
+    'gallery': 'ギャラリーのかべ', 'window': 'まど', 'clock': 'かけ時計', 'spook': 'AIの映写機と机（上でホログラムが回ります）',
     'shelf': '本棚（絵本・本・鉢植え）', 'doorL': 'デザイン室の戸口（横にだけ動きます）',
     'doorR': '編集室の戸口（横にだけ動きます）', 'counter': 'カウンター', 'globe': '地球儀',
     'monitor': 'COMPANYのパソコン', 'keyboard': 'キーボード', 'pen': 'ペン立て',
@@ -329,23 +330,35 @@ def clean_window(win):
     return win
 
 
+AI_BOX = (64, 52)                                    # 映写機の机は、前の額と同じ大きさの箱の下に置く
+
+
+def box_ai(sp):
+    """机+映写機を 64x52 の箱の下(左右は中央)に置く。上の空きでホログラムが回る。"""
+    if sp.size[0] > AI_BOX[0] or sp.size[1] > AI_BOX[1]:
+        sys.exit("映写機の机の絵(%dx%d)が箱(%dx%d)より大きいので、AI_BOX を広げてください" % (sp.size + AI_BOX))
+    b = Image.new("RGBA", AI_BOX, (0, 0, 0, 0))
+    b.alpha_composite(sp, ((AI_BOX[0] - sp.size[0]) // 2, AI_BOX[1] - sp.size[1]))
+    return b
+
+
 SPR = {
-    'gallery': part('gallery', "props__016_"),
-    'window': part('window', "window__001_", clean_window),
-    'clock': part('clock', "furniture__009_"),
-    'spook': part('spook', "props__017_"),
-    'globe': part('globe', "furniture__011_"),
-    'monitor': part('monitor', "furniture__013_"),
-    'keyboard': part('keyboard', "furniture__014_"),
-    'pen': part('pen', "props__026_"),
-    'jukebox': part('jukebox', "furniture__019_"),
-    'post': part('post', "props__018_"),
+    'gallery': part('gallery', "props__*_額縁の壁(ギャラリー)"),
+    'window': part('window', "window__*_楕円窓", clean_window),
+    'clock': part('clock', "furniture__*_掛け時計"),
+    'spook': part('spook', "props__*_AIホログラムの机", box_ai),
+    'globe': part('globe', "furniture__*_地球儀"),
+    'monitor': part('monitor', "furniture__*_COMPANYモニタ"),
+    'keyboard': part('keyboard', "furniture__*_キーボード"),
+    'pen': part('pen', "props__*_ペン立て"),
+    'jukebox': part('jukebox', "furniture__*_ジュークボックス"),
+    'post': part('post', "props__*_赤いポスト"),
 }
-shelf_raw = part('shelf_raw', "furniture__006_")     # 二段の壁棚(板の行だけ使う)
-books = part('books', "furniture__007_")
-ehon = part('ehon', "furniture__008_")
-plant = part('plant', "furniture__012_")
-counter_raw = part('counter_raw', "furniture__010_")  # 290px。両端を残して真ん中を詰める
+shelf_raw = part('shelf_raw', "furniture__*_壁かけの棚")     # 二段の壁棚(板の行だけ使う)
+books = part('books', "furniture__*_本たち")
+ehon = part('ehon', "furniture__*_おばけのパッチの絵本")
+plant = part('plant', "furniture__*_鉢植え")
+counter_raw = part('counter_raw', "furniture__*_カウンター")  # 290px。両端を残して真ん中を詰める
 
 # 本棚: 長い板(棚板の行を伸ばす)に 絵本・本・鉢植え を並べる
 PLANK_H = 4
@@ -407,6 +420,11 @@ HOT['gallery'] = put('gallery', SPR['gallery'], *POS['gallery'])
 HOT['window'] = put('window', SPR['window'], *POS['window'])
 HOT['clock'] = put('clock', SPR['clock'], *POS['clock'])
 HOT['spook'] = put('spook', SPR['spook'], *POS['spook'])
+# 映写機のレンズ(箱の中でいちばん上にある不透明な点の、左右の真ん中)
+_a = SPR['spook'].getchannel("A")
+_ly = min(yy for yy in range(AI_BOX[1]) for xx in range(AI_BOX[0]) if _a.getpixel((xx, yy)))
+_lx = [xx for xx in range(AI_BOX[0]) if _a.getpixel((xx, _ly))]
+AI_LENS = [POS['spook'][0] + (_lx[0] + _lx[-1] + 1) // 2, POS['spook'][1] + _ly]
 sx, sy = POS['shelf']
 im.alpha_composite(shelf, (sx, sy))
 for pid, spimg in (('ehon', ehon), ('books', books), ('plant', plant), ('plank', plank)):
@@ -540,6 +558,7 @@ meta = {
     "mayu": [POS['mayu'][0], POS['mayu'][1], SCALE['mayu']],
     "patti": [POS['patti'][0], POS['patti'][1], SCALE['patti']],
     "walk": WALK,
+    "ai_lens": AI_LENS,                          # 映写機のレンズ(ここからホログラムを出す)
     "hot": {k: list(v) for k, v in HOT.items()},
     "placed": [list(p) for p in PLACED],
     "custom": CUSTOM,

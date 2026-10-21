@@ -83,7 +83,7 @@
 
   /* ─── 重なり順をここで一元管理(レイヤー事故防止) ─── */
   #room { z-index: 1; }
-  #speopclip, #winbars, #garland, #globespin, #jukeglow, #jukehalo, #clockhands, #doorGlowL, #doorGlowR, #signGlowL, #signGlowR, #pcidle, #pcmovie, #bookcover { z-index: 2; }
+  #speopclip, #winbars, #garland, #globespin, #jukeglow, #jukehalo, #clockhands, #doorGlowL, #doorGlowR, #signGlowL, #signGlowR, #pcidle, #pcmovie, #bookcover, #aiholo, #aiglow { z-index: 2; }
   .hs, #jukebox { z-index: 3; }
   #mshadow, #mayu, #pshadow, #patti { z-index: 4; }
   #navbar, #talkbox { z-index: 6; }
@@ -101,7 +101,7 @@
   #navbar nav { display: flex; align-items: center; gap: 0; }
   #navbar nav button {
     border: 0; background: transparent; color: #ffffff; cursor: pointer;
-    font-family: inherit; font-size: 6.5px; line-height: 1.1; padding: 1px 7px; text-align: center;
+    font-family: inherit; font-size: 6.5px; line-height: 1.1; padding: 1px 5px; text-align: center; white-space: nowrap;
   }
   /* 隣どうしの境目: 暗線+明線の溝彫り(ピクセル1px) */
   #navbar nav button + button {
@@ -345,6 +345,19 @@
   .hs.nobg::after { content: none; }
   @media (prefers-reduced-motion: reduce) { .hs::after { transition: none; } }
   /* COMPANYモニタ: ふだんはスクリーンセーバー、カーソルを合わせると映像が流れる */
+  /* AI事業の入口: 映写機の上で回る「AI」のホログラム(絵は ai_holo.js) */
+  #aiholo {
+    position: absolute; width: 44px; height: 38px;
+    image-rendering: pixelated; pointer-events: none; mix-blend-mode: screen;
+    filter: drop-shadow(0 0 1px rgba(170, 140, 255, .9)) drop-shadow(0 0 3px rgba(90, 120, 255, .5));
+  }
+  #aiglow {                                       /* 壁に映るホログラムの光(呼吸する) */
+    position: absolute; left: 259px; top: 64px; width: 60px; height: 50px;
+    pointer-events: none; mix-blend-mode: screen; animation: aiglow 3.2s ease-in-out infinite;
+    background: radial-gradient(closest-side, rgba(150, 110, 255, .32), rgba(70, 110, 255, .14) 55%, rgba(70, 110, 255, 0));
+  }
+  @keyframes aiglow { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { #aiglow { animation: none; } }
   #pcidle, #pcmovie {
     position: absolute; left: 150px; top: 100px;   /* 画面の内側そのもの */
     width: 92px; height: 28px;                     /* = 23:7 (約3.29:1) */
@@ -523,8 +536,9 @@
             aria-label="編集室（CONTENTS CREATIVE）へ入る"></button>
     <button id="companylink" class="hs nobg" style="left:144px;top:100px;width:104px;height:42px"
             aria-label="COMPANY（会社概要をひらく）"></button>
-    <button id="spooklink" class="hs" style="left:254px;top:82px;width:68px;height:56px;--gw:114%;--gh:126%;--gi:.7"
-            aria-label="Patti the Spook（準備中）"></button>
+    <div id="aiglow" aria-hidden="true"></div>
+    <button id="ailink" class="hs" style="left:262px;top:68px;width:54px;height:54px;--gw:120%;--gh:120%;--gi:.55"
+            aria-label="AIの部屋（AI事業）へ入る"></button>
     <button id="booklink" class="hs" style="left:72px;top:82px;width:28px;height:28px;--gw:170%;--gh:170%;--gi:.3"
             aria-label="絵本『おばけのパッチ』を読む"></button>
     <img id="bookcover" src="ehon_cover.png" alt="" aria-hidden="true">
@@ -540,6 +554,7 @@
         <button data-k="company">COMPANY</button>
         <button data-k="chdesign">CHARACTER<br>DESIGN</button>
         <button data-k="contents">CONTENTS<br>CREATIVE</button>
+        <button data-k="ai">AI<br>BUSINESS</button>
         <button data-k="spook">Patti the Spook</button>
         <button data-k="contact">CONTACT US</button>
       </nav>
@@ -563,6 +578,7 @@
   </div>
 </div>
 
+<script src="ai_holo.js"></script>
 <script>
 // ─────────────────────────────────────────────
 // 設定：ここだけ触れば動きが変わる
@@ -878,6 +894,7 @@ function showDetail(key, instant = false) {
     _opener = (a && a !== document.body && wrapEl.contains(a)) ? a : _lastHot;
   }
   wrapEl.inert = true;                                    // 裏の部屋はタブで触れないようにする
+  window.AI_HOLO_PAUSED = true;                           // 裏のホログラムも止める
   dbackEl.focus({ preventScroll: true });
   if (location.hash !== '#' + key) history.pushState({ detail: key }, '', '#' + key);
 }
@@ -888,6 +905,7 @@ function closeDetail() {
   window._closeT = setTimeout(() => { detail.hidden = true; dcontent.innerHTML = ''; }, 300);
   currentView = null;
   wrapEl.inert = false;
+  window.AI_HOLO_PAUSED = false;
   if (_opener && document.contains(_opener)) _opener.focus({ preventScroll: true });
   _opener = null;
   // 自分で積んだ履歴は増やさない(戻るで、閉じた画面が開き直さないように)
@@ -1265,8 +1283,9 @@ hotspot('companylink', 'スタジオパッチの会社案内が見られる<br>�
   pc.addEventListener('mouseleave', stop);
   pc.addEventListener('blur', stop);
 })();
-hotspot('spooklink', '『おばけのパッチ』の世界への入口！<br>大きな月の絵だよ！（いま準備中）',
-  () => tease('Patti the Spook'));
+hotspot('ailink', 'AIの部屋への入口！<br>AIの講座と、会社のAI導入のお手伝いだよ！',
+  () => enterRoom('ai.html', 'AIの部屋'));
+if (window.mountAIHolo) mountAIHolo(stage, 289, 100);   // 映写機のレンズ(make_room.py の AIX と机の位置)
 
 // 上部ナビゲーション(部屋の中の入口と同じところへ案内する)
 const NAV_ACT = {
@@ -1276,6 +1295,8 @@ const NAV_ACT = {
               act: () => enterRoom('design.html', 'デザイン室') },
   contents: { talk: 'アニメーションなど制作のページだよ！<br>編集室へ案内するね！',
               act: () => enterRoom('contents.html', '編集室') },
+  ai:       { talk: 'AIの講座と、会社のAI導入のお手伝い！<br>AIの部屋へ案内するね！',
+              act: () => enterRoom('ai.html', 'AIの部屋') },
   spook:    { talk: '『おばけのパッチ』の世界のページだよ！（いま準備中）', act: () => tease('Patti the Spook') },
   contact:  { talk: 'お問い合わせフォームをひらくよ！', act: () => zoomOpen('post', 320, 116, 26, 72) },
 };

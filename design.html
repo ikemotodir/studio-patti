@@ -70,7 +70,7 @@
   #navbar nav { display: flex; align-items: center; gap: 0; }
   #navbar nav button {
     border: 0; background: transparent; color: #ffffff; cursor: pointer;
-    font-family: inherit; font-size: 6.5px; line-height: 1.1; padding: 1px 7px; text-align: center;
+    font-family: inherit; font-size: 6.5px; line-height: 1.1; padding: 1px 5px; text-align: center; white-space: nowrap;
   }
   #navbar nav button + button {
     border-left: 1px solid #05041c;
@@ -432,6 +432,7 @@
         <button data-k="company">COMPANY</button>
         <button data-k="chdesign" class="here">CHARACTER<br>DESIGN</button>
         <button data-k="contents">CONTENTS<br>CREATIVE</button>
+        <button data-k="ai">AI<br>BUSINESS</button>
         <button data-k="spook">Patti the Spook</button>
         <button data-k="contact">CONTACT US</button>
       </nav>
@@ -547,6 +548,7 @@ const NAV_ACT = {
   company:  { talk: '会社概要だよ！', act: () => window.open(COMPANY_URL, '_blank', 'noopener') },
   chdesign: { talk: 'いまいるのが、このデザイン室のページだよ！', act: () => {} },
   contents: { talk: 'アニメーションなど制作のページだよ！', act: () => { location.href = 'contents.html'; } },
+  ai:       { talk: 'AIの講座と、会社のAI導入のお手伝いのページだよ！', act: () => { location.href = 'ai.html'; } },
   spook:    { talk: '『おばけのパッチ』の世界のページだよ！（いま準備中）', act: () => tease('Patti the Spook') },
   contact:  { talk: 'お問い合わせフォームをひらくよ！', act: () => { location.href = 'index.html#post'; } },
 };
