@@ -1162,6 +1162,12 @@ const BUILDERS = {
       'display:none;color:#8a2a3a;' + fs;
     ok.textContent = 'おてがみを投函しました！ありがとう！';
     dcontent.appendChild(ok);
+    const pv = document.createElement('a');   // 個人情報の取り扱い(10/25)。本文の線の下・投函ボタンの左上(右上は切手、ボタンの左は投函後の文が出る)
+    pv.href = 'privacy.html'; pv.target = '_blank'; pv.rel = 'noopener';
+    pv.textContent = '個人情報の取り扱い';
+    pv.style.cssText = `position:absolute;left:${164/384*100}%;top:${157/240*100}%;` +
+      'font-size:clamp(10px,1.25vw,13px);color:#6b5a48;';
+    dcontent.appendChild(pv);
     const p = dcontent;
     send.addEventListener('click', () => {
       const name = nameEl.value.trim(), mail = mailEl.value.trim(), body = ta.value.trim();

@@ -5,7 +5,7 @@ GitHub の反映ワークフローからも呼べるように、外部ライブ�
 import io, json, os, re, sys
 
 WEB = os.path.dirname(os.path.abspath(__file__))
-PAGES = ["index.html", "m.html", "design.html", "design_m.html", "contents.html", "contents_m.html", "layout.html", "ai.html", "shindan.html"]
+PAGES = ["index.html", "m.html", "design.html", "design_m.html", "contents.html", "contents_m.html", "layout.html", "ai.html", "shindan.html", "privacy.html"]
 PHONE = ["m.html", "design_m.html", "contents_m.html"]
 ng = []
 ok = 0
@@ -186,7 +186,16 @@ check("shindan.html が、メインに届かないとき予備へ送り直して
 _sdtext = re.sub(r"data:[^\"')]+", "", sd)
 for w in ("小さな会社", "小さい会社", "小さなお店", "零細", "そんな会社", "も歓迎", "初心者でも", "稼げる", "必ず", "本日限定", "今だけ"):
     check("shindan.html に使わない言い方『%s』がある" % w, w not in _sdtext)
-check("shindan.html に絵文字がある", not re.search("[🌀-🫿☀-➿]", _sdtext))
+check("shindan.html に絵文字がある", not re.search("[🌀-🫿☀-➿]", _sdtext.replace("♪", "")))   # ♪は池本さんの例「〜調べるよ♪」(10/25)
+# 個人情報の取り扱い(10/25 池本さん「個人情報取り扱いのページをつけよう」)。集める所すべてからつなぐ
+pv = read("privacy.html")
+check("privacy.html に運営者(商号・代表・所在地・連絡先)が無い", all(w in pv for w in ("合同会社スタジオパッチ", "池本 将", "愛知県一宮市西五城字中切29番地1 グレイス五城B号", "mm.arrowz.39@gmail.com")))
+check("privacy.html に使う目的・第三者・保管・開示等の申し出が無い", all(w in pv for w in ("使う目的", "ほかの会社や人に渡すこと", "保管", "消してほしい")))
+for page in ("index.html", "m.html", "ai.html", "shindan.html"):
+    check("%s から個人情報の取り扱い(privacy.html)へつないでいない" % page, "privacy.html" in read(page))
+check("shindan.html の一番下に会社概要が無い", "法人番号" in sd and "6180003026597" in sd)
+for w in ("愛知の会社向け", "個人向けの版", "個人の無料版", "採用の映像", "お調べします"):
+    check("shindan.html に直す前の言い方『%s』が残っている" % w, w not in _sdtext)
 # お相手(個人・企業)に失礼な言い方(10/21 池本さん「小さな会社・お店はマジで失礼」)
 for w in ("小さな会社", "小さい会社", "小さなお店", "小さいお店", "零細", "そんな会社", "も歓迎", "初心者でも", "苦手な方でも", "分からない方"):
     check("ai.html にお相手に失礼な言い方『%s』がある" % w, w not in ai)

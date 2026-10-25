@@ -292,6 +292,7 @@
     border: 2px solid #3a2a20; border-radius: 3px; font-family: var(--font); font-size: 16px; cursor: pointer;
   }
   .letter .send:active { background: #3a2a20; color: #fdf3e3; }
+  .letter .pv { display: inline-block; margin-top: 14px; font-size: 13px; color: #6b5a48; }
   .letter .ok { margin-top: 12px; color: #8a2a3a; font-size: 14px; display: none; line-height: 1.5; }
 
   @media (prefers-reduced-motion: reduce) {
@@ -600,7 +601,8 @@ const BUILDERS = {
       + '<input id="lmail" type="email" placeholder="メールアドレス" autocomplete="email" inputmode="email">'
       + '<textarea id="lbody" placeholder="ご相談・ご依頼はこちらへ"></textarea>'
       + '<button class="send" id="lsend" type="button">ポストに投函する</button>'
-      + '<div class="ok" id="lok"></div>';
+      + '<div class="ok" id="lok"></div>'
+      + '<a class="pv" href="privacy.html" target="_blank" rel="noopener">個人情報の取り扱い</a>';
     dbody.appendChild(box);
     const nameEl = box.querySelector('#lname'), mailEl = box.querySelector('#lmail'), ta = box.querySelector('#lbody');
     const okEl = box.querySelector('#lok'), send = box.querySelector('#lsend');

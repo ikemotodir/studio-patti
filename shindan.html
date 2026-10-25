@@ -36,7 +36,8 @@ body::before{content:"";position:fixed;inset:0;background-image:radial-gradient(
 .proto{position:relative;background:rgba(13,26,74,.55);color:#fff;font-size:12.5px}
 .proto .wrap{padding-block:5px}
 .top .wrap{padding-block:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;color:var(--on-grad)}
-.brand{font-family:var(--f-dot);font-size:18px;letter-spacing:.06em}
+.brand{display:flex;align-items:center}
+.brand img{height:20px;width:auto;display:block;image-rendering:pixelated}
 .chip{font-family:var(--f-dot);font-size:13px;background:var(--yellow);color:#1d1b29;padding:2px 10px;border-radius:3px}
 main .wrap{padding-block:6px 48px}
 .screen{display:grid;gap:18px}
@@ -51,8 +52,8 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .patti.sm{width:72px;height:96px;background-size:864px 96px;animation-name:p12s}
 @keyframes p12{to{background-position:-1296px 0}}
 @keyframes p12s{to{background-position:-864px 0}}
-.walker{width:36px;height:48px;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAbAAAAAwCAYAAABwiS9GAAADyElEQVR42u3dS47bMBBFUVLhnrL/YRYVMIPAQMPoj0TxU5LOAzIIjC6Vy+S9tmzLOZ1MrbV+d3vOOScREXl8evsij2hipcyiCZXgRQD6yfwZ6Ys8o5HRQ4smVIIneIAG6KfzZ4Yv8sxGeg8smlAJnuABGqCfzp+ZvsirmjkzrGhCJXiCB2iAxp/5vsgrm2kZVDShEjzBAzRA488aX+TVzRwZVDShEjzBAzRA4886X2wRmtlzzJk97TlWtH5m9XTkGNH6Gd1TS+1I/Vg/+BOdze/H3FK6/iefZh+T4AkeoAEaf9Zni9Ro1CERPMEDNEBLrLnVWutmQMeOTfA2GUBbO/gTIyXtf9Os1xDsihttsPc3eKP1I9aP9TM/s3xR9jbyKpRzPiyhj3/zXi/6gAgeoAFa8OdYH7N8UY7coZZmXjVef3u1ARE8wQO09YM/x+c7wxfTTyH2XIARhErwBA/QAI0/a3xRWu5oy2b5OKQrDYjgCR6grR/8Sc1zH+mL7cyQVg/tdSdf/84M92792GBfz/mMLN4fq7NQjNaP9YM/ox6zEY/hdmbDRVvUqxc5wRM8QAM0/szzxSWuxHEVoRI8wQM0QOsnrbsSh6S7fYzcBgNo60cITITgAVokXe1KHJHP1YuISLrt9wm7CexpAyJ4EcGfG7wCO/O5frGgCd76sX7So07Pj/ZFufKlfKIJleABGqABWj/zfFHusIj0Y4OJ9YM/z9tTxTa9P4T0A9DWjxCYCMEDtEi64PfAzpyfd25fRCR5f7nj35ajzwyPXu26189f/HQV7ghCjdaPiIwFNP6s9UU529iqUyLRhErwBA/QAI0/c31RZp6rf78TPYYWRagET/AADdD4M9cXTQL7++d/4V+/6+7bP9ucPX/gMopQCZ7gARqg8WeOL0rPxl7/n/2Jq2hCJXiCB2iAxp/xvig9G+vxE9F3ECrBEzxAAzT+jPdFueN3XKIIleAJHqABGn/G+aKLwFoXkC+NEjzBAzRAP6ufnr4oPRqJJrJoQiV4ggdogH46f0b4onxyHj3XHx7pr05t7L09fX0OP99JqARP8AAN0Hfmz2pflBMiqSmlHpP4tk40oRI8wQM0QONPDF/kUeJRZ16duuilwFcLN1I/e3pp+dBEa0/R+rF+uj1BxDECU0cdggdoddQZXif12oQ9N3NVx2zUUQd/nsGf0nCw3KlpdebWyTuevaijjjq4cZk6W4MpayfjqqOOOuqoo05znUM/aOmlsjrqqKOOOlHqbElEROSCySeNmTuZVx111FFHHXUO1fkHtPW2L33qfF4AAAAASUVORK5CYII=) 0 0/432px 48px no-repeat;animation:w12 1.4s steps(12) infinite}
-.walker.walking{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAAwCAYAAACxIqevAAAC60lEQVR42u3c0W7jIBCFYQ7lnfr+l/tQFXux6qqKEtfAwDDkP1Ivqijk85hQwK6VBlNrrVevS1JaGDx48MTxaAZidbHw4MET06MVkFmFwoMHT2yPVkKsCoUHD54zPNkL09s2Hjx4zvFkL0zPZ+DBg+csT/bEtHwWHjx4zvNkb8ydz8SDB8+ZnpwIIcQp2mE0vNopx4MHz7keZkCEELeUhpHTau1nNZLjwYMnuKfchXw3JKn5IH++57G93sLgwYMnvqdpD6gH0/reljUqHjx4Ynvy6ilZsttMw4MHT3BPbl3PSfr/0/PeZHsvAR48eAJ78sio6D1q48GDJ7Yn94yKzrcO4MGD5xAP9wERQhI3IhJCGIAIISTtdid04vIlHjx4mAERQt5yCfa4G+69W48HD57YnuL1z26zioQHD544HpZghBCughFCGIAIIWTPAWjkktyMy3l48OCJ7Smtm1GtDzwafUASHjx4zvWUUZj3LjoePHjiesrKy3OPB2FZPDx48MTzdA1AX3/+NfzxWW+//uwRjSOPfMSDB098T7GEff/udZMTHjx4YnmKJezOIxpX3OmJBw+eGJ7MbeZ48ODx8pgMQB+f9eX60CN48OCJ4SmjkGe/t64NLQuDBw+eOB69mDpVp4cf4cGD5809t5d4VkvFIO3UHz/Uh3bohwbt8M+ofcX/rQPUV7NLQuiHyfYy/MKCy6HQ9cZrM0+yLo5vh/q84xd/RZ0fz7t3P5xSnxzopKfGqefoie+1rvqyR6pPhOiiph51Hu0T1v1wSn1Kx199Gc0eZFBoGX55NfiFszjhr1xqPOaV9YnUf+pm/bD1vM/uh8vro87NJt040Gq8vEgLOvVVm3WCZaT93eqzW/9Zfd4tB0WL867JDpP65I2vGOy2Z6EbJi32nLKn4t1Ooh/61CcHWJfv1kHk6FCA+qRD94c866zN+qFZfTRpGj5j2VIXLne04cxAgeqzY/+xOu91Qn/ZZSWwvD5/ARH/ex5/RekCAAAAAElFTkSuQmCC);background-size:288px 48px;animation:w8 .5s steps(8) infinite}
+.walker{width:36px;height:48px;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAbAAAAAwCAYAAABwiS9GAAAEjklEQVR4nO2dbW7bMBAFTVd36v1/9lAFiyBQISiJxI/l8i01AxRIY5kaPJO7siQ76dVIzjlfPZ5SSi9H1HwAAGBsfU6WEt7NQ81HuaHiAyvBfNbPx6M+p5Eio0JT81FtqPjYZcUBx/x8mM8x8smO9Tl5iFgFpuaj2lDxGZsTBxy++TCfY+STJ9Tn5C3TGpaaj2JDxcc3Jw44xubDfI6TT55Un9MMmdqg1HwUGyo+8zLigMM+H+ZznHzyxPr8niVTui81n5rtPFxqt32iT8v2o8fGZ042LfvAR7c+v2fJlOxTzafkcU+X0m2e7FOznYdL7bZP81GbP/j8jEJ9/vIODMrD8yBSg1fzKXnc06V0m6f6qM0ffF5TMqjhrSD63b7VfCAeFKBYBRrikEXqM+/AGkLzJkKDV/OBWKjNH3xirK+t5UlWH/OwykXNB+YzuwCd75jC5zofWJc0sD5vLTL7QMefvZ6v7rOPY8GqDV7NB2KhNn/wmVefN+9i//Gc/bnHn1tQ87FwWr3Bq/ns41hAQRyfj9r8wWdufd5mHfEepVpR81FrqPiMz4iC6JcP8zlWPtmhPjfdxNG60Pd/1qd+VHysX7DeMfHxW/Dnn1vA5z5rK1hf4/PxqM9NN3HUcl7Us6/fjvZpfcF2egshPjHfweNTl3UNrK95+Yyszy4NbOd4tKuAis/TGnwtHHDUZbT6AVAtT5vP0X1q6jOfAxOi9wjeGnxiLHh8ymA+x8qnBBoYwCILHh94GjQwAAAIies1sNmnWtR9AACgvD67NjCI1VDxgZVgPsfKR+YU4vk6wezrBmo+EJP9cyoq4AMrUFOf394XmFWahZKPWkPFB1aC+Rwrn5r6zClEERQmzRF8rrNR+pwTPmUZKYGPDTQwgAYoQLHygTXhNnoAAHhWA+v90lJr1HwAAGBsfd4svqOq9HSB5TccK/vsY/f8GRR8fPOBWLC+4uQzsj5vnl+GO/q8uIqPWkPFJ9aCx+ca5nOsfEbW5+IGdt7pcfAZF2zVfJQbKj6xFjw+bTmVbj8KfPzr89Z6dHr83d8/n7K/fn8vdvd4LWo++/6VGio+9VCAdPNhPsfJJznW56IGVhrAecf7/61R81FrqPiUZXSEAw7dfJjPsfLJjvV5G3G9YFSjUPVRa6j4xFrw+FzDfI6Vj2d97roLUQU1n9kNFZ9YCx6fOlhfsfLJA+vzkG/i8O7waj5qDRWfWAsen2uYz7HyucP9FOKdiEojU/NR89h5uo/agsenj6fP5yg+FvX5fwNLKaXcuHLurgXcPf6x7+9+p+SzYkPFJ9aC38HnOheVnFb2SSL1+cr8YxSLpJcZp/UF6+WnhorPz/n0ZGNxE8fZCZ/rfHoz6oH19bI4oJ9Sn2lgTkEzjn8+FMRYBfoE64t8urCa3IxDPswf1gV1g3po3i/4cyoAABCSVPD2/aoj3p0KYBzyYf6wLqgb1MMh/eLd+Xau9O0e45AP84d1Qd2gHpr2i6sGxrWrvpBLYRzyYf6wLqgbn3ANDAAA1qf3Jg6rT+QxDvkwf1gX1A3q4aumX/wDEYvwUv1Rlk0AAAAASUVORK5CYII=) 0 0/432px 48px no-repeat;animation:w12 1.2s steps(12) infinite}
+.walker.walking{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAAwCAYAAACxIqevAAADNklEQVR4nO2d3a6jMAyEa7bvtO9/uQ+1yqpaIaEcSkiwY2O+kc5FW+oMk5mcEH4qr06UUsrR5yIir4mAD/rgn/vmSzRIzB6M4IM++OeVIl9iQcRKKPigD/7JlS+xJKIlFHzQB//kzNcyi8xobfigD/7Jm69lFpmRNuCDPvgnd76WmWR62oIP+uCf/PlaZpNZcdQmfNAH/zwjXz/WgAAAYBYWj9FwxV7b8EEf/POcfDEDAgC44d3aQOtiS62BFz7og3/y5OvdIrIW+rzu3cntd+p6vYAP+uCffPmSM8eEI2TOfre+WhI+6IN/npOvKWtAk2+QbwI+6IN/YuTr1BrQyFRsxee7moGHD/rgH0mTL/UZUN2492wDPuiDf+Lmy+wQ7DMSOl5y8APwQR/8Ey9fXAcEAHADAxAAwA0MQAAANzTPgo3Ce/G5BnzQB//EyxczIACAG9QHoHol3PtMGHzQB//EzZfJIZj3oFMDPuiDf2Lmi0MwAIAbGIAAAG5gAAIAxB6ArpzCtjj9DR/0wT858tVchB594NHVByTBB33wT/58vUeJnd3eCvBBH/xz/3ztDkB1o9viHqe04YM++Cdnvt5nHkhUv/f3z3/Cv37vk2t93gP4oA/+yZuvHwNQz4hXN7y+1gR80Af/lLT5Unkkq4Uw8EEf/JM/X83T8NzGgD5XgH/Qx/xCxM+UTON4VAvwQR/8c498XboZtSZhuRYEH/TBPyVdvsTzB+vrHylbAR/0wT/PydcWWsSoo6NP2fyh83N8WJ7S79yM6gNpdNqe+eIssoFR0O+zngkdtOO/TQHrcO9td/R9LbQGGSsOGvpExF32q5z4XAw84K5P5BnQrMDvdX5x+G/Y22Z2faLsl7bOV/s9lT5HM6AjYXoatKwzuuNlYFsx4NHLRwLqcxf/tGpdqWGtswTzYW+Nr7zky2hWFMJwtY5GKEdrbuta8NhitH4UfaL6p673CqTzSN1ixKOn9l79S7yWiCvjASCB2pKAay69M7G7+Id+P8aj1oC8BBQHU35rQ26gzx0Qdb+k433JqI/VdHNWHc3Dnitcop49manPGT5na8087NHYr5n9Xwx5TNfnH5Q/gOaQrocrAAAAAElFTkSuQmCC);background-size:288px 48px;animation:w8 .8s steps(8) infinite}
 @keyframes w12{to{background-position:-432px 0}}
 @keyframes w8{to{background-position:-288px 0}}
 .mayu{width:60px;height:144px;background:url(data:image/png;base64,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) 0 0/720px 144px no-repeat;animation:m12 1.2s steps(12) infinite}
@@ -168,33 +169,68 @@ details.terms ul{margin:6px 0 0;padding-left:1.2em;display:grid;gap:2px}
 .copy.done{background:var(--paper);color:var(--ok)}
 .extra{background:rgba(13,26,74,.55);color:#fff;border-radius:6px;padding:10px 12px;font-size:14px;font-weight:700}
 .btn:focus-visible,.opt:focus-visible,.copy:focus-visible,.back:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible,.resume button:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
-footer .wrap{padding-block:0 32px;font-size:13px;color:var(--on-grad);display:grid;gap:2px;text-shadow:0 1px 0 rgba(13,26,74,.7)}
+.company{position:relative;background:rgba(13,26,74,.62);color:#fff}
+.company .wrap{padding-block:26px 30px}
+.company .pix{font-family:var(--f-dot);font-size:12px;letter-spacing:.14em;opacity:.9}
+.company h2{font-size:20px;margin:2px 0 12px}
+.company dl{display:grid;grid-template-columns:6.5em 1fr;gap:4px 12px;margin:0;font-size:14.5px;line-height:1.5}
+.company dt{opacity:.85}.company dd{margin:0;overflow-wrap:anywhere}
+.company .links{margin-top:16px;font-size:14px}.company a{color:#fff}
+.company .cr{font-size:12px;opacity:.8;margin-top:10px}
 .rhead p,.hero .lead,.timer{text-shadow:0 1px 0 rgba(13,26,74,.6)}
 .opt span:last-child{overflow-wrap:anywhere}
 .win .react{display:block;font-family:var(--f-dot);font-size:15px;color:var(--yellow);margin-bottom:2px}
 .lv .num small{font-size:16px;color:#fff;opacity:.8}
 @media (max-width:440px){.bubble{font-size:16px}}
+/* 10/25夜: マーカー・ドット絵・ゲームの窓・最後の画面の余白 */
+.mk{background:linear-gradient(transparent 50%,var(--yellow) 50%);color:inherit;padding:0 2px}
+:root[data-theme="dark"] .mk{background:var(--yellow);color:#1d1b29}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .mk{background:var(--yellow);color:#1d1b29}}
+.ico{display:inline-block;width:32px;height:32px;flex:none;image-rendering:pixelated;background:0 0/100% 100% no-repeat}
+.ico.sm{width:16px;height:16px;vertical-align:-2px;margin-right:6px}
+.ico.star{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAl0lEQVR4nGNgoCXglfL6D8Jka/5zggGM8RnCRIkLibL9DwFXsJDiR2xqGUGC79dtw6qB2fw/w9+TjDgNFAzyYmD6/GwbI4hBCrh1BKIZpJcR2Xm4XIKu2bwPohklFj4T4RJ0zSgGkAuY8HkB5lcYULNhYACpudaDiFYmXCYjO5dgICMnHGTTiVEDDgx0DciBhG4IMepIAgBxeW00WWLmxwAAAABJRU5ErkJggg==)}.ico.sword{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAiklEQVR4nGNkIBHwSnn9h7E/P9vGSLJmEDh27tF/ZIOIAqOavf4TFUi8UIVkBRivlNf/PycY/lMcVX9OMJCkmQmboNkvOZIsBgOQjVVucv9hroB5h4EYF/BKef3P1bkCF2SxYGAUDPJieL9uG0rax2oASMFcv1dgzuQrOvAMAqJBhhACjBTlLmoAACqbiexwgmepAAAAAElFTkSuQmCC)}.ico.shield{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAlklEQVR4nGNgoBAwggheKa//5Gj+/GwbIwuM837dNpI0CwZ5gWkWZEGWprUoiv7UBeMVBwEmdJOjfJyx2ohLnAldYNmWvVgV4hJnweU0YsSxuoBUwEKVQPz8bBsjKFrwORVZM0gtSA/cAEoAE4xBjCvQbccKeKW8/v85wfCfwWstmEZmE53kYYYgY1yacToFXQNeZ1MCAEgkVKV75BPCAAAAAElFTkSuQmCC)}
+.ico.map{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAjUlEQVR4nGNgoBAwggheKa//5Gj+/GwbIwuM8/JUDorkiwfXGCQUtHBqFjebAqaZkAUfeFXA2SDNIEMIASZkjsK2DgxDYK4hyoAHXhUYhpDsAmSamLBgwilDhGa8BrzAoxk5TJjI0Ywsx0SsZpit6HJMhDSja0SPISZkDjabyQ5EbABbOqE4M5GjDwUAAHYMRMPL7orfAAAAAElFTkSuQmCC)}.ico.chest{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAmUlEQVR4nGNgGGjAiMzhlfL6T4ymz8+2wfWxIGvO1bkCZhsoiTFcuPcKRROy2GQGr/8wQ5jQNRMDQGphrmWEGfB+3TYGUoBgkBfYK0yEFIEwPsACY9TVyWH1L8hlIEPm+r3CCBcQYCLk1FtH8MszEQos8z7cthPlglydK2DNIG9hA4yUxgILTABXIOITQ3EBSdZDAXKSHjgAAFsdSg0u8oW7AAAAAElFTkSuQmCC)}
+.menu{padding:18px 18px 16px}
+.menu h3{font-family:var(--f-dot);font-weight:400;font-size:17px;letter-spacing:.06em;margin-bottom:12px}
+.gets{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.gets li{display:flex;align-items:center;gap:12px;font-weight:700}
+.gets .ico{width:38px;height:38px;padding:3px;background-color:#fff;background-origin:content-box;border-radius:4px}   /* 紺の窓では縁が沈むので白い台に乗せる */
+.gets small{font-family:var(--f-dot);font-weight:400;font-size:12.5px;color:var(--yellow);margin-left:8px;white-space:nowrap}
+#s-result{gap:30px}
+#s-result .card{padding:20px 18px;gap:14px}
+#s-result .quest{padding:12px 0}
+.card h3.gh{display:grid;grid-template-columns:32px 1fr;column-gap:12px;row-gap:2px;align-items:center}
+.gh .ico{grid-row:1/3}
+.gh .eyebrow{justify-self:start}
+.gh .sc{font-family:var(--f-dot);font-weight:400;color:var(--accent2);margin-left:10px;white-space:nowrap}
+.rhead h2.first{display:grid;gap:10px;justify-items:start}
+.first .pre{font-size:18px}
+.first .hl{font-size:clamp(26px,7vw,36px);line-height:1.3;background:var(--yellow);color:#1d1b29;border:3px solid var(--line);border-radius:6px;padding:8px 16px;box-shadow:0 5px 0 var(--edge);text-shadow:none}
+.prompt summary{cursor:pointer;color:var(--head);font-size:13.5px;font-weight:700;margin-bottom:6px}
+h1[tabindex="-1"]:focus,h2[tabindex="-1"]:focus{outline:none}   /* 画面を切り替えたとき見出しに移す読み上げ用の印。枠は出さない */
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 
-<header class="top" lang="ja"><div class="wrap"><a class="brand" href="ai.html" style="color:inherit;text-decoration:none">スタジオパッチ</a><span class="chip">AI活用診断</span></div></header>
+<header class="top" lang="ja"><div class="wrap"><a class="brand" id="brand" href="index.html" aria-label="STUDIO PATTI（スタジオへもどる）"><img src="data:image/png;base64,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" alt="STUDIO PATTI"></a><span class="chip">AI活用診断</span></div></header>
 
 <main lang="ja"><div class="wrap">
 
 <section class="screen" id="s-top">
   <div class="hero">
     <h1>AI活用診断</h1>
-    <p class="lead">愛知の会社向け・無料・アカウント作成なし</p>
-    <div class="talk"><span class="spr patti" role="img" aria-label="パッチ"></span><p class="bubble">AIに何を任せるか、<span class="nb">安全に使えているかを、</span><span class="nb">11の質問でお調べします。</span></p></div>
+    <p class="lead">無料・アカウント作成なし</p>
+    <div class="talk"><span class="spr patti" role="img" aria-label="パッチ"></span><p class="bubble">AIに何を任せるか、<span class="nb">安全に使えているかを、</span><span class="nb"><mark class="mk">11の質問</mark>で調べるよ♪</span></p></div>
   </div>
-  <div class="card">
-    <h3><span class="eyebrow">結果</span>分かること</h3>
-    <ul class="points">
-      <li>AI活用レベルと、任せられる仕事</li>
-      <li>安全に使えているかのチェック</li>
-      <li>進め方と、すぐ使える指示文</li>
+  <div class="win menu">
+    <h3>分かること</h3>
+    <ul class="gets">
+      <li><span class="ico star"></span><span>AI活用レベル</span></li>
+      <li><span class="ico sword"></span><span>いまAIに任せられる仕事<small>クエスト</small></span></li>
+      <li><span class="ico shield"></span><span>安全に使えているかレベル<small>守り</small></span></li>
+      <li><span class="ico map"></span><span>AI化の進め方<small>攻略ルート</small></span></li>
+      <li><span class="ico chest"></span><span>いますぐ使える指示文<small>アイテム</small></span></li>
     </ul>
   </div>
   <button class="btn" id="go">診断をはじめる</button>
@@ -216,7 +252,7 @@ footer .wrap{padding-block:0 32px;font-size:13px;color:var(--on-grad);display:gr
 
 <section class="screen" id="s-contact" hidden>
   <div class="qhead"><button class="back" id="cback">結果に戻る</button><span class="count">相談</span></div>
-  <div class="win"><span class="who">パッチ</span><h2 class="q" tabindex="-1">相談をご希望でしたら、この結果をスタジオパッチに送ってください。</h2><p class="note">メールでお返事します。</p></div>
+  <div class="win"><span class="who">パッチ</span><h2 class="q" tabindex="-1">相談したいときは、この結果をスタジオパッチに送ってね！</h2><p class="note">メールでお返事するよ。</p></div>
   <form class="card" id="cform" novalidate>
     <label class="f" for="c-co"><span>会社名<span class="req">必須</span></span><input type="text" id="c-co" autocomplete="organization"></label>
     <label class="f" for="c-name"><span>お名前<span class="req">必須</span></span><input type="text" id="c-name" autocomplete="name"></label>
@@ -224,16 +260,13 @@ footer .wrap{padding-block:0 32px;font-size:13px;color:var(--on-grad);display:gr
     <label class="f" for="c-msg"><span>ひとこと（任意）</span><textarea id="c-msg" maxlength="800"></textarea></label>
     <label class="f" for="c-from"><span>この診断をどこで知りましたか（任意）</span><select id="c-from"><option value="">選ばない</option></select></label>
     <details class="terms"><summary>送る内容を見る</summary><pre id="c-sum" style="margin:6px 0 0;white-space:pre-wrap;word-break:break-word;font:inherit;font-size:13.5px"></pre></details>
-    <details class="terms" open><summary>個人情報の扱い</summary><ul>
-      <li>送っていただいた内容は、ご相談へのお返事のために使用します</li>
-      <li>会社が分からない形にした集計にも使用します</li>
+    <details class="terms" open><summary>個人情報の取り扱い</summary><ul>
+      <li>送っていただいた内容は、ご相談へのお返事と、会社が分からない形にした集計に使用します</li>
       <li>法令で求められる時を除き、ほかの会社や人には渡さないとお約束します</li>
-      <li>送られた内容は、スタジオパッチのGoogleのメールとフォームに保管します</li>
-      <li>見せてほしい・直してほしい・消してほしい・使うのをやめてほしい時は、ホームページのお問い合わせからお知らせください</li>
-      <li>運営は合同会社スタジオパッチです。住所と代表者は、お問い合わせいただければお知らせします</li>
+      <li>くわしくは<a href="privacy.html" target="_blank" rel="noopener">個人情報の取り扱い</a>をご覧ください</li>
     </ul></details>
     <label class="ck" for="c-biz"><input type="checkbox" id="c-biz"><span>会社・お店としてのご相談です</span></label>
-    <label class="ck" for="c-priv"><input type="checkbox" id="c-priv"><span>個人情報の扱いに同意します</span></label>
+    <label class="ck" for="c-priv"><input type="checkbox" id="c-priv"><span>個人情報の取り扱いに同意します</span></label>
     <p class="err" id="cerr" role="alert" hidden></p>
     <button class="btn" type="submit">結果を送って相談する</button>
   </form>
@@ -243,9 +276,9 @@ footer .wrap{padding-block:0 32px;font-size:13px;color:var(--on-grad);display:gr
 
 <section class="screen" id="s-done" hidden>
   <div class="talk"><span class="spr patti blink" role="img" aria-label="パッチ"></span><span class="spr mayu" role="img" aria-label="マユ"></span></div>
-  <div class="win"><span class="who">パッチ</span><h2 class="q" tabindex="-1">ご相談ありがとうございます！</h2>
+  <div class="win"><span class="who">パッチ</span><h2 class="q" tabindex="-1">相談ありがとう！</h2>
     <div class="note" style="display:grid;gap:4px">
-      <p>メールでお返事いたします。それまでは、結果の指示文をお使いください。</p>
+      <p>メールでお返事するね。それまでは、結果の指示文を使ってみてね！</p>
     </div>
   </div>
   <button class="btn ghost" id="dres">診断の結果を見る</button>
@@ -254,18 +287,31 @@ footer .wrap{padding-block:0 32px;font-size:13px;color:var(--on-grad);display:gr
 
 <div id="basis" hidden><details class="terms"><summary>根拠</summary><ul>
   <li><a href="https://www.anthropic.com/legal/commercial-terms" target="_blank" rel="noopener">Anthropic</a>（Claude）・<a href="https://openai.com/enterprise-privacy/" target="_blank" rel="noopener">OpenAI</a>（ChatGPT）・<a href="https://knowledge.workspace.google.com/admin/generative-ai/generative-ai-in-google-workspace-privacy-hub" target="_blank" rel="noopener">Google</a>（Gemini）・<a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/microsoft-365-copilot-privacy" target="_blank" rel="noopener">Microsoft</a>（Copilot）は、会社向けの契約では、初期設定では入れた内容をAIの学習に使わず、自分から許可した時などは別と書いています（Microsoftは大もとのモデルについて）</li>
-  <li><a href="https://www.anthropic.com/news/updates-to-our-consumer-terms" target="_blank" rel="noopener">Claudeの個人向けの版</a>は、設定がオンのとき、会話を新しいモデルの学習に使うとAnthropicが書いています</li>
+  <li><a href="https://www.anthropic.com/news/updates-to-our-consumer-terms" target="_blank" rel="noopener">Claudeの個人向けプラン</a>は、設定がオンのとき、会話を新しいモデルの学習に使うとAnthropicが書いています</li>
   <li><a href="https://www.rodo.co.jp/news/221692/" target="_blank" rel="noopener">東京商工会議所の調査</a>では、主に東京23区内の中小企業1272社のうち43.2%が「無料ツールのみ使用」と答え、東商の中小企業部は、無料ツールは学習機能がオフになっていないことが多いと指摘しています</li>
 </ul></details></div>
 
 </div></main>
-<footer lang="ja"><div class="wrap"><span>運営：合同会社スタジオパッチ（愛知県一宮市）</span></div></footer>
+<footer class="company" lang="ja"><div class="wrap">
+  <p class="pix">COMPANY</p>
+  <h2>運営会社</h2>
+  <dl>
+    <dt>商号</dt><dd>合同会社スタジオパッチ</dd>
+    <dt>代表</dt><dd>池本 将</dd>
+    <dt>法人番号</dt><dd>6180003026597</dd>
+    <dt>所在地</dt><dd>愛知県一宮市西五城字中切29番地1 グレイス五城B号</dd>
+    <dt>創業</dt><dd>2024年4月1日</dd>
+    <dt>資本金</dt><dd>1,000,000円</dd>
+    <dt>問合せ先</dt><dd>mm.arrowz.39@gmail.com</dd>
+  </dl>
+  <p class="links"><a href="privacy.html">個人情報の取り扱い</a></p>
+  <p class="cr">© 2026 STUDIO PATTI. All rights reserved.</p>
+</div></footer>
 
 <script>
 (function(){
-const AICHI=["名古屋市","豊橋市","岡崎市","一宮市","瀬戸市","半田市","春日井市","豊川市","津島市","碧南市","刈谷市","豊田市","安城市","西尾市","蒲郡市","犬山市","常滑市","江南市","小牧市","稲沢市","新城市","東海市","大府市","知多市","知立市","尾張旭市","高浜市","岩倉市","豊明市","日進市","田原市","愛西市","清須市","北名古屋市","弥富市","みよし市","あま市","長久手市","東郷町","豊山町","大口町","扶桑町","大治町","蟹江町","阿久比町","東浦町","南知多町","美浜町","武豊町","幸田町","設楽町","東栄町","飛島村","豊根村","愛知県の外"];
-const OUTSIDE=["愛知県の外"];
-const CO={"製造":"製造業の会社","建設":"建設業の会社","卸・小売":"卸売・小売の会社","飲食・宿泊":"飲食店・宿泊施設","医療・福祉・保育":"医療・福祉・保育の事業所","運輸":"運送の会社","IT・通信":"IT・通信の会社","不動産":"不動産の会社","士業（税理士・社労士など）":"士業の事務所","その他":"私たちの会社（業種：ここに書く）"};
+const REGIONS=["名古屋市","愛知県（名古屋市のほか）","岐阜県・三重県","そのほかの地域"];
+const CO={"製造":"製造業の会社","建設・リフォーム":"建設・リフォームの会社","卸売":"卸売の会社","小売・ネット販売":"小売・ネット販売のお店","飲食":"飲食店","宿泊・観光":"宿泊・観光の会社","医療":"医療機関","介護・福祉":"介護・福祉の事業所","保育・幼稚園":"保育園・幼稚園","美容・理容・エステ":"美容・理容・エステのお店","運輸・物流":"運送・物流の会社","IT・Web・通信":"IT・Web・通信の会社","不動産":"不動産の会社","士業（税理士・社労士など）":"士業の事務所","教室・スクール・塾":"教室・スクール","広告・デザイン・印刷":"広告・デザイン・印刷の会社","農業・食品":"農業・食品の会社","金融・保険":"金融・保険の会社","人材・派遣":"人材・派遣の会社","その他":"私たちの会社（業種：ここに書く）"};
 const TAIL="\n\n書いていないこと（名前・日付・数字・金額・実績）は作らず、【要確認】と書いてください。";
 const TASKS={
  minutes:{name:"議事録・日報・報告書",how:"メモや録音の書き起こしから、決まったこと・次にやることをAIが整理。人が確かめて仕上げます。",prompt:"次のメモから議事録を作ってください。「決まったこと」「次にやること（誰が・いつまで）」「保留」の3つに分けてください。担当や期限がメモに無いものは【要確認】としてください。\n【メモ】（ここに貼る。名前は「Aさん」などに置き換える）"},
@@ -291,28 +337,29 @@ const LEVEL={none:[1,"これから"],free:[2,"ためし中"],paid:[3,"会社で�
 const HOURS_TXT={"10時間未満":"月10時間未満","10〜30時間未満":"月10〜30時間ほど","30〜60時間未満":"月30〜60時間ほど","60時間以上":"月60時間以上"};
 
 const Q=[
- {id:"ind",t:"まず、どんな業種の会社か教えてください。",type:"one",o:["製造","建設","卸・小売","飲食・宿泊","医療・福祉・保育","運輸","IT・通信","不動産","士業（税理士・社労士など）","その他"],two:true},
- {id:"size",t:"働いている人は何人くらいですか？",note:"パートも含めて",type:"one",o:["9人まで","10〜29人","30〜99人","100人以上"],two:true},
- {id:"city",t:"会社はどの市町村にありますか？",note:"相談を送るとき、会いに伺えるかの目安にします",type:"select",o:AICHI},
- {id:"use",t:"いま、AIはどのくらい使っていますか？",note:"いちばん近いものを1つ。会社向けのプランは、チーム・法人向けの契約です",type:"one",o:["使っていない","個人向けの版で使っている（会社が払う有料版も）","会社向けのプラン（チーム・法人向け）で使っている","会社向けのプランで、決まった仕事に毎日使っている"],v:["none","free","paid","flow"]},
- {id:"tasks",t:"AIで手間を減らしたい仕事はどれですか？",note:"いくつでも選べます",type:"multi",o:["問い合わせ対応","見積・請求","議事録・日報・報告書","求人や採用の文章","社内の手順書","入力・集計","営業資料・提案書","SNS・ホームページ・チラシの文章","在庫・発注","まだ分からない・その他"],v:["inquiry","estimate","minutes","recruit","manual","data","sales","post","stock","other"],two:true},
- {id:"hours",t:"選んだ仕事に、会社全体で月に何時間かけていますか？",note:"だいたいでOK。例：1人が毎日1時間なら月20時間",type:"one",o:["10時間未満","10〜30時間未満","30〜60時間未満","60時間以上","分からない"],skip:()=>Array.isArray(A.tasks)&&A.tasks.length===1&&A.tasks[0]==="other"},
- {id:"lead",t:"社内でAIを進めてくれる人はいますか？",type:"one",o:["いる","いないが、任せたい人はいる","いない"]},
- {id:"rule",t:"AIに入れてはいけない情報（お客様の名前・社外秘など）を、会社で決めていますか？",type:"one",o:["決めて、社員に伝えている","決めているが、伝わっているか分からない","決めていない"],v:["yes","part","no"]},
- {id:"shadow",t:"社員が、会社で契約していないAI（個人の無料版・スマホのアプリ・翻訳や文字起こしのサービスなど）を仕事に使うことはありますか？",type:"one",o:["ない（会社が決めたAIだけ）","あるかもしれない・分からない","ある"],v:["no","maybe","yes"]},
+ {id:"ind",t:"まず、どんな業種の会社か教えてね！",type:"one",o:Object.keys(CO),two:true},
+ {id:"size",t:"働いている人は何人くらい？",note:"パートさんも入れてね",type:"one",o:["9人まで","10〜29人","30〜99人","100人以上"],two:true},
+ {id:"city",t:"会社はどのあたりにあるか教えてね！",note:"相談をもらったとき、会いに行けるかの目安にするよ",type:"one",o:REGIONS,two:true},
+ {id:"use",t:"いま、AIはどのくらい使ってる？",note:"いちばん近いものを1つ選んでね。会社向けのプランは、チーム・法人向けの契約のことだよ",type:"one",o:["使っていない","個人向けプランで使っている（会社が払う有料版も）","会社向けのプラン（チーム・法人向け）で使っている","会社向けのプランで、決まった仕事に毎日使っている"],v:["none","free","paid","flow"]},
+ {id:"tasks",t:"AIで手間を減らしたい仕事はどれ？",note:"いくつでも選べるよ",type:"multi",o:["問い合わせ対応","見積・請求","議事録・日報・報告書","求人や採用の文章","社内の手順書","入力・集計","営業資料・提案書","SNS・ホームページ・チラシの文章","在庫・発注","まだ分からない・その他"],v:["inquiry","estimate","minutes","recruit","manual","data","sales","post","stock","other"],two:true},
+ {id:"hours",t:"選んだ仕事に、会社全体で月に何時間くらいかけてる？",note:"だいたいでOK。例：1人が毎日1時間なら月20時間",type:"one",o:["10時間未満","10〜30時間未満","30〜60時間未満","60時間以上","分からない"],skip:()=>Array.isArray(A.tasks)&&A.tasks.length===1&&A.tasks[0]==="other"},
+ {id:"lead",t:"社内でAIを進めてくれる人はいる？",type:"one",o:["いる","いないが、任せたい人はいる","いない"]},
+ {id:"rule",t:"AIに入れちゃいけない情報（お客様の名前・社外秘など）を、会社で決めてる？",type:"one",o:["決めて、社員に伝えている","決めているが、伝わっているか分からない","決めていない"],v:["yes","part","no"]},
+ {id:"shadow",t:"会社で契約していないAI（個人契約のAI・スマホのアプリ・翻訳や文字起こしのサービスなど）を、社員が仕事に使うことはある？",type:"one",o:["ない（会社が決めたAIだけ）","あるかもしれない・分からない","ある"],v:["no","maybe","yes"]},
  {id:"worry",t:"AIを使うとき、いちばん気になることは？",type:"one",o:["情報が漏れる・AIに学習される","答えが間違っていないか","社員が使いこなせるか","費用","特にない"],v:["leak","wrong","skill","cost","none"],two:true},
- {id:"pain",t:"最後に、いちばん困っていることをひとことで。",note:"書くと、結果がより合ったものになります（書かなくても進めます）",type:"text",opt:true}
+ {id:"pain",t:"最後に、いちばん困っていることをひとことで教えてね！",note:"書くと、結果がもっとぴったりになるよ（書かなくても進めるよ）",type:"text",opt:true}
 ];
 
-const SAMPLE={ind:"その他",size:"9人まで",city:"一宮市",use:"paid",tasks:["estimate","minutes","post"],hours:"10〜30時間未満",lead:"いる",rule:"part",shadow:"maybe",worry:"leak",pain:"",
+const SAMPLE={ind:"その他",size:"9人まで",city:"愛知県（名古屋市のほか）",use:"paid",tasks:["estimate","minutes","post"],hours:"10〜30時間未満",lead:"いる",rule:"part",shadow:"maybe",worry:"leak",pain:"",
  contact:{co:"見本（答えは例です）",sample:true}};
 
 let sent=false, A={}, qi=0, spent=0, qStart=null, elapsed=null, sample=false, warned="", flagged=false, booked=false, contact=null, typing=null, advancing=false, react="";
 const $=id=>document.getElementById(id);
 const KEY="ai-shindan-hp-v1";
 const REDUCE=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+try{const ua=navigator.userAgent||"";const phone=(navigator.userAgentData&&navigator.userAgentData.mobile===true)||/iPhone|iPod|Android.+Mobile|Windows Phone/i.test(ua);const touch=window.matchMedia&&matchMedia("(pointer: coarse)").matches;if(phone&&touch&&!sessionStorage.getItem("patti-pc"))$("brand").href="m.html"}catch(e){}
 function save(){if(sample)return;try{sessionStorage.setItem(KEY,JSON.stringify({A,qi,spent}))}catch(e){}}
-function load(){try{const s=JSON.parse(sessionStorage.getItem(KEY)||"null");if(s&&s.A&&Object.keys(s.A).length){A=s.A;qi=Math.min(s.qi||0,Q.length-1);spent=s.spent||0;if(A.city&&!AICHI.includes(A.city))delete A.city;return true}}catch(e){}return false}
+function load(){try{const s=JSON.parse(sessionStorage.getItem(KEY)||"null");if(s&&s.A&&Object.keys(s.A).length){A=s.A;qi=Math.min(s.qi||0,Q.length-1);spent=s.spent||0;if(A.city&&!REGIONS.includes(A.city))delete A.city;if(A.ind&&!CO[A.ind])delete A.ind;return true}}catch(e){}return false}
 function clearSave(){try{sessionStorage.removeItem(KEY)}catch(e){}}
 function tick(){if(qStart!=null){spent+=Math.min(Date.now()-qStart,180000)}qStart=Date.now()}
 
@@ -344,7 +391,7 @@ function walkTo(p){
 }
 function trackTo(where){ const tr=document.querySelector(".track"); if(where==="contact") $("ctrack").appendChild(tr); else $("s-q").insertBefore(tr,$("resume")); }
 function shown(i){ const q=Q[i]; return !(q.skip&&q.skip()); }
-const REACT={ind:a=>a+"ですね！",size:()=>"ありがとうございます！",city:()=>"了解です！",use:()=>"なるほど！",tasks:()=>"いいですね！",hours:()=>"ありがとうございます！",lead:()=>"なるほど！",rule:()=>"大事なところです！",shadow:()=>"ありがとうございます！",worry:()=>"あと1問です！"};
+const REACT={ind:a=>a==="その他"?"教えてくれてありがとう！":a.replace(/（.*$/,"")+"なんだね！",size:()=>"ありがとう！",city:()=>"わかった！",use:()=>"なるほど！",tasks:()=>"いいね！",hours:()=>"ありがとう！",lead:()=>"なるほど！",rule:()=>"ここ、大事なんだ！",shadow:()=>"教えてくれてありがとう！",worry:()=>"あと1問だよ！"};
 
 function renderQ(keep){
   advancing=false;
@@ -487,11 +534,11 @@ function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;","
 function safety(){
   const it=[
    {k:"会社向けのプラン",ok:A.use==="paid"||A.use==="flow",good:"会社向けのプランでAIを使っています。ただし、自分から許可した会話は例外になることがあり、会話はしばらく保存されます（OpenAI・Anthropic）。",
-    bad:"会社向けのプランのAIが、まだありません。個人向けの版は、学習に使う設定があるか確かめてください。"},
+    bad:"会社向けのプランのAIが、まだありません。個人向けプランは、学習に使う設定があるか確かめてください。"},
    {k:"決まり",ok:A.rule==="yes",good:"AIに入れない情報を決めて、社員に伝えています。",
     bad:A.rule==="part"?"決まりが社員に届いているか、一度たしかめてください。":"お客様の名前や社外秘など、AIに入れない情報を先に決めてください。"},
-   {k:"個人のAI",ok:A.shadow==="no"&&A.use!=="free",good:"会社が決めていないAIは、使われていません。",
-    bad:A.use==="free"?"個人の版で使っているので、会社で設定をそろえにくいと考えます。会社向けのプランに寄せてください。":"使ってよいAIを会社で決めて、社員に伝えてください。"}
+   {k:"個人契約のAI",ok:A.shadow==="no"&&A.use!=="free",good:"会社が決めていないAIは、使われていません。",
+    bad:A.use==="free"?"個人向けプランで使っているので、会社で設定をそろえにくいと考えます。会社向けのプランに寄せてください。":"使ってよいAIを会社で決めて、社員に伝えてください。"}
   ];
   return {it,n:it.filter(x=>x.ok).length};
 }
@@ -507,8 +554,8 @@ function renderResult(){
   const lv=LEVEL[A.use]||LEVEL.none;
   const sf=safety();
   const co=(contact&&contact.sample)?contact.co:"";
-  const head=tops[0]==="other"?'<span class="nb">まずは、</span><span class="nb">AIに任せる仕事の</span><span class="nb">洗い出しからです</span>':'<span class="nb">まず任せるなら、</span><span class="nb">「'+esc(t1.name)+'」です</span>';
-  const hoursLine=(HOURS_TXT[A.hours]&&shown(Q.findIndex(q=>q.id==="hours")))?'<p class="fine">選んだ仕事に、いま'+HOURS_TXT[A.hours]+'かかっています。</p>':'';
+  const head=tops[0]==="other"?'<span class="pre">まずは</span><span class="hl">AIに任せる仕事の洗い出し</span><span class="pre">から</span>':'<span class="pre">まず任せるなら</span><span class="hl">'+esc(t1.name)+'</span>';
+  const hoursLine='<p class="fine">'+((HOURS_TXT[A.hours]&&shown(Q.findIndex(q=>q.id==="hours")))?'いま'+HOURS_TXT[A.hours]+'かかっています。':'')+'減る時間は、試して測ります。</p>';
   const nextLv=lv[0]<4?'進め方のとおりに進めて、Lv.'+(lv[0]+1)+'をめざします。':'次は、AIを使う仕事を増やします。';
   const worryQ=Q.find(q=>q.id==="worry"), worryTxt=worryQ.o[worryQ.v.indexOf(A.worry)]||"";
   const ans=id=>{const q=Q.find(x=>x.id===id); return q&&q.v?(q.o[q.v.indexOf(A[id])]||""):(A[id]||"")};
@@ -516,33 +563,33 @@ function renderResult(){
   summary=["AI活用レベル: Lv."+lv[0]+"（"+lv[1]+"）",
     "選んだ仕事: "+tops.filter(k=>!extra.includes(k)).map(k=>TASKS[k].name).join(" ／ "),
     (extra.length?"診断が足した仕事: "+extra.map(k=>TASKS[k].name).join(" ／ "):""),
-    "安全チェック: "+sf.n+" / 3（"+sf.it.map(x=>x.k+(x.ok?"○":"△")).join("・")+"）",
+    "安全に使えているかレベル: "+sf.n+" / 3（"+sf.it.map(x=>x.k+(x.ok?"○":"△")).join("・")+"）",
     "AIの使い方: "+ans("use"),"入れない情報の決まり: "+ans("rule"),"会社が決めていないAI: "+ans("shadow"),
     "いちばん気になること: "+worryTxt,
     "",
-    "業種: "+(A.ind||"")+" / 人数: "+(A.size||"")+" / 市町村: "+(A.city||"")+" / 進める人: "+(A.lead||"")+(hoursOn?" / かかる時間: "+HOURS_TXT[A.hours]:""),
+    "業種: "+(A.ind||"")+" / 人数: "+(A.size||"")+" / 地域: "+(A.city||"")+" / 進める人: "+(A.lead||"")+(hoursOn?" / かかる時間: "+HOURS_TXT[A.hours]:""),
     "困っていること: "+(A.pain||"（なし）")].filter(x=>x!=="").join(String.fromCharCode(10));
   const r=$("s-result");
+  const H=(ico,gw,title,more)=>'<h3 class="gh"><span class="ico '+ico+'"></span><span class="eyebrow">'+gw+'</span><span class="tt">'+title+(more||'')+'</span></h3>';
   r.innerHTML=
    '<div class="rhead">'+(co?'<span class="who">'+esc(co)+'</span>':'')+
-     '<div class="lvrow"><div class="lv"><span class="lab">いまのAI活用レベル</span><span class="num">Lv.'+lv[0]+'<small> / 4</small></span><span class="name">'+esc(lv[1])+'</span></div>'+
+     '<h2 class="first">'+head+'</h2>'+
+     '<div class="lvrow"><div class="lv"><span class="lab"><span class="ico star sm"></span>AI活用レベル</span><span class="num">Lv.'+lv[0]+'<small> / 4</small></span><span class="name">'+esc(lv[1])+'</span></div>'+
      '<div class="chars"><span class="spr patti" role="img" aria-label="パッチ"></span><span class="spr mayu" role="img" aria-label="マユ"></span></div></div>'+
-     '<h2>'+head+'</h2><p>'+esc(nextLv)+'</p></div>'+
-   '<div class="card"><h3><span class="eyebrow">クエスト</span>AIに任せられそうな仕事</h3>'+
+     '<p>'+esc(nextLv)+'</p></div>'+
+   '<div class="card">'+H("sword","クエスト","いまAIに任せられる仕事")+
      tops.map((k,i)=>'<div class="quest"><span class="n">'+(i+1)+'</span><span><b>'+esc(TASKS[k].name)+(extra.includes(k)?'<span class="tag">ほかに始めやすい仕事</span>':'')+'</b>'+esc(TASKS[k].how)+'</span></div>').join("")+
-     hoursLine+'<p class="fine">どれだけ時間が減るかは、試して測ります。</p></div>'+
-   '<div class="card"><h3><span class="eyebrow">守り</span>安全チェック '+sf.n+' / 3</h3>'+
+     hoursLine+'</div>'+
+   '<div class="card">'+H("shield","守り","安全に使えているかレベル",'<b class="sc">'+sf.n+' / 3</b>')+
      sf.it.map(x=>'<div class="quest"><span class="n">'+(x.ok?'○':'△')+'</span><span><b>'+esc(x.k)+'</b>'+esc(x.ok?x.good:x.bad)+'</span></div>').join("")+
-     '<p>漏れや学習の心配は、会社向けの契約・設定・社内ルールで大きく減らせますが、ゼロにはならないと考えます。</p>'+
-     '<p>日本の中だけで処理する方法、保存しない契約、社内で動かすAIもあり、相談でご案内します。</p>'+
+     '<p class="fine">契約・設定・社内ルールで心配は大きく減らせますが、ゼロにはならないと考えます。</p>'+
      '<div id="basisSlot"></div></div>'+
-   '<div class="card"><h3><span class="eyebrow">'+'攻略ルート</span>'+'これからの進め方</h3>'+first+'<ol class="steps">'+plan.map((s,i)=>'<li><span class="m">'+(i+1)+'か月目</span><span>'+esc(s)+'</span></li>').join("")+'</ol></div>'+
-   '<div class="card"><h3><span class="eyebrow">アイテム</span>すぐ使える指示文</h3><p class="fine">（ここに…）の所を書き換えて、ChatGPT・Gemini・Claude などに貼ってください。会社向けのプランでないときは、架空の例か、公開している情報だけで試してください。</p>'+
-     tops.map((k,i)=>'<div class="prompt"><div class="top"><b>'+esc(TASKS[k].name)+'</b><button class="copy" type="button" data-i="'+i+'">コピー</button></div><pre id="pr'+i+'">'+esc(fill(TASKS[k].prompt))+'</pre></div>').join("")+
+   '<div class="card">'+H("map","攻略ルート","AI化の進め方")+first+'<ol class="steps">'+plan.map((s,i)=>'<li><span class="m">'+(i+1)+'か月目</span><span>'+esc(s)+'</span></li>').join("")+'</ol></div>'+
+   '<div class="card">'+H("chest","アイテム","いますぐ使える指示文")+'<p class="fine">（ここに…）を書き換えて、ChatGPT・Gemini・Claude などに貼ってください。会社向けのプランでないときは、架空の例か、公開している情報だけで試してください。</p>'+
+     tops.map((k,i)=>'<div class="prompt"><div class="top"><b>'+esc(TASKS[k].name)+'</b><button class="copy" type="button" data-i="'+i+'">コピー</button></div><details'+(i===0?' open':'')+'><summary>'+'中身を見る'+'</summary><pre id="pr'+i+'">'+esc(fill(TASKS[k].prompt))+'</pre></details></div>').join("")+
    '</div>'+
-   '<div class="card"><h3><span class="eyebrow">相談</span>この結果で相談する</h3><p>AIに任せる仕事と安全な使い方を、貴社に伺うかオンラインで、一緒に検討します。最初のヒアリングは無料です。費用が発生する場合は、事前にお見積りをお出しします。</p>'+
+   '<div class="card"><h3>この結果で相談する</h3><p>貴社に伺うかオンラインで、AIに任せる仕事と安全な使い方を一緒に検討します。最初のヒアリングは無料です。費用が発生する場合は、事前にお見積りをお出しします。</p>'+
      '<button class="btn" id="toconsult"'+(sent||sample||!HP?' disabled':'')+'>'+(sent?'相談を送りました':sample?'見本では送れません':!HP?'送信はホームページの版から':'相談を申し込む')+'</button></div>'+
-   (Array.isArray(A.tasks)&&A.tasks.includes("recruit")?'<p class="extra">スタジオパッチより：社員への取材でつくる採用の映像のご相談も、お受けします。</p>':'')+
    '<button class="btn ghost" id="again">'+(sample?'最初の画面に戻る':'はじめからやり直す')+'</button>';
   r.querySelectorAll(".copy").forEach(b=>b.onclick=()=>copy(b,$("pr"+b.dataset.i)));
   const bd=$("basis").firstElementChild.cloneNode(true); $("basisSlot").appendChild(bd);
@@ -553,7 +600,7 @@ function copy(btn,el){
   const txt=el.textContent;
   const back=()=>setTimeout(()=>{btn.textContent="コピー";btn.classList.remove("done")},2500);
   const ok=()=>{btn.textContent="コピーしました";btn.classList.add("done");back()};
-  const fallback=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);btn.textContent="選びました。長押しかCtrl+Cで";back()};
+  const fallback=()=>{const d=el.closest("details");if(d)d.open=true;const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);btn.textContent="選びました。長押しかCtrl+Cで";back()};
   try{navigator.clipboard.writeText(txt).then(ok,fallback)}catch(e){fallback()}
 }
 $("dres").onclick=()=>show("s-result");
