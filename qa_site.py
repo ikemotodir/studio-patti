@@ -191,6 +191,8 @@ check("shindan.html に絵文字がある", not re.search("[🌀-🫿☀-➿]", 
 pv = read("privacy.html")
 check("privacy.html に運営者(商号・代表・所在地・連絡先)が無い", all(w in pv for w in ("合同会社スタジオパッチ", "池本 将", "愛知県一宮市西五城字中切29番地1 グレイス五城B号", "mm.arrowz.39@gmail.com")))
 check("privacy.html に使う目的・第三者・保管・開示等の申し出が無い", all(w in pv for w in ("使う目的", "ほかの会社や人に渡すこと", "保管", "消してほしい")))
+check("privacy.html に苦情の申出先が無い(個人情報保護法32条・政令10条2号。10/26)", "苦情" in pv and "お問い合わせ先" in pv)
+check("privacy.html に安全管理措置の項が無い(法32条)", "安全管理" in pv)
 for page in ("index.html", "m.html", "ai.html", "shindan.html"):
     check("%s から個人情報の取り扱い(privacy.html)へつないでいない" % page, "privacy.html" in read(page))
 check("shindan.html の一番下に会社概要が無い", "法人番号" in sd and "6180003026597" in sd)

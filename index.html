@@ -1158,8 +1158,8 @@ const BUILDERS = {
     dcontent.appendChild(send);
     const ok = document.createElement('div');
     ok.id = 'lok';
-    ok.style.cssText = `position:absolute;left:${164/384*100}%;top:${170/240*100}%;` +
-      'display:none;color:#8a2a3a;' + fs;
+    ok.style.cssText = `position:absolute;left:${164/384*100}%;top:${170/240*100}%;max-width:${90/384*100}%;` +   // ボタン(x258〜)の左で折り返す(10/26 長い文がボタンに重なって押せなかった)
+      'display:none;color:#8a2a3a;font-family:inherit;font-size:clamp(10px,1.2vw,13px);line-height:1.35;pointer-events:none;';
     ok.textContent = 'おてがみを投函しました！ありがとう！';
     dcontent.appendChild(ok);
     const pv = document.createElement('a');   // 個人情報の取り扱い(10/25)。本文の線の下・投函ボタンの左上(右上は切手、ボタンの左は投函後の文が出る)
