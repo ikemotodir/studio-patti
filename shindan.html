@@ -3,6 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="11の質問で、AIに任せる仕事と安全に使えているかが分かる無料の診断です。アカウント作成なし。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="STUDIO PATTI">
+<meta property="og:title" content="AI活用診断｜スタジオパッチ">
+<meta property="og:description" content="11の質問で、AIに任せる仕事と安全に使えているかが分かる無料の診断です。アカウント作成なし。">
+<meta property="og:url" content="http://studiopatti.jp/shindan.html">
+<meta property="og:image" content="http://studiopatti.jp/ogp_shindan.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="AI活用診断　11の質問で、AIに任せる仕事と安全に使えているかが分かる">
+<meta name="twitter:card" content="summary_large_image">
 <title>AI活用診断 | スタジオパッチ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -208,6 +219,11 @@ details.terms ul{margin:6px 0 0;padding-left:1.2em;display:grid;gap:2px}
 .first .hl{font-size:clamp(26px,7vw,36px);line-height:1.3;background:var(--yellow);color:#1d1b29;border:3px solid var(--line);border-radius:6px;padding:8px 16px;box-shadow:0 5px 0 var(--edge);text-shadow:none}
 .prompt summary{cursor:pointer;color:var(--head);font-size:13.5px;font-weight:700;margin-bottom:6px}
 h1[tabindex="-1"]:focus,h2[tabindex="-1"]:focus{outline:none}   /* 画面を切り替えたとき見出しに移す読み上げ用の印。枠は出さない */
+.res{background:var(--pick);border-left:6px solid var(--yellow);border-radius:6px;padding:10px 12px;display:grid;gap:2px}
+.res .rtag{font-family:var(--f-dot);font-size:12px;color:var(--accent2);letter-spacing:.06em}
+.res p{font-weight:700}
+.guide{font-family:var(--f-dot);font-size:16px;color:var(--head);display:flex;align-items:center;gap:8px;margin-top:4px}
+.guide::before{content:"";flex:none;border:7px solid transparent;border-top-color:var(--head);border-bottom-width:0;margin-top:5px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -286,9 +302,14 @@ h1[tabindex="-1"]:focus,h2[tabindex="-1"]:focus{outline:none}   /* 画面を切�
 </section>
 
 <div id="basis" hidden><details class="terms"><summary>根拠</summary><ul>
-  <li><a href="https://www.anthropic.com/legal/commercial-terms" target="_blank" rel="noopener">Anthropic</a>（Claude）・<a href="https://openai.com/enterprise-privacy/" target="_blank" rel="noopener">OpenAI</a>（ChatGPT）・<a href="https://knowledge.workspace.google.com/admin/generative-ai/generative-ai-in-google-workspace-privacy-hub" target="_blank" rel="noopener">Google</a>（Gemini）・<a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/microsoft-365-copilot-privacy" target="_blank" rel="noopener">Microsoft</a>（Copilot）は、会社向けの契約では、初期設定では入れた内容をAIの学習に使わず、自分から許可した時などは別と書いています（Microsoftは大もとのモデルについて）</li>
+  <li><a href="https://privacy.claude.com/en/articles/7996868-is-my-data-used-for-model-training" target="_blank" rel="noopener">Anthropic</a>（Claude）は、会社向けのサービス（Claude for Work・APIなど）では、初期設定のままなら入れた内容も答えも学習に使わず、評価ボタンなどで感想や不具合を送った時や、自分で使ってよいと選んだ時は学習に使うことがあると書いています</li>
+  <li><a href="https://openai.com/enterprise-privacy/" target="_blank" rel="noopener">OpenAI</a>（ChatGPT）は、会社向けのプランでは、初期設定のままなら入れた内容を学習に使わず、フィードバックなどで自分から共有を選んだデータは学習に使うことがあると書いています</li>
+  <li><a href="https://knowledge.workspace.google.com/admin/generative-ai/generative-ai-in-google-workspace-privacy-hub" target="_blank" rel="noopener">Google</a>（Gemini）は、Google Workspace の対象のプランでは、契約した会社などの事前の許可や指示がない限り、入れた内容を学習に使わないと書いています</li>
+  <li><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/microsoft-365-copilot-privacy" target="_blank" rel="noopener">Microsoft</a>は、Microsoft 365 Copilot（今の名前は Microsoft Copilot）では、入れた内容と答えを大もとのモデルの学習に使わないと書いています</li>
+  <li><a href="https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data" target="_blank" rel="noopener">Anthropic</a>・<a href="https://openai.com/enterprise-privacy/" target="_blank" rel="noopener">OpenAI</a>は、会社向けで消した会話を、原則30日以内にサーバーから消すと書いています</li>
   <li><a href="https://www.anthropic.com/news/updates-to-our-consumer-terms" target="_blank" rel="noopener">Claudeの個人向けプラン</a>は、設定がオンのとき、会話を新しいモデルの学習に使うとAnthropicが書いています</li>
-  <li><a href="https://www.rodo.co.jp/news/221692/" target="_blank" rel="noopener">東京商工会議所の調査</a>では、主に東京23区内の中小企業1272社のうち43.2%が「無料ツールのみ使用」と答え、東商の中小企業部は、無料ツールは学習機能がオフになっていないことが多いと指摘しています</li>
+  <li><a href="https://www.tokyo-cci.or.jp/page.jsp?id=1209648" target="_blank" rel="noopener">東京商工会議所の調査</a>（主に東京23区内の中小企業・回答1,272社、生成AIの項目は「デジタルシフト・DX状況レベル2～4」の企業で集計）では、生成AIを活用している企業のうち43.2%が「無料ツールのみ利用」と答えています</li>
+  <li>東商の中小企業部は、無料ツールは学習機能がオフになっていないことが多いと指摘しています（<a href="https://www.rodo.co.jp/news/221692/" target="_blank" rel="noopener">労働新聞社の記事</a>）</li>
 </ul></details></div>
 
 </div></main>
@@ -533,7 +554,7 @@ function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;","
 
 function safety(){
   const it=[
-   {k:"会社向けのプラン",ok:A.use==="paid"||A.use==="flow",good:"会社向けのプランでAIを使っています。ただし、自分から許可した会話は例外になることがあり、会話はしばらく保存されます（OpenAI・Anthropic）。",
+   {k:"会社向けのプラン",ok:A.use==="paid"||A.use==="flow",good:"会社向けのプランでAIを使っています。ただし、フィードバックなどで自分から共有したデータは学習に使われることがあり、消した会話は原則30日以内にサーバーから消えます（OpenAI・Anthropic）。",
     bad:"会社向けのプランのAIが、まだありません。個人向けプランは、学習に使う設定があるか確かめてください。"},
    {k:"決まり",ok:A.rule==="yes",good:"AIに入れない情報を決めて、社員に伝えています。",
     bad:A.rule==="part"?"決まりが社員に届いているか、一度たしかめてください。":"お客様の名前や社外秘など、AIに入れない情報を先に決めてください。"},
@@ -550,12 +571,13 @@ function renderResult(){
   if(A.lead==="いない") pre.push("AIを進める人");
   if((A.shadow&&A.shadow!=="no")||A.use==="free") pre.push("使ってよいAI");
   if(A.rule!=="yes") pre.push("AIに入れない情報");
-  const first=pre.length?'<p>'+'最初に、'+esc(pre.join("・"))+'を、会社で決めてください。'+'</p>':'';
+  const first=pre.length?'<div class="res"><span class="rtag">診断結果</span><p>'+'最初に、'+esc(pre.join("・"))+'を、会社で決めてください。'+'</p></div>':'';
+  const guide='<p class="guide">'+(pre.length?'決めたら、この順番で進めてね！':'これから、この順番で進めてね！')+'</p>';
   const lv=LEVEL[A.use]||LEVEL.none;
   const sf=safety();
   const co=(contact&&contact.sample)?contact.co:"";
   const head=tops[0]==="other"?'<span class="pre">まずは</span><span class="hl">AIに任せる仕事の洗い出し</span><span class="pre">から</span>':'<span class="pre">まず任せるなら</span><span class="hl">'+esc(t1.name)+'</span>';
-  const hoursLine='<p class="fine">'+((HOURS_TXT[A.hours]&&shown(Q.findIndex(q=>q.id==="hours")))?'いま'+HOURS_TXT[A.hours]+'かかっています。':'')+'減る時間は、試して測ります。</p>';
+  const hoursLine=((HOURS_TXT[A.hours]&&shown(Q.findIndex(q=>q.id==="hours")))?'<div class="res"><span class="rtag">診断結果</span><p>選んだ仕事に、いま'+HOURS_TXT[A.hours]+'かかっています。</p></div>':'')+'<p class="fine">減る時間は、試して測ります。</p>';
   const nextLv=lv[0]<4?'進め方のとおりに進めて、Lv.'+(lv[0]+1)+'をめざします。':'次は、AIを使う仕事を増やします。';
   const worryQ=Q.find(q=>q.id==="worry"), worryTxt=worryQ.o[worryQ.v.indexOf(A.worry)]||"";
   const ans=id=>{const q=Q.find(x=>x.id===id); return q&&q.v?(q.o[q.v.indexOf(A[id])]||""):(A[id]||"")};
@@ -584,12 +606,12 @@ function renderResult(){
      sf.it.map(x=>'<div class="quest"><span class="n">'+(x.ok?'○':'△')+'</span><span><b>'+esc(x.k)+'</b>'+esc(x.ok?x.good:x.bad)+'</span></div>').join("")+
      '<p class="fine">契約・設定・社内ルールで心配は大きく減らせますが、ゼロにはならないと考えます。</p>'+
      '<div id="basisSlot"></div></div>'+
-   '<div class="card">'+H("map","攻略ルート","AI化の進め方")+first+'<ol class="steps">'+plan.map((s,i)=>'<li><span class="m">'+(i+1)+'か月目</span><span>'+esc(s)+'</span></li>').join("")+'</ol></div>'+
+   '<div class="card">'+H("map","攻略ルート","AI化の進め方")+first+guide+'<ol class="steps">'+plan.map((s,i)=>'<li><span class="m">'+(i+1)+'か月目</span><span>'+esc(s)+'</span></li>').join("")+'</ol></div>'+
    '<div class="card">'+H("chest","アイテム","いますぐ使える指示文")+'<p class="fine">（ここに…）を書き換えて、ChatGPT・Gemini・Claude などに貼ってください。会社向けのプランでないときは、架空の例か、公開している情報だけで試してください。</p>'+
      tops.map((k,i)=>'<div class="prompt"><div class="top"><b>'+esc(TASKS[k].name)+'</b><button class="copy" type="button" data-i="'+i+'">コピー</button></div><details'+(i===0?' open':'')+'><summary>'+'中身を見る'+'</summary><pre id="pr'+i+'">'+esc(fill(TASKS[k].prompt))+'</pre></details></div>').join("")+
    '</div>'+
-   '<div class="card"><h3>この結果で相談する</h3><p>貴社に伺うかオンラインで、AIに任せる仕事と安全な使い方を一緒に検討します。最初のヒアリングは無料です。費用が発生する場合は、事前にお見積りをお出しします。</p>'+
-     '<button class="btn" id="toconsult"'+(sent||sample||!HP?' disabled':'')+'>'+(sent?'相談を送りました':sample?'見本では送れません':!HP?'送信はホームページの版から':'相談を申し込む')+'</button></div>'+
+   '<div class="card"><h3>この結果で無料相談する</h3><p>AIに任せる仕事と安全な使い方を、オンラインか直接伺うかで、一緒に検討します。最初のヒアリングは無料です。費用が発生する場合は、事前にお見積りをお出しします。</p>'+
+     '<button class="btn" id="toconsult"'+(sent||sample||!HP?' disabled':'')+'>'+(sent?'相談を送りました':sample?'見本では送れません':!HP?'送信はホームページの版から':'無料相談を申し込む')+'</button></div>'+
    '<button class="btn ghost" id="again">'+(sample?'最初の画面に戻る':'はじめからやり直す')+'</button>';
   r.querySelectorAll(".copy").forEach(b=>b.onclick=()=>copy(b,$("pr"+b.dataset.i)));
   const bd=$("basis").firstElementChild.cloneNode(true); $("basisSlot").appendChild(bd);

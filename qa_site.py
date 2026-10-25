@@ -194,6 +194,13 @@ check("privacy.html に使う目的・第三者・保管・開示等の申し出
 for page in ("index.html", "m.html", "ai.html", "shindan.html"):
     check("%s から個人情報の取り扱い(privacy.html)へつないでいない" % page, "privacy.html" in read(page))
 check("shindan.html の一番下に会社概要が無い", "法人番号" in sd and "6180003026597" in sd)
+# URLを貼ったときに出る絵(10/25 池本さん「URLをどこかに貼った時に、サムネ？的なのが出るようにしてほしいな」)。https は証明書の名前が合わないので http で指す
+check("shindan.html に、URLを貼ったときの絵(og:image)が無い", '<meta property="og:image" content="http://studiopatti.jp/ogp_shindan.png">' in sd and 'name="twitter:card" content="summary_large_image"' in sd)
+try:
+    from PIL import Image as _Im
+    check("ogp_shindan.png が 1200x630 ではない", _Im.open(os.path.join(WEB, "ogp_shindan.png")).size == (1200, 630))
+except Exception as _e:
+    check("ogp_shindan.png が読めない(%s)" % _e, False)
 for w in ("愛知の会社向け", "個人向けの版", "個人の無料版", "採用の映像", "お調べします"):
     check("shindan.html に直す前の言い方『%s』が残っている" % w, w not in _sdtext)
 # お相手(個人・企業)に失礼な言い方(10/21 池本さん「小さな会社・お店はマジで失礼」)
