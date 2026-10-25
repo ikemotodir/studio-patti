@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
 <title>AI INTRODUCTION｜STUDIO PATTI</title>
-<meta name="description" content="スタジオパッチのAIの部屋。個人さま向けのAI講座と、企業さま向けのAI導入の現場伴走（AI FDE）のご案内です。">
+<meta name="description" content="スタジオパッチのAIの部屋。個人さま向けのAI講座と、企業さま向けのAI導入の現場伴走（AI FDE）・AI活用診断のご案内です。">
 <meta name="theme-color" content="#05030f">
 <link rel="icon" href="favicon.png" type="image/png">
 <link rel="canonical" href="https://studiopatti.jp/ai.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="STUDIO PATTI">
 <meta property="og:title" content="AI INTRODUCTION｜STUDIO PATTI">
-<meta property="og:description" content="AIの部屋へようこそ。AI講座（個人さま向け）と、AI導入の現場伴走（企業さま向け）のご案内です。">
+<meta property="og:description" content="AIの部屋へようこそ。AI講座（個人さま向け）と、AI導入の現場伴走・AI活用診断（企業さま向け）のご案内です。">
 <meta property="og:url" content="https://studiopatti.jp/ai.html">
 <meta property="og:image" content="https://studiopatti.jp/ogp.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -143,9 +143,6 @@
     box-shadow: 0 0 12px rgba(150, 110, 255, .5);
   }
   .scr .more:hover, .scr .more:focus-visible { filter: brightness(1.15); outline: 2px solid #fff; outline-offset: 2px; }
-  .scr.soon h2 { font-size: 26px; }
-  .scr.soon .lead::after { content: '_'; animation: blink 1s steps(1) infinite; }
-  @keyframes blink { 50% { opacity: 0; } }
   .scr.back .more { visibility: hidden; }            /* 奥の画面はボタンを押させない(回して前へ) */
 
   /* 左右の矢印 */
@@ -249,7 +246,7 @@
   #dbody .msg { font-size: 15px; color: #fcc800; min-height: 1.4em; }
 
   @media (prefers-reduced-motion: reduce) {
-    #patti, #mayu, #pattifloat, .scr.soon .lead::after { animation: none !important; }
+    #patti, #mayu, #pattifloat { animation: none !important; }
   }
 </style>
 </head>
@@ -293,9 +290,11 @@
       <p class="lead"><span>AIに任せる業務を</span><span>現場で共に考え構築</span></p>
       <button class="more" type="button">くわしく見る</button>
     </div>
-    <div class="scr soon" data-k="soon" role="group" aria-label="COMING SOON">
-      <h2>COMING SOON...</h2>
-      <p class="lead">つぎの画面を じゅんび中です</p>
+    <div class="scr" data-k="shindan" role="group" aria-label="AI活用診断（企業さま向け）">
+      <span class="tag">企業さま向け</span>
+      <h2>AI活用診断</h2>
+      <p class="lead"><span>AIに任せる仕事と</span><span>安全に使えているかを無料で</span></p>
+      <button class="more" type="button">診断をはじめる</button>
     </div>
 
     <button id="prev" class="arrow" type="button" aria-label="左の画面へ回す"></button>
@@ -326,7 +325,7 @@ const TALK_DEFAULT = 'ここはAIの部屋だよ！<br>左右の矢印で、画�
 const TALKS = {
   course: 'AI講座だよ！<br>AIを「もう1人の自分」に育てるのが目標！',
   fde: '会社のAI導入を、<br>現場でお手伝いするよ！',
-  soon: 'ここは まだ じゅんび中！<br>たのしみに待っててね！',
+  shindan: 'AI活用診断だよ！<br>11問で、会社のAIの使い方が分かるよ！',
 };
 const area = document.getElementById('roomarea');
 const bg = document.getElementById('bg'), bgx = bg.getContext('2d');
@@ -701,7 +700,10 @@ window.addEventListener('keydown', e => {
 SCR.forEach((e, i) => {
   e.addEventListener('click', (ev) => {
     const f = frontIndex();
-    if (i === f) { if (e.dataset.k !== 'soon') openDetail(e.dataset.k); return; }
+    if (i === f) {                                     // 前の画面を押したら: 診断はそのページへ、ほかは「くわしく」
+      if (e.dataset.k === 'shindan') goTo('shindan.html', 'AI活用診断へ ごあんない！'); else openDetail(e.dataset.k);
+      return;
+    }
     rotate(((i - f + 3) % 3) === 1 ? 1 : -1);        // 奥の画面を押したら、その画面を前へ
     ev.stopPropagation();
   });

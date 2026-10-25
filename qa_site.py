@@ -5,7 +5,7 @@ GitHub の反映ワークフローからも呼べるように、外部ライブ�
 import io, json, os, re, sys
 
 WEB = os.path.dirname(os.path.abspath(__file__))
-PAGES = ["index.html", "m.html", "design.html", "design_m.html", "contents.html", "contents_m.html", "layout.html", "ai.html"]
+PAGES = ["index.html", "m.html", "design.html", "design_m.html", "contents.html", "contents_m.html", "layout.html", "ai.html", "shindan.html"]
 PHONE = ["m.html", "design_m.html", "contents_m.html"]
 ng = []
 ok = 0
@@ -75,6 +75,8 @@ NGWORD = ["仮です", "仮のボード", "清書します", "フォルダに入
 for page in PAGES + ["design_data.js"]:
     s = read(page)
     for w in NGWORD:
+        if page == "shindan.html" and w == "ここに書く":
+            continue                                  # 診断が渡すAIへの頼み方の見本で、利用者が書き込む欄(下書きの消し忘れではない)
         check("%s に社内向けの文言『%s』が残っている" % (page, w), w not in s)
 
 # ── 3) 旧ページ(anime.html)へ飛ぶ導線が残っていないか ──
@@ -175,6 +177,16 @@ for page in ("index.html", "m.html", "ai.html"):
     check("%s のお問い合わせが、メインに届かないとき予備へ送り直していない" % page, "send(CONTACT.backup)" in t_)
 _cj = json.load(io.open(os.path.join(WEB, "contact.json"), encoding="utf-8"))
 check("contact.json に予備の受け口(backup)が無い(パスワードを変えるとメインが止まるため)", str(_cj.get("backup", "")).startswith("https://script.google.com/macros/s/") and _cj.get("backup") != _cj.get("endpoint"))
+# AI活用診断(shindan.html・10/25 池本さん「カミングスーンのところに、その診断って入れられるんじゃない？？」)
+sd = read("shindan.html")
+check("ai.html の3枚目が AI活用診断の入口になっていない", 'data-k="shindan"' in ai and "goTo('shindan.html'" in ai and "COMING SOON" not in ai)
+check("shindan.html から AIの部屋へ戻れない", 'href="ai.html"' in sd or "'ai.html'" in sd or '"ai.html"' in sd)
+check("shindan.html の送り先が contact.json ではない", '"/contact.json"' in sd)
+check("shindan.html が、メインに届かないとき予備へ送り直していない", "backup" in sd and "mode: 'no-cors'" not in sd and 'mode:"no-cors"' not in sd)
+_sdtext = re.sub(r"data:[^\"')]+", "", sd)
+for w in ("小さな会社", "小さい会社", "小さなお店", "零細", "そんな会社", "も歓迎", "初心者でも", "稼げる", "必ず", "本日限定", "今だけ"):
+    check("shindan.html に使わない言い方『%s』がある" % w, w not in _sdtext)
+check("shindan.html に絵文字がある", not re.search("[🌀-🫿☀-➿]", _sdtext))
 # お相手(個人・企業)に失礼な言い方(10/21 池本さん「小さな会社・お店はマジで失礼」)
 for w in ("小さな会社", "小さい会社", "小さなお店", "小さいお店", "零細", "そんな会社", "も歓迎", "初心者でも", "苦手な方でも", "分からない方"):
     check("ai.html にお相手に失礼な言い方『%s』がある" % w, w not in ai)

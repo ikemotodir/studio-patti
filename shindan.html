@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AI活用診断 | スタジオパッチ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
+<style>
+/* 構成: 会社概要・AI講座と同じ青→紫のグラデーションに細かいドット。パッチが話しかけるRPGの会話窓で1問ずつ。答えるたびにパッチがゴールの旗へ歩く */
+:root{
+  --page-a:#004aad; --page-b:#cb6ce6; --on-grad:#ffffff;
+  --night:#0d1a4a; --edge:#0d1a4a; --yellow:#fcc800; --yellow-hi:#ffe066;
+  --paper:#ffffff; --ink:#1d1b29; --muted:#5f5b74; --rule:#e2def0; --soft:#f3f1fa; --pick:#fff4cf; --line:#0d1a4a; --accent2:#8a3fb0; --head:#004aad;
+  --warn:#b42318; --warn-bg:#fdecea; --ok:#1d7a4f;
+  --f-dot:"DotGothic16","Zen Maru Gothic","Hiragino Sans",monospace;
+  --f-body:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --page-a:#05276a; --page-b:#7b3a96; --night:#070f2e; --edge:#070f2e;
+  --paper:#1f1c2a; --ink:#ecebf3; --muted:#b3afc8; --rule:#34304a; --soft:#28243a; --pick:#3a3212; --line:#8f8ab0; --accent2:#fcc800; --head:#fcc800;
+  --warn:#ff9a8f; --warn-bg:#3a1c22; --ok:#5fd09a; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --page-a:#05276a; --page-b:#7b3a96; --night:#070f2e; --edge:#070f2e;
+  --paper:#1f1c2a; --ink:#ecebf3; --muted:#b3afc8; --rule:#34304a; --soft:#28243a; --pick:#3a3212; --line:#8f8ab0; --accent2:#fcc800; --head:#fcc800;
+  --warn:#ff9a8f; --warn-bg:#3a1c22; --ok:#5fd09a; color-scheme:dark }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+[lang="ja"]{word-break:auto-phrase}
+.nb{display:inline-block}
+html,body{min-height:100%}
+body{margin:0;color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.75;background:linear-gradient(135deg,var(--page-a),var(--page-b)) fixed;background-color:var(--page-a)}
+body::before{content:"";position:fixed;inset:0;background-image:radial-gradient(#ffffff 1px,transparent 1.5px);background-size:22px 22px;opacity:.14;pointer-events:none}
+.wrap{position:relative;max-width:720px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.proto{position:relative;background:rgba(13,26,74,.55);color:#fff;font-size:12.5px}
+.proto .wrap{padding-block:5px}
+.top .wrap{padding-block:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;color:var(--on-grad)}
+.brand{font-family:var(--f-dot);font-size:18px;letter-spacing:.06em}
+.chip{font-family:var(--f-dot);font-size:13px;background:var(--yellow);color:#1d1b29;padding:2px 10px;border-radius:3px}
+main .wrap{padding-block:6px 48px}
+.screen{display:grid;gap:18px}
+p,li{margin:0;text-wrap:pretty}
+h1,h2,h3{margin:0;text-wrap:balance}
+.dot{font-family:var(--f-dot);font-weight:400;letter-spacing:.03em}
+
+/* スプライト（池本さんのピクセル。12コマ・8コマ） */
+.spr{image-rendering:pixelated;flex:none}
+.patti{width:108px;height:144px;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAbAAAAAwCAYAAABwiS9GAAADyElEQVR42u3dS47bMBBFUVLhnrL/YRYVMIPAQMPoj0TxU5LOAzIIjC6Vy+S9tmzLOZ1MrbV+d3vOOScREXl8evsij2hipcyiCZXgRQD6yfwZ6Ys8o5HRQ4smVIIneIAG6KfzZ4Yv8sxGeg8smlAJnuABGqCfzp+ZvsirmjkzrGhCJXiCB2iAxp/5vsgrm2kZVDShEjzBAzRA488aX+TVzRwZVDShEjzBAzRA4886X2wRmtlzzJk97TlWtH5m9XTkGNH6Gd1TS+1I/Vg/+BOdze/H3FK6/iefZh+T4AkeoAEaf9Zni9Ro1CERPMEDNEBLrLnVWutmQMeOTfA2GUBbO/gTIyXtf9Os1xDsihttsPc3eKP1I9aP9TM/s3xR9jbyKpRzPiyhj3/zXi/6gAgeoAFa8OdYH7N8UY7coZZmXjVef3u1ARE8wQO09YM/x+c7wxfTTyH2XIARhErwBA/QAI0/a3xRWu5oy2b5OKQrDYjgCR6grR/8Sc1zH+mL7cyQVg/tdSdf/84M92792GBfz/mMLN4fq7NQjNaP9YM/ox6zEY/hdmbDRVvUqxc5wRM8QAM0/szzxSWuxHEVoRI8wQM0QOsnrbsSh6S7fYzcBgNo60cITITgAVokXe1KHJHP1YuISLrt9wm7CexpAyJ4EcGfG7wCO/O5frGgCd76sX7So07Pj/ZFufKlfKIJleABGqABWj/zfFHusIj0Y4OJ9YM/z9tTxTa9P4T0A9DWjxCYCMEDtEi64PfAzpyfd25fRCR5f7nj35ajzwyPXu26189f/HQV7ghCjdaPiIwFNP6s9UU529iqUyLRhErwBA/QAI0/c31RZp6rf78TPYYWRagET/AADdD4M9cXTQL7++d/4V+/6+7bP9ucPX/gMopQCZ7gARqg8WeOL0rPxl7/n/2Jq2hCJXiCB2iAxp/xvig9G+vxE9F3ECrBEzxAAzT+jPdFueN3XKIIleAJHqABGn/G+aKLwFoXkC+NEjzBAzRAP6ufnr4oPRqJJrJoQiV4ggdogH46f0b4onxyHj3XHx7pr05t7L09fX0OP99JqARP8AAN0Hfmz2pflBMiqSmlHpP4tk40oRI8wQM0QONPDF/kUeJRZ16duuilwFcLN1I/e3pp+dBEa0/R+rF+uj1BxDECU0cdggdoddQZXif12oQ9N3NVx2zUUQd/nsGf0nCw3KlpdebWyTuevaijjjq4cZk6W4MpayfjqqOOOuqoo05znUM/aOmlsjrqqKOOOlHqbElEROSCySeNmTuZVx111FFHHXUO1fkHtPW2L33qfF4AAAAASUVORK5CYII=) 0 0/1296px 144px no-repeat;animation:p12 1.4s steps(12) infinite}
+.patti.blink{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAbAAAAAwCAYAAABwiS9GAAAEIUlEQVR42u3dS47bMBCEYVLhnXL/ZQ4VKIvAgGGMZ2SKjxb1FZBFYLjUoMj6xZasyemk9n3fv/s855wTERHdXq15kXsUMRNm0YAK8EQC+s7505MXeUQhvQctGlABHuAFtIC+e/6M4EUeWUjrAYsGVIAHeAEtoO+ePyN5kWcVc2awogEV4AFeQAto+TOeF3lmMTUDFQ2oAA/wAlpAy585vMizi/lkoKIBFeABXkALaPkzjxdbhGKOHHNkTUeOFa2eUTV9coxo9fSuqcY7Uj3mj/yJns2vx9xSuv6TT6OPCfAAL6AFtPyZry1SoVEHCeABXkALaIo1bvu+75sB+uzYAG+RCWhzR/7EUEnHb5q1GgSrYqEF9nqDN1o9ZP6YP+M1ihflaCEPo5zzxxB6/s6rH5GAFtC0FrhG8aJ8QsCaYh4ej+8CFxHRsheMQ3mxjd4SEhGRFmLq8RTiETI+/tV8l4iI7rEb682L7QxVZwCpxzGBlYjsdNp6juBFSZU9zlmh/0zms/fTPFBCRCvscqLmYW9ebFe+UVizNX39HngR0QoPTtwxD8tKVyDvfjvw7vMWVwW1T9qM9iSitPx6n52HANZgG/3TCdTSJKJV1/vMPAwPsCtQevQJen7apub4z2MKXkTXebruCut9Zqb05kXxFE7/mlbewhMlbcUw6/1uGVLO9FftFtr0pO/UoydaeT6v3rKLxoty5ZfxRgPqu3pG1uWeHLnnNGY+R1jv0TcYvWsoK717Sz3uyZF7TiPns/xJnkKk/r8P8TMDuvr5ijCfCcBo8lXZVwt5xD0BLU0tu6vPZ7owwM5cSbn68TMDLU0tO20zu/mWvCi12/ejhfW8ao4GVIBv0wJ6F4IrtjRXaNn1PF93D+ir1jOKF91f5tuzNRUJqAB/vJ6aFlDLP1EeqUUWuWUX4XzdPaCvnD8jeFFGbtt7/D4iClABvr6e747V6w3ZjxbZ2UBsNYcj1RPtfN05oK9eT29eVAHs75//xr9+74c//2pxtn6JZQSgAjzAC2gBLX/G8KK0LOzx/9E3X6MBFeABXkALaPnTnxelZWFH2iQ9F1wUoAI8wAtoAS1/+vOirPj4dhSgAjzAC2gBLX/68aIJwGonkNeuADzAC2gBfa96WvKitCgkGsiiARXgAV5AC+i7508PXpQv+uh5/+FMv2ttHP08ve/h55WACvAAL6AF9Mr5M5sX5QRI9pRSi5H41icaUAEe4AW0gJY/MXiRe4GHzziffdJW4N3EjVTPkVpqHpqorSlaPeZPswtEOQZgfPgAvIDmw6e7T2q1CFsu5p2PseHDR/7cI39KxcFyo6L5jPXJB65e+PDhIzcu47NVkHJvRFw+fPjw4cOn2mezxeXDhw8fPlf02RIREdEFlU8SMzciLx8+fPjw4fORzz/wwjItA2P8TwAAAABJRU5ErkJggg==)}
+.patti.sm{width:72px;height:96px;background-size:864px 96px;animation-name:p12s}
+@keyframes p12{to{background-position:-1296px 0}}
+@keyframes p12s{to{background-position:-864px 0}}
+.walker{width:36px;height:48px;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAbAAAAAwCAYAAABwiS9GAAADyElEQVR42u3dS47bMBBFUVLhnrL/YRYVMIPAQMPoj0TxU5LOAzIIjC6Vy+S9tmzLOZ1MrbV+d3vOOScREXl8evsij2hipcyiCZXgRQD6yfwZ6Ys8o5HRQ4smVIIneIAG6KfzZ4Yv8sxGeg8smlAJnuABGqCfzp+ZvsirmjkzrGhCJXiCB2iAxp/5vsgrm2kZVDShEjzBAzRA488aX+TVzRwZVDShEjzBAzRA4886X2wRmtlzzJk97TlWtH5m9XTkGNH6Gd1TS+1I/Vg/+BOdze/H3FK6/iefZh+T4AkeoAEaf9Zni9Ro1CERPMEDNEBLrLnVWutmQMeOTfA2GUBbO/gTIyXtf9Os1xDsihttsPc3eKP1I9aP9TM/s3xR9jbyKpRzPiyhj3/zXi/6gAgeoAFa8OdYH7N8UY7coZZmXjVef3u1ARE8wQO09YM/x+c7wxfTTyH2XIARhErwBA/QAI0/a3xRWu5oy2b5OKQrDYjgCR6grR/8Sc1zH+mL7cyQVg/tdSdf/84M92792GBfz/mMLN4fq7NQjNaP9YM/ox6zEY/hdmbDRVvUqxc5wRM8QAM0/szzxSWuxHEVoRI8wQM0QOsnrbsSh6S7fYzcBgNo60cITITgAVokXe1KHJHP1YuISLrt9wm7CexpAyJ4EcGfG7wCO/O5frGgCd76sX7So07Pj/ZFufKlfKIJleABGqABWj/zfFHusIj0Y4OJ9YM/z9tTxTa9P4T0A9DWjxCYCMEDtEi64PfAzpyfd25fRCR5f7nj35ajzwyPXu26189f/HQV7ghCjdaPiIwFNP6s9UU529iqUyLRhErwBA/QAI0/c31RZp6rf78TPYYWRagET/AADdD4M9cXTQL7++d/4V+/6+7bP9ucPX/gMopQCZ7gARqg8WeOL0rPxl7/n/2Jq2hCJXiCB2iAxp/xvig9G+vxE9F3ECrBEzxAAzT+jPdFueN3XKIIleAJHqABGn/G+aKLwFoXkC+NEjzBAzRAP6ufnr4oPRqJJrJoQiV4ggdogH46f0b4onxyHj3XHx7pr05t7L09fX0OP99JqARP8AAN0Hfmz2pflBMiqSmlHpP4tk40oRI8wQM0QONPDF/kUeJRZ16duuilwFcLN1I/e3pp+dBEa0/R+rF+uj1BxDECU0cdggdoddQZXif12oQ9N3NVx2zUUQd/nsGf0nCw3KlpdebWyTuevaijjjq4cZk6W4MpayfjqqOOOuqoo05znUM/aOmlsjrqqKOOOlHqbElEROSCySeNmTuZVx111FFHHXUO1fkHtPW2L33qfF4AAAAASUVORK5CYII=) 0 0/432px 48px no-repeat;animation:w12 1.4s steps(12) infinite}
+.walker.walking{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAAwCAYAAACxIqevAAAC60lEQVR42u3c0W7jIBCFYQ7lnfr+l/tQFXux6qqKEtfAwDDkP1Ivqijk85hQwK6VBlNrrVevS1JaGDx48MTxaAZidbHw4MET06MVkFmFwoMHT2yPVkKsCoUHD54zPNkL09s2Hjx4zvFkL0zPZ+DBg+csT/bEtHwWHjx4zvNkb8ydz8SDB8+ZnpwIIcQp2mE0vNopx4MHz7keZkCEELeUhpHTau1nNZLjwYMnuKfchXw3JKn5IH++57G93sLgwYMnvqdpD6gH0/reljUqHjx4Ynvy6ilZsttMw4MHT3BPbl3PSfr/0/PeZHsvAR48eAJ78sio6D1q48GDJ7Yn94yKzrcO4MGD5xAP9wERQhI3IhJCGIAIISTtdid04vIlHjx4mAERQt5yCfa4G+69W48HD57YnuL1z26zioQHD544HpZghBCughFCGIAIIWTPAWjkktyMy3l48OCJ7Smtm1GtDzwafUASHjx4zvWUUZj3LjoePHjiesrKy3OPB2FZPDx48MTzdA1AX3/+NfzxWW+//uwRjSOPfMSDB098T7GEff/udZMTHjx4YnmKJezOIxpX3OmJBw+eGJ7MbeZ48ODx8pgMQB+f9eX60CN48OCJ4SmjkGe/t64NLQuDBw+eOB69mDpVp4cf4cGD5809t5d4VkvFIO3UHz/Uh3bohwbt8M+ofcX/rQPUV7NLQuiHyfYy/MKCy6HQ9cZrM0+yLo5vh/q84xd/RZ0fz7t3P5xSnxzopKfGqefoie+1rvqyR6pPhOiiph51Hu0T1v1wSn1Kx199Gc0eZFBoGX55NfiFszjhr1xqPOaV9YnUf+pm/bD1vM/uh8vro87NJt040Gq8vEgLOvVVm3WCZaT93eqzW/9Zfd4tB0WL867JDpP65I2vGOy2Z6EbJi32nLKn4t1Ooh/61CcHWJfv1kHk6FCA+qRD94c866zN+qFZfTRpGj5j2VIXLne04cxAgeqzY/+xOu91Qn/ZZSWwvD5/ARH/ex5/RekCAAAAAElFTkSuQmCC);background-size:288px 48px;animation:w8 .5s steps(8) infinite}
+@keyframes w12{to{background-position:-432px 0}}
+@keyframes w8{to{background-position:-288px 0}}
+.mayu{width:60px;height:144px;background:url(data:image/png;base64,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) 0 0/720px 144px no-repeat;animation:m12 1.2s steps(12) infinite}
+.mayu.sm{width:40px;height:96px;background-size:480px 96px;animation-name:m12s}
+@keyframes m12{to{background-position:-720px 0}}
+@keyframes m12s{to{background-position:-480px 0}}
+
+/* 吹き出し・会話窓 */
+.hero{display:grid;gap:14px;color:var(--on-grad)}
+.hero h1{font-family:var(--f-dot);font-weight:400;font-size:clamp(34px,8vw,52px);line-height:1.15;letter-spacing:.04em;text-shadow:3px 3px 0 rgba(13,26,74,.45)}
+.hero .lead{font-weight:700;font-size:17px}
+.talk{display:flex;align-items:flex-end;gap:12px}
+.bubble{position:relative;background:var(--paper);color:var(--ink);border:3px solid var(--line);border-radius:8px;padding:12px 14px;font-family:var(--f-dot);font-size:17px;line-height:1.6;box-shadow:4px 4px 0 rgba(13,26,74,.35);min-width:0;margin-bottom:28px}
+.bubble::before{content:"";position:absolute;left:-14px;bottom:14px;border:7px solid transparent;border-right-color:var(--line);border-bottom-color:var(--line)}
+.bubble::after{content:"";position:absolute;left:-7px;bottom:17px;border:4px solid transparent;border-right-color:var(--paper);border-bottom-color:var(--paper)}
+.win{position:relative;background:var(--night);color:#fff;border:3px solid #fff;outline:3px solid var(--night);border-radius:6px;padding:22px 18px 16px;margin:10px 3px 3px;box-shadow:0 6px 0 rgba(0,0,0,.25)}
+.win .who{position:absolute;top:-14px;left:12px;background:var(--yellow);color:#1d1b29;font-family:var(--f-dot);font-size:13px;padding:1px 10px;border:2px solid var(--night);border-radius:3px}
+.win .q{font-family:var(--f-dot);font-weight:400;font-size:clamp(19px,4.6vw,22px);line-height:1.55;min-height:1.55em}
+.win .note{margin-top:6px;font-size:14px;opacity:.85}
+.win .more{position:absolute;right:12px;bottom:6px;width:0;height:0;border:6px solid transparent;border-top-color:var(--yellow);animation:bob .9s steps(2) infinite}
+@keyframes bob{50%{transform:translateY(3px)}}
+
+/* 進み具合：パッチが旗まで歩く */
+.track{position:relative;height:66px;margin:0 6px}
+.track .road{position:absolute;left:0;right:22px;bottom:8px;height:8px;background:rgba(255,255,255,.28);border-radius:2px}
+.track .done{position:absolute;left:0;bottom:8px;height:8px;width:calc((100% - 22px) * var(--p,0));background:var(--yellow);border-radius:2px;transition:width .5s steps(6)}
+.track .walker{position:absolute;bottom:14px;left:calc((100% - 58px) * var(--p,0));transition:left .5s steps(6)}
+.track .flag{position:absolute;right:0;bottom:8px;width:22px;height:40px}
+.track .flag::before{content:"";position:absolute;left:3px;bottom:0;width:3px;height:40px;background:#fff}
+.track .flag::after{content:"";position:absolute;left:6px;top:0;width:15px;height:11px;background:var(--yellow);box-shadow:inset -3px -3px 0 rgba(0,0,0,.15)}
+.qhead{display:flex;justify-content:space-between;align-items:center;color:var(--on-grad)}
+.count{font-family:var(--f-dot);font-size:15px;letter-spacing:.06em}
+
+/* ボタン */
+.btn{font:inherit;font-family:var(--f-dot);font-size:19px;letter-spacing:.04em;cursor:pointer;width:100%;padding:13px 16px;background:var(--yellow);color:#1d1b29;border:3px solid var(--line);border-radius:6px;box-shadow:0 5px 0 var(--edge);transition:transform .05s}
+.btn:hover{background:var(--yellow-hi)}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--edge)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:0 5px 0 var(--edge)}
+.btn.ghost{background:var(--paper);color:var(--ink);font-size:16px;padding:10px 14px}
+.back{font:inherit;font-family:var(--f-dot);font-size:15px;background:none;border:0;color:var(--on-grad);cursor:pointer;padding:4px 0 4px 16px;position:relative}
+.back::before{content:"";position:absolute;left:0;top:50%;margin-top:-6px;border:6px solid transparent;border-right-color:var(--yellow);border-left-width:0}
+
+/* 選択肢：コマンドメニュー風 */
+.opts{display:grid;gap:10px}
+.opts.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:330px){.opts.two{grid-template-columns:1fr}}
+@media (max-width:440px){.opts.two .opt{padding:10px 10px 10px 8px;gap:6px;font-size:15px}}
+.opt{font:inherit;font-weight:700;text-align:left;cursor:pointer;display:flex;align-items:center;gap:10px;min-width:0;background:var(--paper);color:var(--ink);border:3px solid var(--line);border-radius:6px;padding:11px 14px 11px 12px;box-shadow:0 4px 0 var(--edge);transition:transform .05s}
+.opt .cur{flex:none;width:0;height:0;border:7px solid transparent;border-left-color:transparent;border-right-width:0}
+.opt:hover .cur,.opt:focus-visible .cur{border-left-color:var(--head)}
+.opt:hover,.opt:focus-visible{background:var(--pick)}
+.opt[aria-pressed="true"]{background:var(--yellow);color:#1d1b29}
+.opt[aria-pressed="true"] .cur{border-left-color:#1d1b29}
+.opt:active{transform:translateY(3px);box-shadow:0 1px 0 var(--edge)}
+.opt .box{flex:none;width:18px;height:18px;border:3px solid var(--line);background:var(--paper)}
+.opt[aria-pressed="true"] .box{background:#0d1a4a;border-color:#0d1a4a;box-shadow:inset 0 0 0 3px var(--yellow)}
+select.pix,textarea.pix{font:inherit;font-weight:700;width:100%;padding:12px 14px;border:3px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);box-shadow:0 4px 0 var(--edge);min-width:0}
+textarea.pix{min-height:110px;resize:vertical;font-weight:500}
+.resume{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;color:var(--on-grad);font-size:14px}
+.resume button{font:inherit;font-weight:700;background:none;border:0;color:#fff;text-decoration:underline;cursor:pointer;padding:0}
+
+/* 白いカード（読む所・入力欄） */
+.card{background:var(--paper);color:var(--ink);border:3px solid var(--line);border-radius:8px;padding:16px;display:grid;gap:10px;box-shadow:0 5px 0 rgba(13,26,74,.35);min-width:0}
+.card h3{font-family:var(--f-dot);font-weight:400;font-size:19px;color:var(--head);letter-spacing:.03em;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.eyebrow{font-family:var(--f-dot);font-size:12px;background:var(--yellow);color:#1d1b29;padding:0 7px;border-radius:2px;letter-spacing:.04em;flex:none}
+.fine{font-size:13.5px;color:var(--muted)}
+.points{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.points li{display:grid;grid-template-columns:12px 1fr;gap:10px;align-items:baseline;font-weight:700}
+.points li::before{content:"";width:10px;height:10px;background:var(--yellow);border:2px solid var(--line);transform:translateY(1px)}
+.legal{background:rgba(255,255,255,.92);color:#1d1b29;border-radius:8px;padding:12px 14px;font-size:13.5px;display:grid;gap:4px}
+:root[data-theme="dark"] .legal{background:rgba(31,28,42,.92);color:#ecebf3}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .legal{background:rgba(31,28,42,.92);color:#ecebf3}}
+
+/* 入力フォーム */
+label.f{display:grid;gap:4px;font-weight:700;font-size:15px}
+label.f .req{color:var(--warn);font-size:12px;margin-left:6px}
+input[type=text],input[type=email],input[type=tel],input[type=number],.card select,.card textarea{font:inherit;font-size:16px;width:100%;padding:10px 12px;border:2px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);min-width:0}
+.card textarea{min-height:96px;resize:vertical}
+label.ck{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-size:15px}
+label.ck input{width:20px;height:20px;margin-top:3px;accent-color:#004aad}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row > *{flex:1 1 180px}
+.err{color:var(--warn);background:var(--warn-bg);border-radius:6px;padding:10px 12px;font-size:14.5px;white-space:pre-line}
+details.terms{background:var(--soft);border-radius:6px;padding:8px 12px;font-size:14px}
+details.terms summary{cursor:pointer;color:var(--head);font-weight:700}
+details.terms ul{margin:6px 0 0;padding-left:1.2em;display:grid;gap:2px}
+
+/* 結果 */
+.rhead{display:grid;gap:10px;color:var(--on-grad)}
+.rhead .who{font-weight:700}
+.rhead h2{font-family:var(--f-dot);font-weight:400;font-size:clamp(24px,5.6vw,30px);line-height:1.4;text-shadow:2px 2px 0 rgba(13,26,74,.45)}
+.lvrow{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.lv{background:var(--night);color:#fff;border:3px solid #fff;outline:3px solid var(--night);border-radius:6px;padding:10px 16px;display:grid;gap:2px;margin:3px}
+.lv .lab{font-family:var(--f-dot);font-size:13px;opacity:.85}
+.lv .num{font-family:var(--f-dot);font-size:34px;line-height:1;color:var(--yellow)}
+.lv .name{font-weight:700;font-size:14px}
+.chars{display:flex;align-items:flex-end;gap:6px}
+.timer{font-size:13px;opacity:.9}
+.quest{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;padding:10px 0;border-top:2px dashed var(--rule)}
+.quest:first-of-type{border-top:0;padding-top:0}
+.quest .n{font-family:var(--f-dot);font-size:15px;background:var(--night);color:var(--yellow);padding:2px 8px;border-radius:3px;white-space:nowrap}
+.quest b{display:block;font-size:17px}
+.tag{font-family:var(--f-dot);font-size:12px;color:var(--accent2);margin-left:6px;white-space:nowrap}
+.money .big{font-family:var(--f-dot);font-size:clamp(26px,6vw,32px);line-height:1.2;color:var(--head)}
+.steps{list-style:none;margin:0;padding:0;display:grid}
+.steps li{display:grid;grid-template-columns:5.6em 1fr;gap:10px;padding:8px 0;border-top:2px dashed var(--rule)}
+.steps li:first-child{border-top:0}
+.steps .m{font-family:var(--f-dot);color:var(--accent2)}
+.prompt{display:grid;gap:6px}
+.prompt .top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.prompt pre{margin:0;white-space:pre-wrap;word-break:break-word;font-family:var(--f-body);font-size:14.5px;background:var(--soft);border-radius:6px;padding:10px 12px}
+.copy{font:inherit;font-family:var(--f-dot);font-size:13px;flex:none;cursor:pointer;background:var(--yellow);color:#1d1b29;border:2px solid var(--line);border-radius:4px;padding:2px 10px;box-shadow:0 2px 0 var(--edge)}
+.copy.done{background:var(--paper);color:var(--ok)}
+.extra{background:rgba(13,26,74,.55);color:#fff;border-radius:6px;padding:10px 12px;font-size:14px;font-weight:700}
+.btn:focus-visible,.opt:focus-visible,.copy:focus-visible,.back:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible,.resume button:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
+footer .wrap{padding-block:0 32px;font-size:13px;color:var(--on-grad);display:grid;gap:2px;text-shadow:0 1px 0 rgba(13,26,74,.7)}
+.rhead p,.hero .lead,.timer{text-shadow:0 1px 0 rgba(13,26,74,.6)}
+.opt span:last-child{overflow-wrap:anywhere}
+.win .react{display:block;font-family:var(--f-dot);font-size:15px;color:var(--yellow);margin-bottom:2px}
+.lv .num small{font-size:16px;color:#fff;opacity:.8}
+@media (max-width:440px){.bubble{font-size:16px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top" lang="ja"><div class="wrap"><a class="brand" href="ai.html" style="color:inherit;text-decoration:none">スタジオパッチ</a><span class="chip">AI活用診断</span></div></header>
+
+<main lang="ja"><div class="wrap">
+
+<section class="screen" id="s-top">
+  <div class="hero">
+    <h1>AI活用診断</h1>
+    <p class="lead">愛知の会社向け・無料・アカウント作成なし</p>
+    <div class="talk"><span class="spr patti" role="img" aria-label="パッチ"></span><p class="bubble">AIに何を任せるか、<span class="nb">安全に使えているかを、</span><span class="nb">11の質問でお調べします。</span></p></div>
+  </div>
+  <div class="card">
+    <h3><span class="eyebrow">結果</span>分かること</h3>
+    <ul class="points">
+      <li>AI活用レベルと、任せられる仕事</li>
+      <li>安全に使えているかのチェック</li>
+      <li>進め方と、すぐ使える指示文</li>
+    </ul>
+  </div>
+  <button class="btn" id="go">診断をはじめる</button>
+  <button class="btn ghost" id="sample">結果の見本を見る</button>
+  <div class="legal">
+    <p>11問です。会社名やメールを入れなくても、結果が出ます。</p>
+    <p>答えは、相談を送るときだけスタジオパッチへ送信します。途中の答えは、このタブを閉じると消えます。</p>
+  </div>
+</section>
+
+<section class="screen" id="s-q" hidden>
+  <div class="qhead"><button class="back" id="qback">戻る</button><span class="count" id="qcount"></span></div>
+  <div class="track" aria-hidden="true"><div class="road"></div><div class="done" id="qdone"></div><span class="spr walker" id="walker"></span><span class="flag"></span></div>
+  <div class="resume" id="resume" hidden><span>前回の続きから始めています。</span><button type="button" id="restart">最初から答える</button></div>
+  <div class="win"><span class="who">パッチ</span><span class="react" id="qreact" hidden></span><h2 class="q" id="qtext" tabindex="-1"></h2><p class="note" id="qnote" hidden></p><span class="more" aria-hidden="true"></span></div>
+  <div id="qbody"></div>
+  <button class="btn" id="qnext" hidden>次へ</button>
+</section>
+
+<section class="screen" id="s-contact" hidden>
+  <div class="qhead"><button class="back" id="cback">結果に戻る</button><span class="count">相談</span></div>
+  <div class="win"><span class="who">パッチ</span><h2 class="q" tabindex="-1">相談をご希望でしたら、この結果をスタジオパッチに送ってください。</h2><p class="note">メールでお返事します。</p></div>
+  <form class="card" id="cform" novalidate>
+    <label class="f" for="c-co"><span>会社名<span class="req">必須</span></span><input type="text" id="c-co" autocomplete="organization"></label>
+    <label class="f" for="c-name"><span>お名前<span class="req">必須</span></span><input type="text" id="c-name" autocomplete="name"></label>
+    <label class="f" for="c-mail"><span>メール<span class="req">必須</span></span><input type="email" id="c-mail" autocomplete="email"></label>
+    <label class="f" for="c-msg"><span>ひとこと（任意）</span><textarea id="c-msg" maxlength="800"></textarea></label>
+    <label class="f" for="c-from"><span>この診断をどこで知りましたか（任意）</span><select id="c-from"><option value="">選ばない</option></select></label>
+    <details class="terms"><summary>送る内容を見る</summary><pre id="c-sum" style="margin:6px 0 0;white-space:pre-wrap;word-break:break-word;font:inherit;font-size:13.5px"></pre></details>
+    <details class="terms" open><summary>個人情報の扱い</summary><ul>
+      <li>送っていただいた内容は、ご相談へのお返事のために使用します</li>
+      <li>会社が分からない形にした集計にも使用します</li>
+      <li>法令で求められる時を除き、ほかの会社や人には渡さないとお約束します</li>
+      <li>送られた内容は、スタジオパッチのGoogleのメールとフォームに保管します</li>
+      <li>見せてほしい・直してほしい・消してほしい・使うのをやめてほしい時は、ホームページのお問い合わせからお知らせください</li>
+      <li>運営は合同会社スタジオパッチです。住所と代表者は、お問い合わせいただければお知らせします</li>
+    </ul></details>
+    <label class="ck" for="c-biz"><input type="checkbox" id="c-biz"><span>会社・お店としてのご相談です</span></label>
+    <label class="ck" for="c-priv"><input type="checkbox" id="c-priv"><span>個人情報の扱いに同意します</span></label>
+    <p class="err" id="cerr" role="alert" hidden></p>
+    <button class="btn" type="submit">結果を送って相談する</button>
+  </form>
+</section>
+
+<section class="screen" id="s-result" hidden></section>
+
+<section class="screen" id="s-done" hidden>
+  <div class="talk"><span class="spr patti blink" role="img" aria-label="パッチ"></span><span class="spr mayu" role="img" aria-label="マユ"></span></div>
+  <div class="win"><span class="who">パッチ</span><h2 class="q" tabindex="-1">ご相談ありがとうございます！</h2>
+    <div class="note" style="display:grid;gap:4px">
+      <p>メールでお返事いたします。それまでは、結果の指示文をお使いください。</p>
+    </div>
+  </div>
+  <button class="btn ghost" id="dres">診断の結果を見る</button>
+  <a class="btn ghost" href="ai.html" style="display:block;text-align:center;text-decoration:none">AIの部屋にもどる</a>
+</section>
+
+<div id="basis" hidden><details class="terms"><summary>根拠</summary><ul>
+  <li><a href="https://www.anthropic.com/legal/commercial-terms" target="_blank" rel="noopener">Anthropic</a>（Claude）・<a href="https://openai.com/enterprise-privacy/" target="_blank" rel="noopener">OpenAI</a>（ChatGPT）・<a href="https://knowledge.workspace.google.com/admin/generative-ai/generative-ai-in-google-workspace-privacy-hub" target="_blank" rel="noopener">Google</a>（Gemini）・<a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/microsoft-365-copilot-privacy" target="_blank" rel="noopener">Microsoft</a>（Copilot）は、会社向けの契約では、初期設定では入れた内容をAIの学習に使わず、自分から許可した時などは別と書いています（Microsoftは大もとのモデルについて）</li>
+  <li><a href="https://www.anthropic.com/news/updates-to-our-consumer-terms" target="_blank" rel="noopener">Claudeの個人向けの版</a>は、設定がオンのとき、会話を新しいモデルの学習に使うとAnthropicが書いています</li>
+  <li><a href="https://www.rodo.co.jp/news/221692/" target="_blank" rel="noopener">東京商工会議所の調査</a>では、主に東京23区内の中小企業1272社のうち43.2%が「無料ツールのみ使用」と答え、東商の中小企業部は、無料ツールは学習機能がオフになっていないことが多いと指摘しています</li>
+</ul></details></div>
+
+</div></main>
+<footer lang="ja"><div class="wrap"><span>運営：合同会社スタジオパッチ（愛知県一宮市）</span></div></footer>
+
+<script>
+(function(){
+const AICHI=["名古屋市","豊橋市","岡崎市","一宮市","瀬戸市","半田市","春日井市","豊川市","津島市","碧南市","刈谷市","豊田市","安城市","西尾市","蒲郡市","犬山市","常滑市","江南市","小牧市","稲沢市","新城市","東海市","大府市","知多市","知立市","尾張旭市","高浜市","岩倉市","豊明市","日進市","田原市","愛西市","清須市","北名古屋市","弥富市","みよし市","あま市","長久手市","東郷町","豊山町","大口町","扶桑町","大治町","蟹江町","阿久比町","東浦町","南知多町","美浜町","武豊町","幸田町","設楽町","東栄町","飛島村","豊根村","愛知県の外"];
+const OUTSIDE=["愛知県の外"];
+const CO={"製造":"製造業の会社","建設":"建設業の会社","卸・小売":"卸売・小売の会社","飲食・宿泊":"飲食店・宿泊施設","医療・福祉・保育":"医療・福祉・保育の事業所","運輸":"運送の会社","IT・通信":"IT・通信の会社","不動産":"不動産の会社","士業（税理士・社労士など）":"士業の事務所","その他":"私たちの会社（業種：ここに書く）"};
+const TAIL="\n\n書いていないこと（名前・日付・数字・金額・実績）は作らず、【要確認】と書いてください。";
+const TASKS={
+ minutes:{name:"議事録・日報・報告書",how:"メモや録音の書き起こしから、決まったこと・次にやることをAIが整理。人が確かめて仕上げます。",prompt:"次のメモから議事録を作ってください。「決まったこと」「次にやること（誰が・いつまで）」「保留」の3つに分けてください。担当や期限がメモに無いものは【要確認】としてください。\n【メモ】（ここに貼る。名前は「Aさん」などに置き換える）"},
+ inquiry:{name:"問い合わせ対応",how:"よくある問い合わせへの返信の下書きをAIが作り、人が確かめて送ります。",prompt:"あなたは{会社}の窓口担当です。次の問い合わせに、丁寧で短い返信の下書きを作ってください。金額・納期・在庫は約束せず、分からない点は「確認してご連絡します」と書いてください。\n【問い合わせ】（ここに貼る。お名前・電話・住所・メールは消してから）"},
+ post:{name:"SNS・ホームページ・チラシの文章",how:"SNSやチラシの文案をAIが何案か出し、人が選んで直します。",prompt:"{会社}のお知らせを、SNS用に3案（それぞれ100字以内）と、チラシの見出しを3案作ってください。大げさな表現と、中身に無い日付・値段・割引は入れないでください。\n【お知らせの中身】（ここに書く）"},
+ recruit:{name:"求人や採用の文章",how:"求人票・面接の質問・案内文の下書きをAIが作ります。",prompt:"{会社}で人を募集します。下の事実だけを使って、求人票の下書きを作ってください。\n【事実】（仕事の中身・時間・給与・職場の様子をここに書く）"},
+ sales:{name:"営業資料・提案書",how:"提案書の目次と各ページの要点を、AIが下書きします。",prompt:"{会社}として、次のお客様への提案書の目次と、各ページの要点を作ってください。実績・数字・値段は【自社の情報】に書いたものだけを使ってください。【自社の情報】には、公開している情報だけを書いてください。\n【お客様の困りごと】（ここに書く。お客様の名前は「A社」に）\n【自社の情報】（実績・できること・値段をここに書く）"},
+ manual:{name:"社内の手順書",how:"ベテランのやり方を聞き取り、AIが手順書の形に起こします。",prompt:"次の作業の説明を、新人が読んで分かる手順書にしてください。番号つきの手順と注意点に分けてください。説明に無い手順や注意点は足さず、足りないと思う所は【要確認：○○】と書いてください。\n【作業の説明】（ここに書く）"},
+ estimate:{name:"見積・請求",how:"見積の項目と説明文の下書きをAIが作ります。金額は人が入れます。",prompt:"次の条件で、見積書の項目と説明文の下書きを作ってください。金額の欄は空けたままにし、条件に無い項目は足さないでください。\n【条件】（お客様は「A社」と書く。内容・納期をここに書く）"},
+ data:{name:"入力・集計",how:"紙や表の転記・集計を、表計算とAIで減らします。",prompt:"Excel（またはGoogleスプレッドシート）に、次の列の表があります。月ごと・担当ごとの合計を出す方法を、手順と式で教えてください。\n【表の列】（例：A列 日付、B列 担当、C列 金額。自分の表に書き換える）"},
+ stock:{name:"在庫・発注",how:"在庫表から、少ない品目と減りの早い品目をAIが一覧にします。",prompt:"次の2つの在庫表から、残りが少ない品目と、先月より減りが早い品目を一覧にしてください。表に無い数字は推測しないでください。仕入れ値や取引先名は、貼る前に消してください。\n【今月の在庫表】（ここに貼る）\n【先月の在庫表】（ここに貼る）"},
+ other:{name:"仕事の洗い出し",how:"AIに向く作業と、人がやる作業を一緒に洗い出します。",prompt:"私の仕事を次に書きます。AIに任せられそうな作業と、人がやる作業に分けて、理由を1行ずつ書いてください。\n【仕事の中身】（ここに書く）"}
+};
+const ORDER=["minutes","inquiry","post","recruit","sales","manual","estimate","data","stock"];
+const KW={stock:["在庫","発注"],minutes:["議事録","会議","日報","報告書"],inquiry:["問い合わせ","問合せ","問合わせ","電話対応","メール対応"],estimate:["見積","請求"],recruit:["求人","採用","面接"],manual:["手順","マニュアル","引き継ぎ","引継ぎ"],data:["入力","集計","転記","エクセル","Excel","表計算"],sales:["営業資料","提案書"],post:["SNS","ＳＮＳ","sns","チラシ","発信","ホームページ"]};
+const PLAN={
+ none:["架空の例で、下の指示文を試します","よく使う指示文を、社内の共有メモに保存します","会社向けのプランを用意し、1つの仕事の下書きをAIで作成します"],
+ free:["社員それぞれの使い方を集約します","会社向けのプランを選び、1つの仕事のやり方を統一します","会社向けのプランで、ほかの仕事にも展開します"],
+ paid:["いちばん時間のかかる仕事を選び、いまの時間を記録します","その仕事の手順と指示文を、ひな形にします","ひな形をほかの人にも使ってもらい、時間を記録し直します"],
+ flow:["いまAIに任せている仕事の時間を記録します","ExcelやいまのシステムとAIを連携できる所を探します","連携した形で、1つの仕事を試します"]
+};
+const LEVEL={none:[1,"これから"],free:[2,"ためし中"],paid:[3,"会社で使っている"],flow:[4,"仕事に組み込み済み"]};
+const HOURS_TXT={"10時間未満":"月10時間未満","10〜30時間未満":"月10〜30時間ほど","30〜60時間未満":"月30〜60時間ほど","60時間以上":"月60時間以上"};
+
+const Q=[
+ {id:"ind",t:"まず、どんな業種の会社か教えてください。",type:"one",o:["製造","建設","卸・小売","飲食・宿泊","医療・福祉・保育","運輸","IT・通信","不動産","士業（税理士・社労士など）","その他"],two:true},
+ {id:"size",t:"働いている人は何人くらいですか？",note:"パートも含めて",type:"one",o:["9人まで","10〜29人","30〜99人","100人以上"],two:true},
+ {id:"city",t:"会社はどの市町村にありますか？",note:"相談を送るとき、会いに伺えるかの目安にします",type:"select",o:AICHI},
+ {id:"use",t:"いま、AIはどのくらい使っていますか？",note:"いちばん近いものを1つ。会社向けのプランは、チーム・法人向けの契約です",type:"one",o:["使っていない","個人向けの版で使っている（会社が払う有料版も）","会社向けのプラン（チーム・法人向け）で使っている","会社向けのプランで、決まった仕事に毎日使っている"],v:["none","free","paid","flow"]},
+ {id:"tasks",t:"AIで手間を減らしたい仕事はどれですか？",note:"いくつでも選べます",type:"multi",o:["問い合わせ対応","見積・請求","議事録・日報・報告書","求人や採用の文章","社内の手順書","入力・集計","営業資料・提案書","SNS・ホームページ・チラシの文章","在庫・発注","まだ分からない・その他"],v:["inquiry","estimate","minutes","recruit","manual","data","sales","post","stock","other"],two:true},
+ {id:"hours",t:"選んだ仕事に、会社全体で月に何時間かけていますか？",note:"だいたいでOK。例：1人が毎日1時間なら月20時間",type:"one",o:["10時間未満","10〜30時間未満","30〜60時間未満","60時間以上","分からない"],skip:()=>Array.isArray(A.tasks)&&A.tasks.length===1&&A.tasks[0]==="other"},
+ {id:"lead",t:"社内でAIを進めてくれる人はいますか？",type:"one",o:["いる","いないが、任せたい人はいる","いない"]},
+ {id:"rule",t:"AIに入れてはいけない情報（お客様の名前・社外秘など）を、会社で決めていますか？",type:"one",o:["決めて、社員に伝えている","決めているが、伝わっているか分からない","決めていない"],v:["yes","part","no"]},
+ {id:"shadow",t:"社員が、会社で契約していないAI（個人の無料版・スマホのアプリ・翻訳や文字起こしのサービスなど）を仕事に使うことはありますか？",type:"one",o:["ない（会社が決めたAIだけ）","あるかもしれない・分からない","ある"],v:["no","maybe","yes"]},
+ {id:"worry",t:"AIを使うとき、いちばん気になることは？",type:"one",o:["情報が漏れる・AIに学習される","答えが間違っていないか","社員が使いこなせるか","費用","特にない"],v:["leak","wrong","skill","cost","none"],two:true},
+ {id:"pain",t:"最後に、いちばん困っていることをひとことで。",note:"書くと、結果がより合ったものになります（書かなくても進めます）",type:"text",opt:true}
+];
+
+const SAMPLE={ind:"その他",size:"9人まで",city:"一宮市",use:"paid",tasks:["estimate","minutes","post"],hours:"10〜30時間未満",lead:"いる",rule:"part",shadow:"maybe",worry:"leak",pain:"",
+ contact:{co:"見本（答えは例です）",sample:true}};
+
+let sent=false, A={}, qi=0, spent=0, qStart=null, elapsed=null, sample=false, warned="", flagged=false, booked=false, contact=null, typing=null, advancing=false, react="";
+const $=id=>document.getElementById(id);
+const KEY="ai-shindan-hp-v1";
+const REDUCE=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+function save(){if(sample)return;try{sessionStorage.setItem(KEY,JSON.stringify({A,qi,spent}))}catch(e){}}
+function load(){try{const s=JSON.parse(sessionStorage.getItem(KEY)||"null");if(s&&s.A&&Object.keys(s.A).length){A=s.A;qi=Math.min(s.qi||0,Q.length-1);spent=s.spent||0;if(A.city&&!AICHI.includes(A.city))delete A.city;return true}}catch(e){}return false}
+function clearSave(){try{sessionStorage.removeItem(KEY)}catch(e){}}
+function tick(){if(qStart!=null){spent+=Math.min(Date.now()-qStart,180000)}qStart=Date.now()}
+
+function show(id){["s-top","s-q","s-contact","s-result","s-done"].forEach(s=>$(s).hidden=(s!==id));window.scrollTo(0,0);const h=$(id).querySelector("h1,h2");if(h){h.setAttribute("tabindex","-1");h.focus({preventScroll:true})}}
+
+function resetForms(){
+  ["c-co","c-name","c-mail","c-from","c-msg"].forEach(i=>$(i).value="");
+  ["c-biz","c-priv"].forEach(i=>$(i).checked=false);
+  $("cerr").hidden=true;
+  sent=false;contact=null;
+}
+/* 会話窓の文字を少しずつ出す（動きを減らす設定ならすぐ全部） */
+function typeText(el,text){
+  if(typing){clearInterval(typing);typing=null}
+  if(REDUCE){el.textContent=text;return}
+  const draw=i=>{el.textContent="";el.append(text.slice(0,i));const rest=document.createElement("span");rest.style.visibility="hidden";rest.textContent=text.slice(i);el.append(rest)};
+  let i=0; draw(0);
+  const step=Math.max(1,Math.ceil(text.length/24));
+  typing=setInterval(()=>{i+=step;if(i>=text.length){el.textContent=text;clearInterval(typing);typing=null}else draw(i)},18);
+}
+/* パッチを進み具合の位置まで歩かせる */
+function walkTo(p){
+  const w=$("walker"), track=w.parentNode;
+  const prev=parseFloat(track.style.getPropertyValue("--p")||"0");
+  track.style.setProperty("--p",String(p));
+  if(Math.abs(prev-p)<1e-6) return;
+  w.classList.add("walking");
+  clearTimeout(w._t); w._t=setTimeout(()=>w.classList.remove("walking"),REDUCE?0:520);
+}
+function trackTo(where){ const tr=document.querySelector(".track"); if(where==="contact") $("ctrack").appendChild(tr); else $("s-q").insertBefore(tr,$("resume")); }
+function shown(i){ const q=Q[i]; return !(q.skip&&q.skip()); }
+const REACT={ind:a=>a+"ですね！",size:()=>"ありがとうございます！",city:()=>"了解です！",use:()=>"なるほど！",tasks:()=>"いいですね！",hours:()=>"ありがとうございます！",lead:()=>"なるほど！",rule:()=>"大事なところです！",shadow:()=>"ありがとうございます！",worry:()=>"あと1問です！"};
+
+function renderQ(keep){
+  advancing=false;
+  const q=Q[qi];
+  $("qcount").textContent="Q"+(qi+1)+" / "+Q.length;
+  walkTo(qi/(Q.length));
+  $("qreact").hidden=!react; $("qreact").textContent=react; react="";
+  typeText($("qtext"),q.t);
+  $("qnote").hidden=!q.note; $("qnote").textContent=q.note||"";
+  const body=$("qbody"); body.innerHTML="";
+  const vals=q.v||q.o;
+  if(q.type==="one"||q.type==="multi"){
+    const box=document.createElement("div"); box.className="opts"+(q.two?" two":"");
+    q.o.forEach((label,i)=>{
+      const b=document.createElement("button"); b.type="button"; b.className="opt";
+      const v=vals[i], cur=A[q.id];
+      b.setAttribute("aria-pressed",String(q.type==="multi"?(Array.isArray(cur)&&cur.includes(v)):cur===v));
+      b.innerHTML=(q.type==="multi"?'<span class="box"></span>':'<span class="cur"></span>')+'<span></span>'; b.lastChild.textContent=label;
+      b.onclick=()=>{
+        if(q.type==="one"){
+          if(advancing)return; advancing=true;
+          A[q.id]=v;save();
+          box.querySelectorAll(".opt").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+          const at=qi;
+          setTimeout(()=>{advancing=false; if(qi===at&&!$("s-q").hidden) next()},REDUCE?0:140);
+          return}
+        let arr=Array.isArray(A[q.id])?A[q.id].slice():[];
+        if(arr.includes(v)) arr=arr.filter(x=>x!==v);
+        else{ if(q.excl){ if(label===q.excl) arr=[]; else arr=arr.filter(x=>x!==q.excl);} arr.push(v);}
+        A[q.id]=arr;save();
+        box.querySelectorAll(".opt").forEach((x,j)=>x.setAttribute("aria-pressed",String(arr.includes(vals[j]))));
+        updNext();
+      };
+      box.appendChild(b);
+    });
+    body.appendChild(box);
+  }else if(q.type==="select"){
+    const s=document.createElement("select"); s.className="pix"; s.id="q-"+q.id; s.setAttribute("aria-label",q.t);
+    const p=document.createElement("option"); p.value=""; p.textContent="市町村を選ぶ"; s.appendChild(p);
+    q.o.forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=c;if(A[q.id]===c)o.selected=true;s.appendChild(o)});
+    s.onchange=()=>{A[q.id]=s.value;save();updNext()};
+    body.appendChild(s);
+  }else{
+    const t=document.createElement("textarea"); t.className="pix"; t.id="q-"+q.id; t.setAttribute("aria-label",q.t); t.maxLength=200; t.value=A[q.id]||"";
+    t.oninput=()=>{A[q.id]=t.value;save()};
+    body.appendChild(t);
+  }
+  $("qnext").hidden=(q.type==="one"&&A[q.id]==null);
+  $("qnext").textContent=(qi===Q.length-1)?"結果を見る":"次へ";
+  updNext();
+  if(!keep){window.scrollTo(0,0);$("qtext").focus({preventScroll:true})}
+}
+function updNext(){
+  const q=Q[qi], v=A[q.id];
+  let ok=true;
+  if(q.type==="multi") ok=Array.isArray(v)&&v.length>0;
+  if(q.type==="select") ok=!!v;
+  $("qnext").disabled=!ok;
+}
+function next(){
+  tick();
+  const q=Q[qi], ans=A[q.id];
+  react=(REACT[q.id]&&ans!=null&&ans!=="")?REACT[q.id](q.v?q.o[q.v.indexOf(ans)]:ans):"";
+  let n=qi+1; while(n<Q.length&&!shown(n)) n++;
+  if(n<Q.length){qi=n;save();renderQ()}
+  else { elapsed=spent; react=""; walkTo(1); A.__done=true; save(); renderResult(); show("s-result") }
+}
+
+$("go").onclick=()=>{
+  sample=false; resetForms(); react="";
+  const resumed=load(); if(!resumed){A={};qi=0;spent=0} if(resumed&&A.__done){renderResult();show("s-result");return}
+  $("resume").hidden=!resumed||qi===0;
+  trackTo("q"); qStart=Date.now(); show("s-q"); renderQ();
+};
+$("restart").onclick=()=>{A={};qi=0;spent=0;clearSave();$("resume").hidden=true;qStart=Date.now();renderQ()};
+$("sample").onclick=()=>{sample=true; resetForms(); A=JSON.parse(JSON.stringify(SAMPLE)); contact=A.contact; elapsed=null; renderResult(); show("s-result")};
+$("qnext").onclick=()=>{ if(advancing)return; next() };
+$("qback").onclick=()=>{ if(advancing)return; tick(); react=""; let n=qi-1; while(n>0&&!shown(n)) n--; if(n>=0&&qi>0){qi=n;save();renderQ()} else show("s-top") };
+$("cback").onclick=()=>show("s-result");
+
+["スタジオパッチのホームページ","スタジオパッチの見積書・請求書・メールから","取引先・知人から","検索・記事","SNS","その他"].forEach(t=>{const o=document.createElement("option");o.textContent=t;$("c-from").appendChild(o)});
+const HP=true;  /* Claude上の版では false（送れないので、送るボタンを止める） */
+let CONTACT=null;
+if(HP) fetch("/contact.json",{cache:"no-store"}).then(r=>r.json()).then(j=>{CONTACT=j}).catch(()=>{});
+function postContact(params){
+  const send=url=>{
+    const ac=window.AbortController?new AbortController():null;
+    const tm=ac&&setTimeout(()=>ac.abort(),20000);
+    return fetch(url,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:params.toString(),signal:ac?ac.signal:undefined})
+      .then(r=>r.json()).then(j=>!!(j&&j.ok)).catch(()=>false).finally(()=>clearTimeout(tm));
+  };
+  return send(CONTACT.endpoint).then(ok=>(ok||!CONTACT.backup)?ok:send(CONTACT.backup));
+}
+let summary="";
+$("cform").addEventListener("submit",e=>{
+  e.preventDefault();
+  const btn=e.target.querySelector('button[type="submit"]');
+  if(btn.disabled) return;
+  const miss=[], chk=[];
+  if(!$("c-co").value.trim()) miss.push("会社名");
+  if(!$("c-name").value.trim()) miss.push("お名前");
+  const mail=$("c-mail").value.trim();
+  if(!mail) miss.push("メール");
+  if(!$("c-biz").checked||!$("c-priv").checked) chk.push("x");
+  const msg=[]; if(miss.length) msg.push(miss.join("・")+"を入れてください。");
+  if(mail&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) msg.push("メールをもう一度ご確認ください。");
+  if(chk.length) msg.push("上のチェックの欄に、チェックを入れてください。");
+  const err=$("cerr");
+  if(msg.length){err.hidden=false;err.textContent=msg.join("\n");return}
+  const F=(CONTACT&&CONTACT.fields)||{};
+  if(!CONTACT||!CONTACT.endpoint||!F.name||!F.mail||!F.body){err.hidden=false;err.textContent="申し訳ございません。ただいま送信できません。ページを読み込み直してから、もう一度お試しください。";return}
+  err.hidden=true; btn.disabled=true; $("cback").disabled=true; btn.textContent="送信しています…";
+  const q=new URLSearchParams();
+  q.append(F.name,$("c-name").value.trim()); q.append(F.mail,$("c-mail").value.trim());
+  q.append(F.body,"【AI活用診断からのご相談】\n会社名: "+$("c-co").value.trim()+"\nどこで知ったか: "+($("c-from").value||"（選ばない）")+"\n\nひとこと:\n"+($("c-msg").value.trim()||"（なし）")+"\n\n"+summary);
+  postContact(q).then(ok=>{
+    btn.disabled=false; $("cback").disabled=false; btn.textContent="結果を送って相談する";
+    if(ok){ sent=true; renderResult(); if(!$("s-contact").hidden) show("s-done") }
+    else { err.hidden=false; err.textContent="申し訳ございません。送信できませんでした。時間をおいて、もう一度お試しください。" }
+  });
+});
+
+function topTasks(){
+  const sel=Array.isArray(A.tasks)?A.tasks:[];
+  const pain=A.pain||"";
+  const said=ORDER.filter(k=>KW[k].some(w=>pain.includes(w)));
+  const out=[], extra=[];
+  const push=(k,isExtra)=>{if(!out.includes(k)&&out.length<3){out.push(k);if(isExtra)extra.push(k)}};
+  if(sel.includes("other")&&sel.length===1&&!said.length) push("other");
+  said.filter(k=>sel.includes(k)).forEach(k=>push(k));
+  ORDER.filter(k=>sel.includes(k)).forEach(k=>push(k));
+  said.forEach(k=>push(k));
+  if(sel.includes("other")) push("other");
+  ORDER.forEach(k=>push(k,true));
+  return {list:out,extra};
+}
+function fill(s){return s.replace(/\{会社\}/g,CO[A.ind]||"私たちの会社（業種：ここに書く）")+TAIL}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+
+function safety(){
+  const it=[
+   {k:"会社向けのプラン",ok:A.use==="paid"||A.use==="flow",good:"会社向けのプランでAIを使っています。ただし、自分から許可した会話は例外になることがあり、会話はしばらく保存されます（OpenAI・Anthropic）。",
+    bad:"会社向けのプランのAIが、まだありません。個人向けの版は、学習に使う設定があるか確かめてください。"},
+   {k:"決まり",ok:A.rule==="yes",good:"AIに入れない情報を決めて、社員に伝えています。",
+    bad:A.rule==="part"?"決まりが社員に届いているか、一度たしかめてください。":"お客様の名前や社外秘など、AIに入れない情報を先に決めてください。"},
+   {k:"個人のAI",ok:A.shadow==="no"&&A.use!=="free",good:"会社が決めていないAIは、使われていません。",
+    bad:A.use==="free"?"個人の版で使っているので、会社で設定をそろえにくいと考えます。会社向けのプランに寄せてください。":"使ってよいAIを会社で決めて、社員に伝えてください。"}
+  ];
+  return {it,n:it.filter(x=>x.ok).length};
+}
+function renderResult(){
+  const {list:tops,extra}=topTasks();
+  const t1=TASKS[tops[0]];
+  const plan=(PLAN[A.use]||PLAN.none).slice();
+  const pre=[];
+  if(A.lead==="いない") pre.push("AIを進める人");
+  if((A.shadow&&A.shadow!=="no")||A.use==="free") pre.push("使ってよいAI");
+  if(A.rule!=="yes") pre.push("AIに入れない情報");
+  const first=pre.length?'<p>'+'最初に、'+esc(pre.join("・"))+'を、会社で決めてください。'+'</p>':'';
+  const lv=LEVEL[A.use]||LEVEL.none;
+  const sf=safety();
+  const co=(contact&&contact.sample)?contact.co:"";
+  const head=tops[0]==="other"?'<span class="nb">まずは、</span><span class="nb">AIに任せる仕事の</span><span class="nb">洗い出しからです</span>':'<span class="nb">まず任せるなら、</span><span class="nb">「'+esc(t1.name)+'」です</span>';
+  const hoursLine=(HOURS_TXT[A.hours]&&shown(Q.findIndex(q=>q.id==="hours")))?'<p class="fine">選んだ仕事に、いま'+HOURS_TXT[A.hours]+'かかっています。</p>':'';
+  const nextLv=lv[0]<4?'進め方のとおりに進めて、Lv.'+(lv[0]+1)+'をめざします。':'次は、AIを使う仕事を増やします。';
+  const worryQ=Q.find(q=>q.id==="worry"), worryTxt=worryQ.o[worryQ.v.indexOf(A.worry)]||"";
+  const ans=id=>{const q=Q.find(x=>x.id===id); return q&&q.v?(q.o[q.v.indexOf(A[id])]||""):(A[id]||"")};
+  const hoursOn=HOURS_TXT[A.hours]&&shown(Q.findIndex(q=>q.id==="hours"));
+  summary=["AI活用レベル: Lv."+lv[0]+"（"+lv[1]+"）",
+    "選んだ仕事: "+tops.filter(k=>!extra.includes(k)).map(k=>TASKS[k].name).join(" ／ "),
+    (extra.length?"診断が足した仕事: "+extra.map(k=>TASKS[k].name).join(" ／ "):""),
+    "安全チェック: "+sf.n+" / 3（"+sf.it.map(x=>x.k+(x.ok?"○":"△")).join("・")+"）",
+    "AIの使い方: "+ans("use"),"入れない情報の決まり: "+ans("rule"),"会社が決めていないAI: "+ans("shadow"),
+    "いちばん気になること: "+worryTxt,
+    "",
+    "業種: "+(A.ind||"")+" / 人数: "+(A.size||"")+" / 市町村: "+(A.city||"")+" / 進める人: "+(A.lead||"")+(hoursOn?" / かかる時間: "+HOURS_TXT[A.hours]:""),
+    "困っていること: "+(A.pain||"（なし）")].filter(x=>x!=="").join(String.fromCharCode(10));
+  const r=$("s-result");
+  r.innerHTML=
+   '<div class="rhead">'+(co?'<span class="who">'+esc(co)+'</span>':'')+
+     '<div class="lvrow"><div class="lv"><span class="lab">いまのAI活用レベル</span><span class="num">Lv.'+lv[0]+'<small> / 4</small></span><span class="name">'+esc(lv[1])+'</span></div>'+
+     '<div class="chars"><span class="spr patti" role="img" aria-label="パッチ"></span><span class="spr mayu" role="img" aria-label="マユ"></span></div></div>'+
+     '<h2>'+head+'</h2><p>'+esc(nextLv)+'</p></div>'+
+   '<div class="card"><h3><span class="eyebrow">クエスト</span>AIに任せられそうな仕事</h3>'+
+     tops.map((k,i)=>'<div class="quest"><span class="n">'+(i+1)+'</span><span><b>'+esc(TASKS[k].name)+(extra.includes(k)?'<span class="tag">ほかに始めやすい仕事</span>':'')+'</b>'+esc(TASKS[k].how)+'</span></div>').join("")+
+     hoursLine+'<p class="fine">どれだけ時間が減るかは、試して測ります。</p></div>'+
+   '<div class="card"><h3><span class="eyebrow">守り</span>安全チェック '+sf.n+' / 3</h3>'+
+     sf.it.map(x=>'<div class="quest"><span class="n">'+(x.ok?'○':'△')+'</span><span><b>'+esc(x.k)+'</b>'+esc(x.ok?x.good:x.bad)+'</span></div>').join("")+
+     '<p>漏れや学習の心配は、会社向けの契約・設定・社内ルールで大きく減らせますが、ゼロにはならないと考えます。</p>'+
+     '<p>日本の中だけで処理する方法、保存しない契約、社内で動かすAIもあり、相談でご案内します。</p>'+
+     '<div id="basisSlot"></div></div>'+
+   '<div class="card"><h3><span class="eyebrow">'+'攻略ルート</span>'+'これからの進め方</h3>'+first+'<ol class="steps">'+plan.map((s,i)=>'<li><span class="m">'+(i+1)+'か月目</span><span>'+esc(s)+'</span></li>').join("")+'</ol></div>'+
+   '<div class="card"><h3><span class="eyebrow">アイテム</span>すぐ使える指示文</h3><p class="fine">（ここに…）の所を書き換えて、ChatGPT・Gemini・Claude などに貼ってください。会社向けのプランでないときは、架空の例か、公開している情報だけで試してください。</p>'+
+     tops.map((k,i)=>'<div class="prompt"><div class="top"><b>'+esc(TASKS[k].name)+'</b><button class="copy" type="button" data-i="'+i+'">コピー</button></div><pre id="pr'+i+'">'+esc(fill(TASKS[k].prompt))+'</pre></div>').join("")+
+   '</div>'+
+   '<div class="card"><h3><span class="eyebrow">相談</span>この結果で相談する</h3><p>AIに任せる仕事と安全な使い方を、貴社に伺うかオンラインで、一緒に検討します。最初のヒアリングは無料です。費用が発生する場合は、事前にお見積りをお出しします。</p>'+
+     '<button class="btn" id="toconsult"'+(sent||sample||!HP?' disabled':'')+'>'+(sent?'相談を送りました':sample?'見本では送れません':!HP?'送信はホームページの版から':'相談を申し込む')+'</button></div>'+
+   (Array.isArray(A.tasks)&&A.tasks.includes("recruit")?'<p class="extra">スタジオパッチより：社員への取材でつくる採用の映像のご相談も、お受けします。</p>':'')+
+   '<button class="btn ghost" id="again">'+(sample?'最初の画面に戻る':'はじめからやり直す')+'</button>';
+  r.querySelectorAll(".copy").forEach(b=>b.onclick=()=>copy(b,$("pr"+b.dataset.i)));
+  const bd=$("basis").firstElementChild.cloneNode(true); $("basisSlot").appendChild(bd);
+  $("toconsult").onclick=()=>{if(sent||sample||!HP)return;$("c-sum").textContent=summary;show("s-contact")};
+  $("again").onclick=()=>{ if(!sample) clearSave(); sample=false; A={};qi=0;spent=0;elapsed=null; resetForms(); show("s-top")};
+}
+function copy(btn,el){
+  const txt=el.textContent;
+  const back=()=>setTimeout(()=>{btn.textContent="コピー";btn.classList.remove("done")},2500);
+  const ok=()=>{btn.textContent="コピーしました";btn.classList.add("done");back()};
+  const fallback=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);btn.textContent="選びました。長押しかCtrl+Cで";back()};
+  try{navigator.clipboard.writeText(txt).then(ok,fallback)}catch(e){fallback()}
+}
+$("dres").onclick=()=>show("s-result");
+window.addEventListener("resize",()=>{ if(!$("s-q").hidden) walkTo(qi/Q.length) });
+})();
+</script>
+
+</body>
+</html>
